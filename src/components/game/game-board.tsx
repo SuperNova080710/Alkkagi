@@ -10,6 +10,8 @@ import { extractFrames, summarizeTurn, type TurnShot } from '@/lib/game/turn-his
 import { requestRematch } from '@/app/rooms/rematch';
 import { GameFeedback } from '@/components/game/game-feedback';
 import { keyboardVector, DIRECTIONS, type Direction } from '@/lib/game/keyboard-shot';
+import { getPlayerIdentities } from '@/lib/game/player-identity';
+import { GameIdentityHeading } from '@/components/game/game-identity-heading';
 
 type Match = {
  id: string;
@@ -77,6 +79,7 @@ export function GameBoard({
  const myTurn = match.status === 'active' && match.turn_user_id === userId && !animating && remaining !== 0;
  const firstLabel = players.find(p => p.seat === 1)?.nickname ?? '선공';
  const secondLabel = players.find(p => p.seat === 2)?.nickname ?? '후공';
+ const identities = getPlayerIdentities(match, userId, players, board);
 
  useEffect(() => {
   const timer = window.setInterval(() => router.refresh(), 3500);
@@ -184,25 +187,12 @@ export function GameBoard({
  }
 
  const mine=board.pieces.filter(p=>p.owner===userId);
- const firstRemaining = board.pieces.filter(p => p.owner === match.player1_id).length;
- const secondRemaining = board.pieces.filter(p => p.owner === match.player2_id).length;
  const power = drag ? Math.min(MAX_FORCE, Math.hypot(drag.origin.x - drag.at.x, drag.origin.y - drag.at.y)) : 0;
  const turns = shots.map(s => summarizeTurn(s, match.player1_id, match.player2_id))
   .filter((item): item is NonNullable<typeof item> => item !== null);
  return <section className="game-screen mt-8">
-  <div className="game-screen-heading flex flex-wrap items-center justify-between gap-3">
-   <div>
-    <h2 className="text-xl font-extrabold sm:text-2xl">알까기 대전</h2>
-    <p className="mt-1 text-sm text-slate-300" aria-live="polite">
-     {animating ? '알이 움직이는 중입니다…' : match.status === 'finished'
-      ? match.winner_id === userId ? '승리했습니다!' : match.winner_id ? '패배했습니다.' : '무승부입니다.'
-      : myTurn ? '내 차례입니다. 내 알을 잡고 뒤로 드래그하세요.' : '상대방의 차례입니다.'}
-    </p>
-   </div>
-   <span className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold">
-    선공 {firstRemaining}개 · 후공 {secondRemaining}개
-   </span>
-  </div>
+  <GameIdentityHeading match={match} viewerId={userId} players={identities}
+   mode={mode} animating={animating} pending={pending} remaining={remaining}/>
   <div className="game-screen-body">
    <div className="game-screen-main">
     <div className="game-screen-stage overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
@@ -216,12 +206,29 @@ export function GameBoard({
       <rect x="23" y="23" width="754" height="454" fill="none"
        stroke="#34d399" strokeOpacity="0.18" strokeWidth="2"/>
       <path d="M400 20 V480" stroke="#34d399" strokeOpacity="0.15" strokeDasharray="8 10" strokeWidth="3"/>
+      {identities.map(identity => {
+       const x = identity.seat === 1 ? 29 : 583;
+       return <g key={identity.id} aria-hidden="true" style={{ pointerEvents: 'none' }}>
+        <rect x={x} y={24} width="188" height="34" rx="9" fill="#020617" fillOpacity="0.88"
+         stroke={identity.color} strokeWidth={identity.isMe ? 2.6 : 1.4}/>
+        <circle cx={x + 16} cy="41" r="6" fill={identity.color}/>
+        <text x={x + 30} y="46" fontSize="13" fontWeight="800" fill="#f8fafc">
+         {identity.isMe ? '내 알' : '상대 알'} · {identity.colorName}
+        </text>
+       </g>;
+      })}
       {board.pieces.map(piece => <g key={piece.id}>
        <circle cx={piece.x + 2} cy={piece.y + 4} r={RADIUS + 1} fill="#000" opacity="0.28"/>
        <circle cx={piece.x} cy={piece.y} r={RADIUS}
         fill={piece.owner === match.player1_id ? '#f59e0b' : '#60a5fa'}
         stroke={piece.owner === userId ? '#fef3c7' : '#bfdbfe'} strokeWidth="2.5"/>
        <circle cx={piece.x - 5} cy={piece.y - 5} r="5" fill="#fff" opacity="0.45"/>
+       {piece.owner === userId && <>
+        <circle cx={piece.x} cy={piece.y} r={RADIUS + 5} fill="none"
+         stroke="#ffffff" strokeWidth="2.6" strokeDasharray="4 3"/>
+        <text x={piece.x} y={piece.y + 4} textAnchor="middle" fontSize="11" fontWeight="900"
+         fill="#0f172a" style={{ pointerEvents:'none', userSelect:'none' }}>나</text>
+       </>}
       </g>)}
       {drag && <g>
        <line x1={drag.origin.x} y1={drag.origin.y}
