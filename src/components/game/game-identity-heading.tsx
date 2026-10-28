@@ -31,7 +31,7 @@ export function GameIdentityHeading({
      aria-label={`${player.isMe ? '내 알' : '상대 알'}: ${player.nickname}, ${player.colorName}, ${seat}, ${player.startSide} 시작, ${player.remaining}개 남음, ${turnBadge}`}>
      <div className="flex items-center gap-1.5 text-xs font-bold">
       <span className="game-player-dot shrink-0" style={{ backgroundColor: player.color }}/>
-      <span className="truncate">{player.isMe ? '나' : '상대'} · {seat} · {player.colorName}</span>
+      <span className="truncate">{player.isMe ? '내 알' : '상대 알'} · {player.colorName} · {seat}</span>
      </div>
      <div className="mt-0.5 flex items-center justify-between gap-1">
       <span className="truncate text-sm font-bold" title={player.nickname}>{player.nickname}</span>

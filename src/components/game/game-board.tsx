@@ -12,6 +12,7 @@ import { GameFeedback } from '@/components/game/game-feedback';
 import { keyboardVector, DIRECTIONS, type Direction } from '@/lib/game/keyboard-shot';
 import { getPlayerIdentities } from '@/lib/game/player-identity';
 import { GameIdentityHeading } from '@/components/game/game-identity-heading';
+import { GamePieces } from '@/components/game/game-pieces';
 
 type Match = {
  id: string;
@@ -197,7 +198,7 @@ export function GameBoard({
    <div className="game-screen-main">
     <div className="game-screen-stage overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
      <svg viewBox="0 0 800 500" role="img"
-      aria-label="알까기 보드. 자신의 알을 뒤로 드래그해 힘을 모아 발사합니다."
+      aria-label={`알까기 보드. 내 알은 ${identities.find(p => p.isMe)?.colorName ?? "알 수 없는 색상"}이며, 자신의 알을 뒤로 드래그해 발사합니다.`}
       onPointerDown={down} onPointerMove={move} onPointerUp={up}
       onPointerCancel={() => setDrag(null)}
       style={{ touchAction: 'none', width: '100%', display: 'block',
@@ -206,30 +207,7 @@ export function GameBoard({
       <rect x="23" y="23" width="754" height="454" fill="none"
        stroke="#34d399" strokeOpacity="0.18" strokeWidth="2"/>
       <path d="M400 20 V480" stroke="#34d399" strokeOpacity="0.15" strokeDasharray="8 10" strokeWidth="3"/>
-      {identities.map(identity => {
-       const x = identity.seat === 1 ? 29 : 583;
-       return <g key={identity.id} aria-hidden="true" style={{ pointerEvents: 'none' }}>
-        <rect x={x} y={24} width="188" height="34" rx="9" fill="#020617" fillOpacity="0.88"
-         stroke={identity.color} strokeWidth={identity.isMe ? 2.6 : 1.4}/>
-        <circle cx={x + 16} cy="41" r="6" fill={identity.color}/>
-        <text x={x + 30} y="46" fontSize="13" fontWeight="800" fill="#f8fafc">
-         {identity.isMe ? '내 알' : '상대 알'} · {identity.colorName}
-        </text>
-       </g>;
-      })}
-      {board.pieces.map(piece => <g key={piece.id}>
-       <circle cx={piece.x + 2} cy={piece.y + 4} r={RADIUS + 1} fill="#000" opacity="0.28"/>
-       <circle cx={piece.x} cy={piece.y} r={RADIUS}
-        fill={piece.owner === match.player1_id ? '#f59e0b' : '#60a5fa'}
-        stroke={piece.owner === userId ? '#fef3c7' : '#bfdbfe'} strokeWidth="2.5"/>
-       <circle cx={piece.x - 5} cy={piece.y - 5} r="5" fill="#fff" opacity="0.45"/>
-       {piece.owner === userId && <>
-        <circle cx={piece.x} cy={piece.y} r={RADIUS + 5} fill="none"
-         stroke="#ffffff" strokeWidth="2.6" strokeDasharray="4 3"/>
-        <text x={piece.x} y={piece.y + 4} textAnchor="middle" fontSize="11" fontWeight="900"
-         fill="#0f172a" style={{ pointerEvents:'none', userSelect:'none' }}>나</text>
-       </>}
-      </g>)}
+      <GamePieces board={board} firstPlayerId={match.player1_id} viewerId={userId}/>
       {drag && <g>
        <line x1={drag.origin.x} y1={drag.origin.y}
         x2={drag.origin.x + (drag.origin.x - drag.at.x)}
