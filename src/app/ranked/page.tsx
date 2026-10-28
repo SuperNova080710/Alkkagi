@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {requireUser} from '@/lib/auth/user';
 import {createClient} from '@/lib/supabase/server';
 import {RankedQueue} from '@/components/ranked/ranked-queue';
+import {type QueueStatus} from '@/app/ranked/actions';
 export const dynamic='force-dynamic';
 type Entry={position:number;nickname:string;rating:number;wins:number;losses:number;draws:number};
 type History={matchId:string;finished_at:string;opponent:string;result:string;delta:number|null;ratingAfter:number|null};
@@ -13,7 +14,11 @@ export default async function RankedPage(){
  const [statusQuery,boardQuery]=await Promise.all([
   db.rpc('ranked_queue_status'),db.rpc('ranked_dashboard'),
  ]);
- const status=(statusQuery.data??{status:'idle'}) as {status:string;matchId?:string|null};
+ const raw=statusQuery.data as {status?:string;matchId?:unknown}|null;
+ const status:QueueStatus={
+  status:raw?.status==='queued'||raw?.status==='matched'?raw.status:'idle',
+  matchId:typeof raw?.matchId==='string'?raw.matchId:null,
+ };
  const dashboard=(boardQuery.data??empty) as Dashboard;
  return <main className="mx-auto max-w-5xl px-5 py-12">
   <Link href="/lobby" className="text-sm font-semibold text-emerald-300">← 일반전 로비</Link>
