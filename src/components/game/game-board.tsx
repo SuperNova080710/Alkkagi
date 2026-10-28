@@ -226,7 +226,7 @@ export function GameBoard({
      <h3 className="font-bold">턴 기록</h3>
      <span className="text-xs tabular-nums text-slate-400">{turns.length}턴</span>
     </div>
-    <p className="my-3 text-xs text-slate-400">탈락 수는 선공 / 후공 순서입니다.</p>
+    <p className="my-3 text-xs text-slate-400">각 턴에 탈락한 알을 기록합니다.</p>
     <ol className="game-turn-list space-y-2 pr-1" aria-label="진행된 턴">
      {turns.length === 0 && <li className="rounded-lg bg-slate-800/70 p-3 text-sm text-slate-400">
       첫 번째 발사를 기다리고 있습니다.
@@ -237,8 +237,11 @@ export function GameBoard({
       <p className="mt-1 truncate text-sm font-semibold">
        {turn.playerId === match.player1_id ? firstLabel : secondLabel} · {turn.pieceId} 발사
       </p>
-      <p className="mt-1 text-xs text-slate-300">
-       선공 -{turn.firstLost} / 후공 -{turn.secondLost}
+      <p className="mt-1 break-words text-xs text-slate-300">
+       {firstLabel} 알 {turn.firstLost}개 탈락
+      </p>
+      <p className="mt-1 break-words text-xs text-slate-300">
+       {secondLabel} 알 {turn.secondLost}개 탈락
       </p>
      </li>)}
     </ol>
@@ -253,7 +256,7 @@ export function GameBoard({
      </p>
      <form action={rematchAction} className="mt-3">
       <input type="hidden" name="roomId" value={roomId}/>
-      <button type="submit" disabled={myRematchVote || rematchPending}
+      <button type="submit" disabled={myRematchVote || rematchPending || animating}
        className="w-full rounded-lg bg-emerald-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60">
        {myRematchVote ? '상대방 수락 대기 중' : rematchPending ? '요청 중…' : '다시하기 · 재대전 신청'}
       </button>
