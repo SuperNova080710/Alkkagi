@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { HEIGHT, MAX_FORCE, MIN_FORCE, RADIUS, WIDTH, type Board } from '@/lib/game/engine';
 import { viewportToBoard } from '@/lib/game/coordinates';
@@ -31,10 +32,11 @@ type Props = {
  rematchReadyCount: number;
  myRematchVote: boolean;
  shots: TurnShot[];
+ mode?: 'casual' | 'ranked';
 };
 
 export function GameBoard({
- match, userId, roomId, players, rematchReadyCount, myRematchVote, shots,
+ match, userId, roomId, players, rematchReadyCount, myRematchVote, shots, mode='casual',
 }: Props) {
  const router = useRouter();
  const [drag, setDrag] = useState<Drag | null>(null);
@@ -56,13 +58,13 @@ export function GameBoard({
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return () => window.clearInterval(timer);
   const db = createBrowserClient(url, key);
-  const channel = db.channel('match-room:' + roomId)
+  const channel = db.channel('match:' + match.id)
    .on('postgres_changes', {
-    event: '*', schema: 'public', table: 'matches', filter: 'room_id=eq.' + roomId,
+    event: 'UPDATE', schema: 'public', table: 'matches', filter: 'id=eq.' + match.id,
    }, () => router.refresh())
    .subscribe();
   return () => { window.clearInterval(timer); void db.removeChannel(channel); };
- }, [roomId, router]);
+ }, [match.id, router]);
 
  useEffect(() => {
   if (!latestShot || lastSeenShot.current === latestShot.id) return;
@@ -244,6 +246,7 @@ export function GameBoard({
       {match.winner_id === match.player1_id ? firstLabel + ' 승리' :
        match.winner_id === match.player2_id ? secondLabel + ' 승리' : '무승부'}
      </p>
+     {mode === 'ranked' ? <Link href="/ranked" className="mt-4 block rounded-lg bg-emerald-300 px-4 py-3 text-center text-sm font-bold text-slate-950">랭크 로비로 돌아가기</Link> : <>
      <p className="mt-3 text-xs text-slate-300">
       재대전 준비 {rematchReadyCount}/2 · 두 명이 모두 수락하면 새 경기를 시작합니다.
      </p>
@@ -255,6 +258,7 @@ export function GameBoard({
       </button>
      </form>
      {rematch.error && <p role="alert" className="mt-2 text-xs text-rose-300">{rematch.error}</p>}
+     </>}
     </div>}
    </aside>
   </div>
