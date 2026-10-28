@@ -1,9 +1,9 @@
-# ALEPH P1–P3 인수 검증 기록 — 2026-10-28
+# ALEPH P2 제출 시점의 인수 검증 기록 — 2026-10-28
 
 ## 검증 출처
 - **사용자 직접 확인:** '전부 확인했고 정상입니다.' (2026-10-28). 직전 점검 항목: A/B 랭크 매칭 및 종료 후 RP·전적/순위, 일반전 RP 불변, 재접속·120초 시간 초과, 키보드·모바일 터치, 게임판 무스크롤·모션.
-- **CI:** latest main `10dfced979a2bf2f5011557fdf2fc7c4db7cf458`; GitHub Actions [run #40650525641](https://github.com/SuperNova080710/Alkkagi/actions/runs/40650525641) — success. Lint, typecheck, Vitest(PGlite DB), Next.js build.
-- **배포:** Vercel Production latest main `10dfced` — READY, [공개 URL](https://alkkagi-alpha.vercel.app).
+- **CI:** P2 제출용 기능 기준 main `feb483e51ed706ee144a4067608c7ecccde09e66`; GitHub Actions [run #40653128780](https://github.com/SuperNova080710/Alkkagi/actions/runs/40653128780) — success. Lint, typecheck, Vitest(PGlite DB), Next.js build.
+- **배포:** Vercel Production main `feb483e` — READY, [공개 URL](https://alkkagi-alpha.vercel.app).
 - **운영 DB 집계(2026-10-28 조회):** 완료된 일반전 6건, 완료된 랭크전 1건. `rating_history` 2건, 1경기/2명 정산, RP 최소 -16·최대 +16·합계 0. 개인 정보·사용자 ID는 공개 기록에 포함하지 않음.
 
 ## P1 — 제출 접수 사용자 보고
@@ -19,12 +19,19 @@
 - PR #31; DB migrations 006/007.
 - **미완료:** ALEPH 중간 점검 2차 제출 접수.
 
-## P3 — 구현/검증 완료, 일부 보안 운영 개선 및 플랫폼 제출 대기
+## P2에 포함된 선행 안정화 기능 — 현재 배포 완료, P3 최종본은 별도
 - DB 스냅샷 복귀, 서버 기준 120초 턴 만료, 서버 전용 `expire_match`, 350ms 샷 제한, 키보드 보조 조작, 모바일.
 - 사용자 재접속/시간 초과/화면과 조작 정상 보고. PGlite 권한 및 중복 정산 회귀 검사 통과.
 - PR #32; DB migrations 008/009.
 - **잔여 운영 확인:** Supabase Auth 유출 비밀번호 보호 기능 활성화 여부 검토. Advisor는 의도적 인증 사용자 `SECURITY DEFINER` 공개 RPC 경고를 표시하며, 해당 함수들의 인증·소유권 검사는 지속 감사 필요. 반복 요청의 대규모 부하 실측/전문 침투 테스트를 시행했다고 주장하지 않음.
-- **미완료:** ALEPH 최종 제출 접수.
+- **다음 단계:** 최종 제출용 추가 수정사항은 아직 정해지지 않았으며, 사용자 피드백 이후 새로운 PR·검증 기록을 추가할 예정입니다. ALEPH 최종 제출 접수도 아직 완료되지 않았습니다.
+
+## 제출 경계
+
+- **이번 제출:** 현재까지 구현·실제로 확인한 모든 기능을 ALEPH 중간 점검 2차에 제출.
+- **이번에 제출하지 않는 것:** 앞으로 추가할 기능의 성과, 아직 수행하지 않은 대규모 부하 테스트, 최종 제출 확정본.
+- **문구:** [P2 제출 초안](p2-submission-2026-10-28.md).
+- **상태:** P2 제출 버튼/접수는 아직 사용자 확인 전. P3는 추가 작업 후 새 문서 작성.
 
 ## 목표 대비 판단
 핵심 기능 3가지(1:1 서버 알까기, 초대방·랜덤 매칭, RP·순위/전적)는 구현과 사용 확인을 완료했습니다. 실제 서비스는 두 계정 사용이 가능하고 코드/DB/배포 검증 자료가 있습니다.
