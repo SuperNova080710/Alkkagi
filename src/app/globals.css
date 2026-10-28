@@ -100,3 +100,56 @@ body {
   .game-page--playing .game-turn-log { overflow: hidden; }
   .game-page--playing .game-turn-list { max-height: none; flex: 1 1 0; min-height: 0; }
 }
+
+/*
+ * Game court layout stability:
+ * The stage fills the space BETWEEN a fixed-size title and HUD. Dynamic
+ * turn, drag-power and server feedback must never change those dimensions.
+ * On mobile, normal document flow remains available for text wrapping.
+ */
+.game-shot-feedback {
+  display: grid;
+  grid-template-rows: 1.5rem 1.5rem;
+  row-gap: 0.15rem;
+}
+.game-shot-power {
+  min-height: 1.5rem;
+  align-items: center;
+}
+.game-shot-status {
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+}
+.game-turn-list { scrollbar-gutter: stable; }
+
+@media (min-width: 1024px) and (min-height: 640px) {
+  .game-page--playing .game-screen-heading {
+    flex: 0 0 4.5rem;
+    height: 4.5rem;
+    min-height: 4.5rem;
+    overflow: hidden;
+    align-items: center;
+  }
+  .game-page--playing .game-screen-heading > div {
+    min-width: 0;
+  }
+  .game-page--playing .game-screen-heading p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .game-page--playing .game-screen-bottom {
+    flex: 0 0 6.5rem;
+    height: 6.5rem;
+    min-height: 6.5rem;
+    overflow: hidden;
+  }
+  .game-page--playing .game-screen-bottom > div:first-child {
+    min-height: 2.5rem;
+  }
+  .game-page--playing .game-shot-status {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

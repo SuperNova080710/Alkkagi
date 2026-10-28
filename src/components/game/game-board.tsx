@@ -7,6 +7,7 @@ import { HEIGHT, MAX_FORCE, MIN_FORCE, RADIUS, WIDTH, type Board } from '@/lib/g
 import { viewportToBoard } from '@/lib/game/coordinates';
 import { extractFrames, summarizeTurn, type TurnShot } from '@/lib/game/turn-history';
 import { requestRematch } from '@/app/rooms/rematch';
+import { GameFeedback } from '@/components/game/game-feedback';
 
 type Match = {
  id: string;
@@ -154,7 +155,6 @@ export function GameBoard({
  const firstRemaining = board.pieces.filter(p => p.owner === match.player1_id).length;
  const secondRemaining = board.pieces.filter(p => p.owner === match.player2_id).length;
  const power = drag ? Math.min(MAX_FORCE, Math.hypot(drag.origin.x - drag.at.x, drag.origin.y - drag.at.y)) : 0;
- const percent = Math.round(power / MAX_FORCE * 100);
  const turns = shots.map(s => summarizeTurn(s, match.player1_id, match.player2_id))
   .filter((item): item is NonNullable<typeof item> => item !== null);
  return <section className="game-screen mt-8">
@@ -210,14 +210,7 @@ export function GameBoard({
        기권하기
       </button>}
      </div>
-     {drag && <div className="mt-2 flex items-center gap-3 text-xs text-amber-200" aria-live="off">
-      <span className="min-w-16">세기 {percent}%</span>
-      <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-700">
-       <div className="h-full rounded-full bg-amber-300" style={{ width: percent + '%' }}/>
-      </div>
-     </div>}
-     {pending && <p role="status" className="mt-2 text-sm text-amber-200">서버에서 판정 중입니다…</p>}
-     {error && <p role="alert" className="mt-2 text-sm text-rose-300">{error}</p>}
+     <GameFeedback power={drag ? power : null} pending={pending} error={error}/>
     </div>
    </div>
    <aside className="game-turn-log rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
