@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  background: #020617;
+  color: #f8fafc;
+  font-family: Arial, "Noto Sans KR", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+::selection {
+  background: #6ee7b7;
+  color: #020617;
+}

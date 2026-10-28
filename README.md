@@ -2,7 +2,7 @@
 
 브라우저에서 친구와 1:1로 알까기를 즐기고, 랜덤 랭크 매칭과 순위표에서 경쟁하는 온라인 게임 프로젝트입니다.
 
-> **현재 상태: 기획 및 저장소 초기화 단계.** 게임 기능·테스트·배포는 아직 완료되지 않았습니다.
+> **현재 상태: P1 인증·DB 기반 구현 단계.** 회원가입·로그인·로그아웃 코드와 DB/RLS 마이그레이션을 추가했습니다. 원격 DB 적용·실계정 인증·게임 기능 검증은 아직 완료되지 않았습니다.
 
 ## 프로젝트 목표
 
@@ -37,3 +37,56 @@ Next.js (App Router) · React · TypeScript · Supabase (Auth / PostgreSQL / Rea
 4. P3 품질·복구·보안 강화 → 최종 제출
 
 > 계획·실제 구현·테스트·배포 여부를 구분해 기록합니다. 프로젝트 상세 설계는 작업 브랜치에서 `plan.md`로 관리합니다.
+
+## 로컬 실행 — Issue #4
+
+Node.js 24.x와 npm을 사용합니다. `.nvmrc`가 제공됩니다.
+
+```sh
+nvm use
+npm ci
+npm run dev
+```
+
+`http://localhost:3000`에서 시작 화면을 확인합니다. 현재 화면은 환경변수나
+Supabase 연결 없이 실행됩니다. 로그인은 Supabase 환경변수 설정 후 이용할 수 있으며, 방·대전은 아직 구현되지 않았습니다.
+로컬 인증을 시험하려면 `.env.example`을 `.env.local`로 복사하고 공개 설정과 `SITE_URL=http://localhost:3000`을 설정합니다.
+`SUPABASE_SECRET_KEY`는 서버 전용이며 브라우저 코드에서 사용하면 안 됩니다.
+
+## 품질 검사
+
+```sh
+npm run lint       # ESLint, 경고도 실패 처리
+npm run typecheck  # Next.js 라우트 타입 생성 후 TypeScript 검사
+npm test           # SSR·인증 경계·쿠키·DB RLS 검증
+npm run build      # 프로덕션 빌드
+# 전체 검사
+npm run check
+```
+
+`npm run start`는 빌드 완료 후 프로덕션 서버를 실행합니다.
+GitHub Actions도 Node.js 24에서 `npm ci`와 동일한 전체 검사를 실행합니다.
+인증 단위 테스트와 로컬 PostgreSQL RLS 테스트를 포함합니다. 실제 Supabase 통합과 동시 요청 테스트는 별도입니다.
+
+## 코드 구조와 배포 준비
+
+- `src/app/layout.tsx`: 한국어 문서, 메타데이터, 전역 스타일
+- `src/app/page.tsx`: 구현 상태를 명시하는 초기 홈 화면
+- `tests/`: Vitest 테스트
+- `.env.example`: 값이 비어 있는 환경변수 목록
+
+Vercel에서 이 저장소를 연결하고 Framework Preset을 **Next.js**, Root Directory를
+저장소 루트, Node.js를 **24.x**로 지정합니다. Install Command는 `npm ci`,
+Build Command는 `npm run build`입니다. Output Directory는 기본값을 사용합니다.
+Next.js 자동 감지를 사용하므로 별도의 `vercel.json`은 필요하지 않습니다.
+실제 Vercel 배포와 Supabase 프로젝트 연결은 아직 수행하지 않았습니다.
+
+### 의존성 참고
+
+Next.js ESLint 설정에 포함된 React/import/accessibility 플러그인의 peer 범위가
+ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원 종료 경고가
+출력됩니다. 플러그인이 ESLint 10을 지원하면 함께 업그레이드해야 합니다.
+
+## 인증·DB 연결 — Issue #5
+
+설정, SQL 적용, 테스트 범위와 배포 후 점검은 [docs/auth-database.md](docs/auth-database.md)를 따릅니다.
