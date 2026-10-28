@@ -7,8 +7,9 @@ import {GameBoard} from '@/components/game/game-board';
 import {RoomRefresh} from '@/components/rooms/room-refresh';
 import {leaveRoom} from '../actions';
 import {startGame} from '../start';
+import {type TurnShot} from '@/lib/game/turn-history';
 export const dynamic='force-dynamic';
-type Room={id:string;code:string;status:string;yourSeat:number;players:{seat:number;nickname:string}[]};
+type Room={id:string;code:string;status:string;yourSeat:number;rematchReadyCount?:number;myRematchVote?:boolean;players:{seat:number;nickname:string}[]};
 export default async function RoomPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{error?:string}>}){
  const user=await requireUser();
  const {id}=await params,query=await searchParams;
@@ -19,7 +20,11 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  const room=data as Room;
  if(!Array.isArray(room.players))notFound();
  const {data:match}=await db.from('matches').select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state')
-  .eq('room_id',id).maybeSingle();
+  .eq('room_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle();
+ const {data:history}=match?await db.from('shots')
+  .select('id,turn_no,player_id,piece_id,input,result_state,created_at')
+  .eq('match_id',match.id).order('turn_no',{ascending:false}).limit(100):{data:null};
+ const shots=((history??[]) as TurnShot[]).reverse();
  const hasMatch=Boolean(match&&validBoard(match.board_state));
  return <main className={hasMatch ? "game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6" : "mx-auto max-w-5xl px-6 py-12"}>
  <Link href="/lobby" className="game-page-back text-sm font-semibold text-emerald-300">← 로비</Link>
@@ -28,7 +33,9 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  <h1 className="mt-3 text-4xl font-black">친구와 한 판</h1></div>
  <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 text-center">
  <p className="text-xs text-slate-400">초대 코드</p><p className="text-xl font-extrabold tracking-widest">{room.code}</p></div></div>
- {match&&validBoard(match.board_state)?<GameBoard match={{...match,board_state:match.board_state}} userId={user.id}/>:
+ {match&&validBoard(match.board_state)?<GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
+ roomId={room.id} players={room.players} rematchReadyCount={room.rematchReadyCount??0}
+ myRematchVote={room.myRematchVote??false} shots={shots}/>:
  <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
   <h2 className="text-xl font-bold">참가자 {room.players.length}/2</h2>
   <ol className="mt-4 grid gap-3 sm:grid-cols-2">{[1,2].map(seat=><li key={seat} className="rounded-xl border border-slate-600 p-4">

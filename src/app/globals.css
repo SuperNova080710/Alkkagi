@@ -25,7 +25,7 @@ body {
   touch-action: none;
 }
 
-@media (min-width: 768px) and (min-height: 640px) {
+@media (min-width: 1024px) and (min-height: 640px) {
   .game-page--playing {
     box-sizing: border-box;
     width: 100%;
@@ -77,4 +77,26 @@ body {
   .game-page--playing .game-screen-bottom {
     margin-top: 0.5rem;
   }
+}
+
+/* Turn history uses the space beside the board instead of extending the page. */
+.game-screen-body { display: flex; flex-direction: column; gap: 0.85rem; min-height: 0; }
+.game-screen-main { min-width: 0; min-height: 0; }
+.game-turn-log { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.game-turn-list { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; max-height: 15rem; }
+.game-screen-stage { min-height: 0; }
+@media (min-width: 1024px) and (min-height: 640px) {
+  .game-page--playing { max-width: 1280px; }
+  .game-screen-body {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(0,1fr) minmax(235px,272px);
+    gap: 0.9rem;
+    min-height: 0;
+    margin-top: 0.65rem;
+  }
+  .game-screen-main { display: flex; flex-direction: column; min-height: 0; }
+  .game-page--playing .game-screen-stage { margin-top: 0; }
+  .game-page--playing .game-turn-log { overflow: hidden; }
+  .game-page--playing .game-turn-list { max-height: none; flex: 1 1 0; min-height: 0; }
 }

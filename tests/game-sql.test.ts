@@ -14,7 +14,7 @@ describe('casual game transaction and RLS',()=>{
   await db.exec("create role anon nologin;create role authenticated nologin;create role service_role nologin bypassrls;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema public,auth to anon,authenticated,service_role;grant execute on function auth.uid() to anon,authenticated,service_role;");
   await db.exec("create schema realtime;create publication supabase_realtime;");
   await db.exec("insert into auth.users(id) values ('"+a+"'),('"+b+"'),('"+c+"');");
-  for(const f of ['202610280001_initial_schema.sql','202610280002_casual_rooms.sql','202610280003_casual_game.sql'])
+  for(const f of ['202610280001_initial_schema.sql','202610280002_casual_rooms.sql','202610280003_casual_game.sql','202610280005_initial_board_balance.sql'])
    await db.exec(readFileSync(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
  },30000);
  afterAll(async()=>{await db?.close()});
@@ -30,6 +30,10 @@ describe('casual game transaction and RLS',()=>{
   expect(match).toBeTruthy();
   const result=await db.query<{board_state:{pieces:unknown[]}}>("select board_state from public.matches where id='"+match+"'");
   expect(result.rows[0].board_state.pieces).toHaveLength(10);
+  expect(result.rows[0].board_state.pieces).toEqual(expect.arrayContaining([
+   expect.objectContaining({id:'a1',x:175}),
+   expect.objectContaining({id:'b1',x:625}),
+  ]));
  });
  it('denies authenticated callers direct state mutation and score forgery',async()=>{
   await as(a);
