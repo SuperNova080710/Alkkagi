@@ -1,4 +1,5 @@
-import {describe,expect,it} from 'vitest';
+import {describe,expect,it,vi} from 'vitest';
+vi.mock('@/app/profile/actions',()=>({checkNickname:vi.fn(),saveNickname:vi.fn()}));
 import {renderToStaticMarkup} from 'react-dom/server';
 import {NicknameForm} from '../src/components/profile/nickname-form';
 describe('nickname settings UI',()=>{
