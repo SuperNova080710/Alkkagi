@@ -7,6 +7,7 @@ export type RoomState = {error:string};
 const abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const code=()=>Array.from({length:8},()=>abc[randomInt(abc.length)]).join('');
 export async function createRoom(_s:RoomState):Promise<RoomState>{
+ void _s;
  await requireUser();
  let id:string|null=null;
  try {
