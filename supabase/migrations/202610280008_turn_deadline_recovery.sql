@@ -1,11 +1,10 @@
 begin;
 
--- Existing active matches start a fresh, server-clock 2 minute grace window.
+-- Existing active games are preserved without retroactive timeout.
+-- New matches receive 120 seconds; existing games get a deadline after their next shot.
 alter table public.matches add column turn_deadline timestamptz;
 alter table public.matches alter column turn_deadline
  set default (now()+interval '120 seconds');
-update public.matches set turn_deadline=now()+interval '120 seconds'
- where status='active';
 
 -- Defensive turn validation and atomic deadline refresh.
 create or replace function public.commit_casual_shot(
