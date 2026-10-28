@@ -9,6 +9,7 @@ import { viewportToBoard } from '@/lib/game/coordinates';
 import { extractFrames, summarizeTurn, type TurnShot } from '@/lib/game/turn-history';
 import { requestRematch } from '@/app/rooms/rematch';
 import { GameFeedback } from '@/components/game/game-feedback';
+import { keyboardVector, DIRECTIONS, type Direction } from '@/lib/game/keyboard-shot';
 
 type Match = {
  id: string;
@@ -44,6 +45,9 @@ export function GameBoard({
  const [pending, setPending] = useState(false);
  const [error, setError] = useState('');
  const [remaining, setRemaining] = useState<number | null>(null);
+ const [keyboardPiece,setKeyboardPiece] = useState('');
+ const [keyboardDirection,setKeyboardDirection] = useState<Direction>('right');
+ const [keyboardPower,setKeyboardPower] = useState(65);
  const [playback, setPlayback] = useState<Playback | null>(null);
  const [rematch, rematchAction, rematchPending] = useActionState(requestRematch, { error: '' });
  useEffect(() => {
@@ -130,37 +134,40 @@ export function GameBoard({
   if (position) setDrag({ ...drag, at: position });
  }
 
- async function up(event: PointerEvent<SVGSVGElement>) {
-  if (!drag) return;
-  const position = location(event);
-  const current = drag;
-  setDrag(null);
-  if (!position || !myTurn || pending) return;
-  let dx = current.origin.x - position.x;
-  let dy = current.origin.y - position.y;
-  const power = Math.hypot(dx, dy);
-  if (power < MIN_FORCE) return;
-  if (power > MAX_FORCE) { dx *= MAX_FORCE / power; dy *= MAX_FORCE / power; }
+ async function submitShot(pieceId:string,dx:number,dy:number){
+  if(!myTurn||pending)return;
   setPending(true);
   setError('');
   try {
-   const result = await fetch('/api/matches/' + match.id + '/shot', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-     pieceId: current.id,
-     turnNo: match.turn_no,
-     dx, dy,
-     requestId: crypto.randomUUID(),
-    }),
+   const result=await fetch('/api/matches/'+match.id+'/shot',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({pieceId,turnNo:match.turn_no,dx,dy,requestId:crypto.randomUUID()}),
    });
-   if (!result.ok) throw Error(result.status === 409
-    ? '이미 진행된 턴입니다. 게임 상태를 새로고칩니다.' : '발사를 처리하지 못했습니다.');
+   if(!result.ok)throw Error(result.status===409?
+    '이미 진행된 턴입니다. 게임 상태를 새로고칩니다.':'발사를 처리하지 못했습니다.');
    router.refresh();
-  } catch (cause) {
-   setError(cause instanceof Error ? cause.message : '연결 오류가 발생했습니다.');
+  }catch(cause){
+   setError(cause instanceof Error?cause.message:'연결 오류가 발생했습니다.');
    router.refresh();
-  } finally { setPending(false); }
+  }finally{setPending(false);}
+ }
+ async function up(event:PointerEvent<SVGSVGElement>){
+  if(!drag)return;
+  const position=location(event),current=drag;
+  setDrag(null);
+  if(!position||!myTurn||pending)return;
+  let dx=current.origin.x-position.x,dy=current.origin.y-position.y;
+  const power=Math.hypot(dx,dy);
+  if(power<MIN_FORCE)return;
+  if(power>MAX_FORCE){dx*=MAX_FORCE/power;dy*=MAX_FORCE/power;}
+  await submitShot(current.id,dx,dy);
+ }
+ async function keyboardFire(){
+  const pieceId=board.pieces.find(p=>p.owner===userId&&p.id===keyboardPiece)?.id
+   ??board.pieces.find(p=>p.owner===userId)?.id;
+  if(!pieceId||!myTurn||pending)return;
+  const vector=keyboardVector(keyboardDirection,keyboardPower);
+  await submitShot(pieceId,vector.dx,vector.dy);
  }
 
  async function forfeit() {
@@ -176,6 +183,7 @@ export function GameBoard({
   } finally { setPending(false); }
  }
 
+ const mine=board.pieces.filter(p=>p.owner===userId);
  const firstRemaining = board.pieces.filter(p => p.owner === match.player1_id).length;
  const secondRemaining = board.pieces.filter(p => p.owner === match.player2_id).length;
  const power = drag ? Math.min(MAX_FORCE, Math.hypot(drag.origin.x - drag.at.x, drag.origin.y - drag.at.y)) : 0;
@@ -262,6 +270,32 @@ export function GameBoard({
       </p>
      </li>)}
     </ol>
+    {match.status==='active'&&<details className="mt-3 border-t border-slate-700 pt-3 text-sm">
+     <summary className="cursor-pointer font-semibold text-emerald-300">키보드 조작</summary>
+     <p className="mt-2 text-xs text-slate-400">알·방향·세기를 선택하고 발사하세요.</p>
+     <label className="mt-3 block text-xs text-slate-300" htmlFor="keyboard-piece">발사할 알</label>
+     <select id="keyboard-piece" value={mine.some(p=>p.id===keyboardPiece)?keyboardPiece:mine[0]?.id??''}
+      onChange={event=>setKeyboardPiece(event.target.value)}
+      className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2">
+      {mine.map(p=><option key={p.id} value={p.id}>{p.id}</option>)}
+     </select>
+     <label className="mt-3 block text-xs text-slate-300" htmlFor="keyboard-direction">방향</label>
+     <select id="keyboard-direction" value={keyboardDirection}
+      onChange={event=>setKeyboardDirection(event.target.value as Direction)}
+      className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2">
+      {DIRECTIONS.map(direction=><option key={direction.value} value={direction.value}>{direction.label}</option>)}
+     </select>
+     <label className="mt-3 flex justify-between text-xs text-slate-300" htmlFor="keyboard-power">
+      <span>세기</span><span>{keyboardPower}/{MAX_FORCE}</span>
+     </label>
+     <input id="keyboard-power" type="range" min={9} max={MAX_FORCE} step={1}
+      value={keyboardPower} onChange={event=>setKeyboardPower(Number(event.target.value))}
+      className="mt-2 w-full accent-emerald-300"/>
+     <button type="button" onClick={keyboardFire} disabled={!myTurn||pending||mine.length===0}
+      className="mt-3 w-full rounded-lg bg-emerald-300 px-4 py-2 font-bold text-slate-950 disabled:opacity-50">
+      선택한 알 발사
+     </button>
+    </details>}
     {match.status === 'finished' && <div className="mt-3 border-t border-slate-700 pt-3">
      <h4 className="font-bold text-emerald-300">경기 종료</h4>
      <p className="mt-1 text-sm text-slate-300">
