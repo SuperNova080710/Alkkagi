@@ -39,8 +39,8 @@ describe('game player and turn identity',()=>{
   const identity=getPlayerIdentities(match,b,players,board);
   const html=renderToStaticMarkup(<GameIdentityHeading match={match} viewerId={b}
    players={identity} mode="ranked" animating={false} pending={false} remaining={80}/>);
-  expect(html).toContain('나 · 후공 · 파란색');
-  expect(html).toContain('상대 · 선공 · 주황색');
+  expect(html).toContain('내 알 · 파란색 · 후공');
+  expect(html).toContain('상대 알 · 주황색 · 선공');
   expect(html).toContain('상대 턴');
   expect(html).toContain('A플레이어');
   expect(html).toContain('B플레이어');
