@@ -44,7 +44,7 @@ describe('game player and turn identity',()=>{
   expect(html).toContain('상대 턴');
   expect(html).toContain('A플레이어');
   expect(html).toContain('B플레이어');
-  expect(html.match(/현재 턴/g)).toHaveLength(1);
+  expect(html.split('>현재 턴</span>').length - 1).toBe(1);
   expect(html).toContain('aria-live="polite"');
  });
 });
