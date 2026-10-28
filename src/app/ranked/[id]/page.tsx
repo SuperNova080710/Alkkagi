@@ -12,7 +12,7 @@ export default async function RankedMatchPage({params}:{params:Promise<{id:strin
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))notFound();
  const db=await createClient();
  const {data:match}=await db.from('matches')
-  .select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state,mode')
+  .select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state,mode,turn_deadline')
   .eq('id',id).eq('mode','ranked').maybeSingle();
  if(!match||!validBoard(match.board_state))notFound();
  const [{data:playersData},{data:history}]=await Promise.all([

@@ -153,3 +153,12 @@ body {
     text-overflow: ellipsis;
   }
 }
+
+/* Keyboard-control panel may need additional height; scroll only the sidebar. */
+@media (min-width: 1024px) and (min-height: 640px) {
+  .game-page--playing .game-turn-log:has(details[open]) {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .game-turn-log details[open] { flex: 0 0 auto; }
+}

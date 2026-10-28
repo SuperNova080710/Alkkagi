@@ -19,7 +19,7 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  if(error||!data||typeof data!=='object'||Array.isArray(data))notFound();
  const room=data as Room;
  if(!Array.isArray(room.players))notFound();
- const {data:match}=await db.from('matches').select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state')
+ const {data:match}=await db.from('matches').select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state,turn_deadline')
   .eq('room_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle();
  const {data:history}=match?await db.from('shots')
   .select('id,turn_no,player_id,piece_id,input,result_state,created_at')
