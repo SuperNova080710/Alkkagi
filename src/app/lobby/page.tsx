@@ -9,7 +9,12 @@ export default async function Lobby(){
  <header className="flex items-center justify-between gap-4"><Link href="/" className="font-bold text-emerald-300">ALKKAGI ARENA</Link><LogoutForm /></header>
  <h1 className="mt-12 text-4xl font-bold">대전 로비</h1>
  <p className="mt-4 break-all text-slate-300">{user.email} 계정으로 로그인했습니다.</p>
+ <div className="mt-8 rounded-2xl border border-amber-600/60 bg-amber-950/30 p-6">
+ <h2 className="text-2xl font-bold">랭크전</h2>
+ <p className="mt-2 text-slate-300">랜덤 상대와 겨뤄 RP를 쌓고 순위에 도전하세요.</p>
+ <Link href="/ranked" className="mt-4 inline-block rounded-lg bg-amber-300 px-5 py-3 font-bold text-slate-950">랭크 아레나 입장</Link>
+ </div>
  <RoomForms />
- <p className="mt-8 text-slate-400">현재 초대방 입장까지 지원합니다. 알까기 플레이는 후속 단계에서 추가됩니다.</p>
+ <p className="mt-8 text-slate-400">초대방 일반전과 랜덤 랭크전 중 원하는 모드로 1:1 알까기를 즐길 수 있습니다.</p>
  </main>;
 }
