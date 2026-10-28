@@ -28,6 +28,12 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
  if(data.status!=='active'||data.turn_user_id!==user.id||data.turn_no!==b.turnNo)
    return NextResponse.json({error:'STALE_TURN'},{status:409});
  if(!validBoard(data.board_state))return NextResponse.json({error:'INVALID_BOARD'},{status:500});
+ // Server-exclusive DB throttle: protects physics CPU work from rapid repeated requests.
+ try{
+  const {data:allowed,error:rateError}=await createAdminClient().rpc('claim_shot_slot',{p_user:user.id});
+  if(rateError)return NextResponse.json({error:'RATE_SERVICE_UNAVAILABLE'},{status:503});
+  if(!allowed)return NextResponse.json({error:'TOO_MANY_SHOTS'},{status:429});
+ }catch{return NextResponse.json({error:'RATE_SERVICE_UNAVAILABLE'},{status:503});}
  let simulation;
  try{simulation=simulateShotWithFrames(data.board_state,user.id,{pieceId:b.pieceId,dx:b.dx,dy:b.dy});}
  catch(e){return NextResponse.json({error:e instanceof Error?e.message:'INVALID_SHOT'},{status:400});}
