@@ -263,3 +263,4 @@ export function GameBoard({
    </aside>
   </div>
  </section>;
+}
