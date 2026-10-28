@@ -4,7 +4,7 @@ import {afterAll,beforeAll,describe,expect,it} from 'vitest';
 import {validNickname} from '../src/lib/profile/nickname';
 
 const a='00000000-0000-0000-0000-000000000011';
-const b='00000000-0000-0000-0000-000000000012';
+const b='11111111-1111-1111-1111-111111111112';
 let db:PGlite;
 async function acting(id:string){
  await db.exec("reset role;set role authenticated;select set_config('request.jwt.claim.sub','"+id+"',false);");
