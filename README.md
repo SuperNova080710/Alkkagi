@@ -2,7 +2,7 @@
 
 브라우저에서 친구와 1:1로 알까기를 즐기고, 랜덤 랭크 매칭과 순위표에서 경쟁하는 온라인 게임 프로젝트입니다.
 
-> **현재 상태: 프로젝트 스캐폴드 구현 단계.** 시작 화면과 품질 검사 구성을 추가했습니다. 게임 기능·실서비스 배포는 아직 완료되지 않았습니다.
+> **현재 상태: P1 인증·DB 기반 구현 단계.** 회원가입·로그인·로그아웃 코드와 DB/RLS 마이그레이션을 추가했습니다. 원격 DB 적용·실계정 인증·게임 기능 검증은 아직 완료되지 않았습니다.
 
 ## 프로젝트 목표
 
@@ -49,8 +49,8 @@ npm run dev
 ```
 
 `http://localhost:3000`에서 시작 화면을 확인합니다. 현재 화면은 환경변수나
-Supabase 연결 없이 실행됩니다. 로그인·방·대전은 아직 구현되지 않았습니다.
-Supabase 연동 시 `.env.example`을 `.env.local`로 복사하고 실제 값을 설정합니다.
+Supabase 연결 없이 실행됩니다. 로그인은 Supabase 환경변수 설정 후 이용할 수 있으며, 방·대전은 아직 구현되지 않았습니다.
+로컬 인증을 시험하려면 `.env.example`을 `.env.local`로 복사하고 공개 설정과 `SITE_URL=http://localhost:3000`을 설정합니다.
 `SUPABASE_SECRET_KEY`는 서버 전용이며 브라우저 코드에서 사용하면 안 됩니다.
 
 ## 품질 검사
@@ -58,7 +58,7 @@ Supabase 연동 시 `.env.example`을 `.env.local`로 복사하고 실제 값을
 ```sh
 npm run lint       # ESLint, 경고도 실패 처리
 npm run typecheck  # Next.js 라우트 타입 생성 후 TypeScript 검사
-npm test           # 환경변수 없이 시작 화면 서버 렌더링 검증
+npm test           # SSR·인증 경계·쿠키·DB RLS 검증
 npm run build      # 프로덕션 빌드
 # 전체 검사
 npm run check
@@ -66,7 +66,7 @@ npm run check
 
 `npm run start`는 빌드 완료 후 프로덕션 서버를 실행합니다.
 GitHub Actions도 Node.js 24에서 `npm ci`와 동일한 전체 검사를 실행합니다.
-인증·DB·경쟁 상태 테스트는 해당 기능 구현 이슈에서 추가합니다.
+인증 단위 테스트와 로컬 PostgreSQL RLS 테스트를 포함합니다. 실제 Supabase 통합과 동시 요청 테스트는 별도입니다.
 
 ## 코드 구조와 배포 준비
 
@@ -86,3 +86,7 @@ Next.js 자동 감지를 사용하므로 별도의 `vercel.json`은 필요하지
 Next.js ESLint 설정에 포함된 React/import/accessibility 플러그인의 peer 범위가
 ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원 종료 경고가
 출력됩니다. 플러그인이 ESLint 10을 지원하면 함께 업그레이드해야 합니다.
+
+## 인증·DB 연결 — Issue #5
+
+설정, SQL 적용, 테스트 범위와 배포 후 점검은 [docs/auth-database.md](docs/auth-database.md)를 따릅니다.
