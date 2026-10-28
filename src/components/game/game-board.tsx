@@ -187,8 +187,6 @@ export function GameBoard({
  }
 
  const mine=board.pieces.filter(p=>p.owner===userId);
- const firstRemaining = board.pieces.filter(p => p.owner === match.player1_id).length;
- const secondRemaining = board.pieces.filter(p => p.owner === match.player2_id).length;
  const power = drag ? Math.min(MAX_FORCE, Math.hypot(drag.origin.x - drag.at.x, drag.origin.y - drag.at.y)) : 0;
  const turns = shots.map(s => summarizeTurn(s, match.player1_id, match.player2_id))
   .filter((item): item is NonNullable<typeof item> => item !== null);
