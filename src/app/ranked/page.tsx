@@ -9,10 +9,11 @@ type History={matchId:string;finished_at:string;opponent:string;result:string;de
 type Dashboard={rating:number;rank:number;wins:number;losses:number;draws:number;leaderboard:Entry[];history:History[]};
 const empty:Dashboard={rating:1000,rank:0,wins:0,losses:0,draws:0,leaderboard:[],history:[]};
 export default async function RankedPage(){
- await requireUser();
+ const user=await requireUser();
  const db=await createClient();
- const [statusQuery,boardQuery]=await Promise.all([
+ const [statusQuery,boardQuery,profileQuery]=await Promise.all([
   db.rpc('ranked_queue_status'),db.rpc('ranked_dashboard'),
+  db.from('profiles').select('nickname').eq('id',user.id).maybeSingle(),
  ]);
  const raw=statusQuery.data as {status?:string;matchId?:unknown}|null;
  const status:QueueStatus={
@@ -24,6 +25,12 @@ export default async function RankedPage(){
   <Link href="/lobby" className="text-sm font-semibold text-emerald-300">← 일반전 로비</Link>
   <h1 className="mt-8 text-4xl font-black">랭크 아레나</h1>
   <p className="mt-3 text-slate-300">승리하면 RP를 획득하고 패배하면 RP가 감소합니다. 일반전 결과는 반영되지 않습니다.</p>
+  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900 p-4">
+   <p className="min-w-0 truncate font-bold text-emerald-200">내 닉네임 · {profileQuery.data?.nickname??'확인 필요'}</p>
+   <Link href="/profile" className="rounded-lg border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-200">
+    닉네임 변경
+   </Link>
+  </div>
   <div className="mt-6 grid gap-3 sm:grid-cols-3">
    <div className="rounded-xl border border-slate-700 bg-slate-900 p-5"><p className="text-sm text-slate-400">나의 RP</p>
     <p className="mt-2 text-3xl font-black text-emerald-300">{dashboard.rating.toLocaleString()}</p></div>
