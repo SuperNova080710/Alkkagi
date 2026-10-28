@@ -6,13 +6,22 @@ import {RoomForms} from '@/components/rooms/room-forms';
 export const dynamic='force-dynamic';
 export default async function Lobby(){
  const user=await requireUser();
- const {data:activeCasual}=await (await createClient()).from('matches')
+ const db=await createClient();
+ const {data:profile}=await db.from('profiles').select('nickname').eq('id',user.id).maybeSingle();
+ const {data:activeCasual}=await db.from('matches')
   .select('id,room_id,created_at').eq('mode','casual').eq('status','active')
   .order('created_at',{ascending:false}).limit(5);
  return <main className="mx-auto max-w-4xl px-6 py-16">
  <header className="flex items-center justify-between gap-4"><Link href="/" className="font-bold text-emerald-300">ALKKAGI ARENA</Link><LogoutForm /></header>
  <h1 className="mt-12 text-4xl font-bold">대전 로비</h1>
- <p className="mt-4 break-all text-slate-300">{user.email} 계정으로 로그인했습니다.</p>
+ <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700 bg-slate-900 px-5 py-4">
+  <div className="min-w-0"><p className="text-xs text-slate-400">내 닉네임</p>
+   <p className="break-words font-bold text-emerald-200">{profile?.nickname??'프로필 확인 필요'}</p>
+   <p className="mt-1 break-all text-xs text-slate-400">{user.email}</p></div>
+  <Link href="/profile" className="shrink-0 rounded-lg border border-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-200">
+   닉네임 설정
+  </Link>
+ </div>
  <div className="mt-8 rounded-2xl border border-amber-600/60 bg-amber-950/30 p-6">
  <h2 className="text-2xl font-bold">랭크전</h2>
  <p className="mt-2 text-slate-300">랜덤 상대와 겨뤄 RP를 쌓고 순위에 도전하세요.</p>
