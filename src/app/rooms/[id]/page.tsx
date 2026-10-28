@@ -20,9 +20,10 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  if(!Array.isArray(room.players))notFound();
  const {data:match}=await db.from('matches').select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state')
   .eq('room_id',id).maybeSingle();
- return <main className="mx-auto max-w-5xl px-6 py-12">
- <Link href="/lobby" className="text-sm font-semibold text-emerald-300">← 로비</Link>
- <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+ const hasMatch=Boolean(match&&validBoard(match.board_state));
+ return <main className={hasMatch ? "game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6" : "mx-auto max-w-5xl px-6 py-12"}>
+ <Link href="/lobby" className="game-page-back text-sm font-semibold text-emerald-300">← 로비</Link>
+ <div className="game-page-header mt-8 flex flex-wrap items-center justify-between gap-4">
  <div><p className="text-sm font-bold tracking-widest text-emerald-300">일반전 · ALKKAGI ARENA</p>
  <h1 className="mt-3 text-4xl font-black">친구와 한 판</h1></div>
  <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 text-center">

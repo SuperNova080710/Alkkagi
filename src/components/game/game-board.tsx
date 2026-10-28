@@ -3,6 +3,7 @@ import {useEffect,useState,type PointerEvent} from 'react';
 import {useRouter} from 'next/navigation';
 import {createBrowserClient} from '@supabase/ssr';
 import {HEIGHT,RADIUS,WIDTH,type Board} from '@/lib/game/engine';
+import {viewportToBoard} from '@/lib/game/coordinates';
 type Match={
  id:string;status:string;turn_user_id:string;turn_no:number;
  player1_id:string;player2_id:string;winner_id:string|null;board_state:Board;
@@ -24,13 +25,13 @@ export function GameBoard({match,userId}:{match:Match;userId:string}){
     ()=>router.refresh()).subscribe();
   return ()=>{clearInterval(timer);void db.removeChannel(channel);};
  },[match.id,router]);
- function location(event:PointerEvent<SVGSVGElement>):Point{
-  const r=event.currentTarget.getBoundingClientRect();
-  return {x:(event.clientX-r.left)*WIDTH/r.width,y:(event.clientY-r.top)*HEIGHT/r.height};
+ function location(event:PointerEvent<SVGSVGElement>):Point|null{
+  return viewportToBoard(event.clientX,event.clientY,event.currentTarget.getBoundingClientRect());
  }
  function down(event:PointerEvent<SVGSVGElement>){
   if(!myTurn||pending)return;
   const p=location(event);
+  if(!p||p.x<0||p.x>WIDTH||p.y<0||p.y>HEIGHT)return;
   const piece=match.board_state.pieces.find(q=>q.owner===userId&&Math.hypot(q.x-p.x,q.y-p.y)<RADIUS+8);
   if(!piece)return;
   event.currentTarget.setPointerCapture(event.pointerId);
@@ -38,12 +39,13 @@ export function GameBoard({match,userId}:{match:Match;userId:string}){
  }
  function move(event:PointerEvent<SVGSVGElement>){
   if(!drag)return;
-  setDrag({...drag,at:location(event)});
+  const point=location(event);
+  if(point)setDrag({...drag,at:point});
  }
  async function up(event:PointerEvent<SVGSVGElement>){
   if(!drag)return;
   const p=location(event),d=drag;setDrag(null);
-  if(!myTurn||pending)return;
+  if(!p||!myTurn||pending)return;
   let dx=d.origin.x-p.x,dy=d.origin.y-p.y;
   const len=Math.hypot(dx,dy);
   if(len<5)return;
@@ -72,15 +74,15 @@ export function GameBoard({match,userId}:{match:Match;userId:string}){
  const player1=match.board_state.pieces.filter(p=>p.owner===match.player1_id).length;
  const player2=match.board_state.pieces.filter(p=>p.owner===match.player2_id).length;
  const score='선공 '+player1+'개 · 후공 '+player2+'개';
- return <section className="mt-8">
-  <div className="flex flex-wrap items-center justify-between gap-3">
+ return <section className="game-screen mt-8">
+  <div className="game-screen-heading flex flex-wrap items-center justify-between gap-3">
    <div><h2 className="text-2xl font-extrabold">알까기 대전</h2>
    <p className="mt-2 text-slate-300" aria-live="polite">{match.status==='finished'
     ? match.winner_id===userId?'승리했습니다!':match.winner_id?'패배했습니다.':'무승부입니다.'
     : myTurn?'내 차례입니다. 내 알을 잡아 뒤로 드래그하세요.':'상대방의 차례입니다.'}</p></div>
    <span className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold">{score}</span>
   </div>
-  <div className="mt-5 overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
+  <div className="game-screen-stage mt-5 overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
    <svg viewBox="0 0 800 500" role="img" aria-label="알까기 게임판. 내 알을 뒤로 드래그해서 상대 알을 밀어내세요."
     onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={()=>setDrag(null)}
     style={{touchAction:'none',width:'100%',display:'block',cursor:myTurn?'crosshair':'default'}}>
@@ -100,12 +102,14 @@ export function GameBoard({match,userId}:{match:Match;userId:string}){
     </g>}
    </svg>
   </div>
-  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
+  <div className="game-screen-bottom mt-4">
+   <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
    <p>턴 {match.turn_no} · 알이 판 밖으로 밀려나면 제거됩니다.</p>
    {match.status==='active'&&<button onClick={forfeit} disabled={pending}
     className="rounded-lg border border-rose-400 px-4 py-2 font-semibold text-rose-300 disabled:opacity-50">기권하기</button>}
   </div>
   {pending&&<p role="status" className="mt-4 text-amber-200">서버에서 판정 중입니다…</p>}
-  {error&&<p role="alert" className="mt-4 text-rose-300">{error}</p>}
+  {error&&<p role="alert" className="mt-2 text-rose-300">{error}</p>}
+  </div>
  </section>;
 }
