@@ -18,6 +18,7 @@ type Match = {
  player1_id: string;
  player2_id: string;
  winner_id: string | null;
+ turn_deadline?: string | null;
  board_state: Board;
 };
 type Point = { x: number; y: number };
@@ -42,13 +43,34 @@ export function GameBoard({
  const [drag, setDrag] = useState<Drag | null>(null);
  const [pending, setPending] = useState(false);
  const [error, setError] = useState('');
+ const [remaining, setRemaining] = useState<number | null>(null);
  const [playback, setPlayback] = useState<Playback | null>(null);
  const [rematch, rematchAction, rematchPending] = useActionState(requestRematch, { error: '' });
+ useEffect(() => {
+  if(match.status!=='active'||!match.turn_deadline)return;
+  const deadline=Date.parse(match.turn_deadline);
+  if(!Number.isFinite(deadline))return;
+  let stopped=false,lastAttempt=0;
+  async function update(){
+   if(stopped)return;
+   const ms=Date.now();
+   const seconds=Math.max(0,Math.ceil((deadline-ms)/1000));
+   setRemaining(seconds);
+   if(seconds===0&&ms-lastAttempt>5000){
+    lastAttempt=ms;
+    try{await fetch('/api/matches/'+match.id+'/expire',{method:'POST'});}catch{}
+    if(!stopped)router.refresh();
+   }
+  }
+  void update();
+  const timer=window.setInterval(()=>{void update();},1000);
+  return ()=>{stopped=true;window.clearInterval(timer);};
+ },[match.id,match.status,match.turn_deadline,router]);
  const latestShot = shots.at(-1);
  const lastSeenShot = useRef<string | null>(latestShot?.id ?? null);
  const board = playback ? playback.frames[playback.index] : match.board_state;
  const animating = playback !== null;
- const myTurn = match.status === 'active' && match.turn_user_id === userId && !animating;
+ const myTurn = match.status === 'active' && match.turn_user_id === userId && !animating && remaining !== 0;
  const firstLabel = players.find(p => p.seat === 1)?.nickname ?? '선공';
  const secondLabel = players.find(p => p.seat === 2)?.nickname ?? '후공';
 
@@ -205,7 +227,7 @@ export function GameBoard({
     </div>
     <div className="game-screen-bottom mt-3">
      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300 sm:text-sm">
-      <p>{animating ? '이동 재생 중' : '턴 ' + match.turn_no} · 최대 발사 세기 {MAX_FORCE}</p>
+      <p>{animating ? '이동 재생 중' : '턴 ' + match.turn_no} · 제한 세기 {MAX_FORCE}{match.status==='active' ? ' · 남은 시간 '+(remaining===null?'--:--':Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0')) : ''}</p>
       {match.status === 'active' && <button type="button" onClick={forfeit}
        disabled={pending || animating}
        className="rounded-lg border border-rose-400 px-4 py-2 font-semibold text-rose-300 disabled:opacity-50">
