@@ -2,7 +2,7 @@ import {NextResponse, type NextRequest} from 'next/server';
 import {getVerifiedUser} from '@/lib/auth/user';
 import {createClient} from '@/lib/supabase/server';
 import {createAdminClient} from '@/lib/supabase/admin';
-import {outcome,simulateShot,validBoard} from '@/lib/game/engine';
+import {outcome,simulateShotWithFrames,validBoard} from '@/lib/game/engine';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -28,14 +28,15 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
  if(data.status!=='active'||data.turn_user_id!==user.id||data.turn_no!==b.turnNo)
    return NextResponse.json({error:'STALE_TURN'},{status:409});
  if(!validBoard(data.board_state))return NextResponse.json({error:'INVALID_BOARD'},{status:500});
- let next;
- try{next=simulateShot(data.board_state,user.id,{pieceId:b.pieceId,dx:b.dx,dy:b.dy});}
+ let simulation;
+ try{simulation=simulateShotWithFrames(data.board_state,user.id,{pieceId:b.pieceId,dx:b.dx,dy:b.dy});}
  catch(e){return NextResponse.json({error:e instanceof Error?e.message:'INVALID_SHOT'},{status:400});}
+ const next=simulation.board;
  const ending=outcome(next,data.player1_id,data.player2_id);
  try{
   const {data:result,error:commitError}=await createAdminClient().rpc('commit_casual_shot',{
    p_match_id:id,p_actor:user.id,p_turn:data.turn_no,p_request:b.requestId,
-   p_piece:b.pieceId,p_input:{dx:b.dx,dy:b.dy,expectedBoard:data.board_state,finished:ending.finished},
+   p_piece:b.pieceId,p_input:{dx:b.dx,dy:b.dy,expectedBoard:data.board_state,finished:ending.finished,frames:simulation.frames},
    p_result:next,p_winner:ending.winnerId,
   });
   if(commitError)return NextResponse.json({error:'SHOT_CONFLICT'},{status:409});
