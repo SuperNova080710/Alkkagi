@@ -1,5 +1,6 @@
 import {describe,expect,it,vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
+import {readFileSync} from 'node:fs';
 vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn(),refresh:vi.fn()})}));
 vi.mock('@/app/ranked/actions',()=>({changeRankedQueue:vi.fn()}));
 vi.mock('@/app/matches/chat-actions',()=>({sendMatchMessage:vi.fn()}));
@@ -48,5 +49,29 @@ describe('game result overlay and in-match chat SSR',()=>{
   expect(html).toContain('&lt;script&gt;');
   expect(html).not.toContain('<script>');
   expect(html).toContain('maxLength="280"');
+ });
+});
+
+describe('post-send focus and subtle match-result motion',()=>{
+ it('keeps chat textarea focusable during send instead of disabling it',()=>{
+  const source=readFileSync(new URL('../src/components/game/match-chat.tsx',import.meta.url),'utf8');
+  expect(source).toContain('readOnly={sending} disabled={closed}');
+  expect(source).toContain('ref={inputRef}');
+  expect(source).toContain('wasTyping=document.activeElement===inputRef.current');
+  expect(source).toContain("active===document.body||active===inputRef.current");
+  expect(source).toContain('focus({preventScroll:true})');
+  expect(source).not.toContain('disabled={sending||closed}');
+ });
+ it('animates only the result overlay and card, with a reduced-motion fallback',()=>{
+  const source=readFileSync(new URL('../src/app/globals.css',import.meta.url),'utf8');
+  expect(source).toContain('@keyframes alkkagi-result-card-in');
+  expect(source).toContain('translateY(9px) scale(0.985)');
+  expect(source).toContain('260ms cubic-bezier');
+  expect(source).toContain('@media (prefers-reduced-motion: reduce)');
+  expect(source).toMatch(/\.game-result-overlay,\s*\.game-result-card\s*\{ animation: none; \}/);
+  const html=renderToStaticMarkup(<GameResult {...base}/>);
+  expect(html).toContain('game-result-overlay');
+  expect(html).toContain('game-result-card');
+  expect(html).toContain('로비로 돌아가기');
  });
 });

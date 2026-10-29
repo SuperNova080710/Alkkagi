@@ -21,10 +21,22 @@ export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,m
  const [sending,setSending]=useState(false);
  const [error,setError]=useState('');
  const listRef=useRef<HTMLOListElement>(null);
+ const inputRef=useRef<HTMLTextAreaElement>(null);
+ const restoreFocusRef=useRef(false);
  const closed=status!=='active'&&status!=='finished';
  useEffect(()=>{
   if(listRef.current)listRef.current.scrollTop=listRef.current.scrollHeight;
  },[messages]);
+ // Restore focus only after our own successful send, and only if the user
+ // hasn't chosen another control while the server refreshed this match.
+ useEffect(()=>{
+  if(!restoreFocusRef.current||closed)return;
+  const active=document.activeElement;
+  if(active===document.body||active===inputRef.current){
+   inputRef.current?.focus({preventScroll:true});
+  }
+  restoreFocusRef.current=false;
+ },[messages,closed]);
  useEffect(()=>{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -38,14 +50,28 @@ export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,m
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();
   if(sending||closed||!draft.trim())return;
+  const wasTyping=document.activeElement===inputRef.current;
   setSending(true);
   setError('');
   try{
    const result=await sendMatchMessage(matchId,draft);
-   if(result.ok){setDraft('');router.refresh();}
-   else setError(result.message);
+   if(result.ok){
+    setDraft('');
+    if(wasTyping)restoreFocusRef.current=true;
+    router.refresh();
+   }else setError(result.message);
   }catch{setError('채팅을 전송하지 못했습니다.');}
-  finally{setSending(false);}
+  finally{
+   setSending(false);
+   // readOnly (rather than disabled) normally preserves focus.
+   // This is a fallback if a server refresh temporarily detached the input.
+   if(wasTyping&&!closed){
+    const active=document.activeElement;
+    if(active===document.body||active===inputRef.current){
+     inputRef.current?.focus({preventScroll:true});
+    }
+   }
+  }
  }
  function onChatKeyDown(event:KeyboardEvent<HTMLTextAreaElement>){
   if(!shouldSubmitChatOnEnter({
@@ -85,8 +111,8 @@ export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,m
   </ol>
   <form onSubmit={submit} className="game-chat-compose mt-3 border-t border-slate-700 pt-3">
    <label className="sr-only" htmlFor={'match-chat-'+matchId}>채팅 메시지</label>
-   <textarea id={'match-chat-'+matchId} value={draft} onChange={e=>{setDraft(e.target.value);setError('');}}
-    maxLength={280} rows={2} disabled={sending||closed} onKeyDown={onChatKeyDown} placeholder={closed?'종료된 채팅입니다':'상대방에게 메시지 보내기'}
+   <textarea ref={inputRef} id={'match-chat-'+matchId} value={draft} onChange={e=>{setDraft(e.target.value);setError('');}}
+    maxLength={280} rows={2} readOnly={sending} disabled={closed} onKeyDown={onChatKeyDown} placeholder={closed?'종료된 채팅입니다':'상대방에게 메시지 보내기'}
     aria-describedby={'match-chat-shortcut-'+matchId}
     className="w-full resize-none rounded-xl border border-slate-600 bg-slate-950 p-3 text-sm outline-offset-2 focus:outline-emerald-300 disabled:opacity-60"/>
    <p id={'match-chat-shortcut-'+matchId} className="mt-1 text-xs text-slate-400">Enter 전송 · Shift+Enter 줄바꿈</p>
