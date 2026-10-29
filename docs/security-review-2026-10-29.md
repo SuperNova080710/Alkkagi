@@ -56,6 +56,17 @@
 - [ ] 서로 다른 실제 DB 연결 세션에서 동시 생성 제한 재현 (PGlite 단일 연결 테스트만으로 완료 판단 금지)
 - [ ] 사용자가 병합한 이후 운영 마이그레이션 적용 및 운영 검증 (이 대화에서 수행하지 않음)
 
+### PR #69 리뷰 보완: PostgreSQL 동시성 검증
+
+- 별도 PostgreSQL 16 CI 서비스에서 `dblink` 독립 연결 세 개로 실제 경합을 재현하도록 `tests/security-room-concurrency.sql`을 추가했습니다.
+- 첫 번째 연결은 미커밋 상태로 `profiles` 잠금을 유지하고, 두 번째 동일 사용자 연결의 `pg_stat_activity.wait_event_type = 'Lock'`을 확인한 후 첫 연결을 커밋합니다.
+- 대기방 4개에서의 경합은 정상 생성 1건 + `ROOM_ACTIVE_LIMIT` 1건, 닫힌 방 9개에서의 경합은 정상 생성 1건 + `ROOM_RATE_LIMIT` 1건을 기대합니다.
+- 잠금 유지 중 다른 사용자의 생성이 독립 실행되는지 확인하고, 최종 `rooms`/`room_players` 개수로 중복 생성과 부분 행 잔여를 검증합니다.
+- 만료된 waiting 방과 10분 이전 생성 이력의 제외 규칙을 추가 검증합니다.
+- `.github/workflows/security-room-concurrency.yml`은 GitHub Actions의 폐기 가능한 PostgreSQL 서비스만 사용합니다. 운영 DB나 운영 환경변수는 사용하지 않습니다.
+
+**검증 상태:** 신규 스크립트는 커밋했습니다. GitHub Actions의 실제 결과가 성공하기 전까지 동시성 검증 완료로 판단하지 않습니다. 운영 DB 반영과 PR 병합은 별도 승인 단계로 남습니다.
+
 ## 운영 환경 설정 (코드 PR과 독립)
 
 - **유출 비밀번호 차단:** Supabase Auth 관리자 화면에서 실제 지원 요금제·설정을 확인한 후 #65 진행. 공식 안내는 Pro 이상 제공. https://supabase.com/docs/guides/auth/password-security
