@@ -52,7 +52,7 @@
 | 409 | `ALREADY_FRIENDS`, `INCOMING_FRIEND_REQUEST` | 이미 친구/받은 요청 확인 |
 | 409 | `FRIEND_REQUEST_COOLDOWN` | 거절된 요청은 24시간 후 재요청 |
 | 409 | `FRIENDS_FULL` | 상대 또는 나의 친구 최대 100명 |
-| 429 | `FRIEND_REQUEST_LIMIT`, `FRIEND_INBOX_FULL` | 보낸 대기 요청 최대 20개, 받는 대기 요청 최대 40개 |
+| 429 | `FRIEND_REQUEST_LIMIT`, `FRIEND_INBOX_FULL`, `BLOCK_LIMIT` | 보낸 대기 요청 최대 20개, 받는 대기 요청 최대 40개, 차단 사용자 최대 100명 |
 | 503 | `FRIEND_SERVICE_UNAVAILABLE` | API/DB 임시 오류; 내부 SQL 오류를 사용자에게 그대로 표시하지 않음 |
 
 중복된 같은 방향 요청은 `200`과 `alreadyPending:true`로 재전송 안전하게 반환합니다. 반대 방향으로 대기 중인 요청이 있으면 새 요청을 만들지 않고 `INCOMING_FRIEND_REQUEST`를 반환하므로 기존 받은 요청을 수락하도록 안내합니다.
