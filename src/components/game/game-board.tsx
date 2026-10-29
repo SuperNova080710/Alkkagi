@@ -201,7 +201,7 @@ export function GameBoard({
   <div className="game-screen-body">
    <MatchChat matchId={match.id} userId={userId} firstPlayerId={match.player1_id}
     secondPlayerId={match.player2_id} players={players} messages={messages}
-    status={match.status} finishedAt={match.finished_at??null}/>
+    status={match.status}/>
    <div className="game-screen-main">
     <div className="game-screen-stage relative overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
      <svg viewBox="0 0 800 500" role="img"
