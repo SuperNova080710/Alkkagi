@@ -543,3 +543,17 @@
     flex: 1 0 auto;
   }
 }
+
+
+/* Wide-screen hero: keep the 1920x640 source art visible without distorting it (#122). */
+@media (min-width: 1600px) and (min-height: 900px) {
+  .arena-hero {
+    /* The source image is 3:1. Taller desktops can show the full scene. */
+    aspect-ratio: 3 / 1;
+    min-height: 0;
+    max-height: min(48dvh, calc(100dvh - 530px));
+  }
+
+  /* On shorter browser windows, prioritize the characters over empty sky. */
+  .arena-hero-art { object-position: center 60%; }
+}
