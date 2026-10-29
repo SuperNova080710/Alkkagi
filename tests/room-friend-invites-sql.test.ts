@@ -127,7 +127,7 @@ describe('Room friend invites V1: SQL permissions and concurrency invariants',()
     const nextId=await room(3);
     const next=await send(nextId);
     await db.exec('reset role;');
-    await db.query("update public.room_friend_invites set expires_at=now()-interval '1 minute' where id=$1",[next.inviteId]);
+    await db.query("update public.room_friend_invites set created_at=now()-interval '10 minutes', expires_at=now()-interval '1 minute' where id=$1",[next.inviteId]);
     await as(guest);
     expect(await received()).toEqual([]);
     await expect(rpc('respond_room_friend_invite',[next.inviteId,true]))
