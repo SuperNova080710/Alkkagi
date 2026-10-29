@@ -86,7 +86,7 @@ declare
   existing public.dm_messages%rowtype;
   saved public.dm_messages%rowtype;
   last_sent timestamptz;
-  current_time timestamptz;
+  v_checked_at timestamptz;
 begin
   if actor is null then raise exception 'AUTH_REQUIRED'; end if;
   if p_peer is null or actor=p_peer then raise exception 'DM_NOT_AVAILABLE'; end if;
@@ -113,11 +113,11 @@ begin
       'alreadySent',true);
   end if;
 
-  current_time:=clock_timestamp();
+  v_checked_at:=clock_timestamp();
   select created_at into last_sent from public.dm_messages
     where thread_id=tid and sender_id=actor
     order by created_at desc,id desc limit 1;
-  if last_sent > current_time - interval '1 second' then
+  if last_sent > v_checked_at - interval '1 second' then
     raise exception 'DM_RATE_LIMIT';
   end if;
   if (select count(*) from public.dm_messages m where m.thread_id=tid) >= 5000 then
@@ -125,7 +125,7 @@ begin
   end if;
   if (select count(*) from public.dm_messages m
     where m.thread_id=tid and m.sender_id=actor
-      and m.created_at > current_time - interval '24 hours') >= 200 then
+      and m.created_at > v_checked_at - interval '24 hours') >= 200 then
     raise exception 'DM_DAILY_LIMIT';
   end if;
   insert into public.dm_messages(thread_id,sender_id,request_id,body)
