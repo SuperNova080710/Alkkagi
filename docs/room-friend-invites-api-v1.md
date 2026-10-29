@@ -65,7 +65,7 @@
 - **친구·차단 검증:** `friend_links.status='accepted'`, 상호 `player_blocks` 없음. 발송·조회·수락 시 계속 확인합니다. 친구 해제·차단·방 종료 후 초대는 받은 목록에서 사라지고 수락할 수 없습니다.
 - **만료/중복:** 보낸 초대의 TTL은 5분. 한 방+수신자 조합은 UNIQUE이므로 재전송 시 동일한 pending 초대 ID와 `alreadyPending:true`를 반환합니다. 거절·만료된 초대는 같은 방에서 다시 생성하지 않습니다.
 - **남용 한도:** 호스트당 최근 10분 생성 20건, 동시에 유효한 보낸 대기 초대 10건, 수신자당 동시 유효 초대 20건. 한도를 초과하면 429.
-- **원자적 좌석:** 수락 RPC는 호스트/수신자 프로필 행을 ID 순서로 잠그고, 기존 `rooms` 행을 `FOR UPDATE` 잠근 뒤 seat 2 비어 있음 및 AI/일반전 미시작을 확인하고 INSERT합니다. 기존 코드 초대 참가 RPC도 같은 방 행을 잠그므로 단일 좌석만 성공해야 합니다.
+- **원자적 좌석 및 잠금 호환성:** 수락·발송 RPC는 호스트/수신자 프로필 행을 UUID 순서대로 `FOR NO KEY UPDATE` 잠그고, `rooms` 행을 `FOR UPDATE` 잠급니다. 기존 코드 입장은 방 행을 먼저 잠그고 `room_players`에 INSERT하면서 프로필 외래 키에 `KEY SHARE` 잠금을 획득합니다. `NO KEY UPDATE`와 `KEY SHARE`는 공존하므로 코드 입장과 초대 간 교착을 방지하며, 친구 차단·친구 해제의 `FOR UPDATE`는 여전히 해당 프로필 작업을 직렬화합니다. 좌석 점유·만료·AI 시작 여부는 방 잠금 후 재검증하며, 동시에 입장해도 seat 2는 한 명만 점유할 수 있습니다.
 - **테이블 직접 접근:** `room_friend_invites` RLS ON, `anon`/`authenticated` 직접 SELECT/WRITE 없음. 네 가지 제한된 `SECURITY DEFINER` RPC만 인증 회원에게 실행 가능. API는 내부 SQL 오류를 표시하지 않습니다.
 - **데이터 보존:** 만료·거절 기록은 중복/스팸 방어를 위해 남으며, 사용자 삭제나 방 삭제 시 외래 키 CASCADE로 정리. 운영 보관 기한/정리 작업은 추후 정책 필요.
 - 기존 랭크 RP·물리 엔진·AI 상태·일반전 코드 참가 경로는 변경하지 않았습니다. 친구 초대로 새 랭크전이 생성되지 않습니다.
@@ -98,4 +98,5 @@
 - [ ] PGlite 단일 연결: 기존 일반전/AI전/친구 권한, 유효/무효 초대·방 좌석 경쟁 순서
 - [ ] HTTP mock: 인증/CSRF/JSON·ID 검증, 안전한 오류 응답
 - [ ] GitHub Actions lint/typecheck/Vitest/Next build, Vercel Preview
-- [ ] 실제 Supabase DB 적용 및 복수 DB 연결의 동시 좌석 선점, 2계정 브라우저 테스트 (사용자 후속 승인 필요)
+- [ ] 격리 PostgreSQL 16 독립 연결 경합: `tests/room-friend-invites-concurrency.sql`과 `.github/workflows/room-friend-invites-concurrency.yml`에서 코드 입장↔초대 수락, 코드 입장↔초대 발송, 친구 차단과의 프로필 잠금 충돌 검증 (**CI 성공 확인 후 완료 처리**)
+- [ ] 실제 Supabase DB 적용 및 실사용자 2계정 브라우저 E2E (사용자 후속 승인 필요). CI와 운영 DB는 별개
