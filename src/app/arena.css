@@ -524,3 +524,22 @@
     border-radius: 11px;
   }
 }
+
+
+/* Desktop lobby columns: distribute spare height into the cards, not empty gutters (#120). */
+@media (min-width: 1101px) {
+  /* The grid already gives both columns the same height.
+     Grow their child panels to make their visible bottoms line up. */
+  .arena-lobby-grid .arena-play-column > .arena-modes {
+    flex: 3 0 auto;
+  }
+
+  .arena-lobby-grid .arena-play-column > .arena-recovery {
+    flex: 1 0 auto;
+    margin-top: 0;
+  }
+
+  .arena-lobby-grid .arena-sidebar > .arena-panel {
+    flex: 1 0 auto;
+  }
+}
