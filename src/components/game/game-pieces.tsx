@@ -16,6 +16,7 @@ export function GamePieces({board, firstPlayerId, viewerId}: Props) {
     fill={piece.owner === firstPlayerId ? '#f59e0b' : '#60a5fa'}
     stroke={piece.owner === firstPlayerId ? '#fcd34d' : '#93c5fd'} strokeWidth="1.5"/>
    <circle cx={piece.x - 5} cy={piece.y - 5} r="5" fill="#fff" opacity="0.45"/>
+   <ellipse cx={piece.x - 5} cy={piece.y - 7} rx="7" ry="3" fill="#fff" opacity="0.45" pointerEvents="none"/>
    {mine && <text x={piece.x} y={piece.y + 4} textAnchor="middle"
     fontSize="11" fontWeight="900" fill="#0f172a"
     style={{ pointerEvents:'none', userSelect:'none' }}>나</text>}

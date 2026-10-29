@@ -200,3 +200,40 @@
   .arena-invite { width: 100%; gap: 4px 12px; }
   .arena-invite > strong { font-size: 21px; }
 }
+
+/* Match appearance (#55). Never override the existing court/HUD sizing rules. */
+.arena-match { background: #eee4d0; }
+.arena-match .game-page-back { color: var(--arena-forest); }
+.arena-match .game-page-header h1 { font-size: 26px; color: var(--arena-forest); margin-top: 2px; }
+.arena-match .game-page-header > div:last-child:not(:first-child) { background: var(--arena-cream); border-color: var(--arena-line); }
+.arena-match .game-chat-panel, .arena-match .game-turn-log, .arena-match .game-result-card { background: var(--arena-cream); border-color: var(--arena-line); box-shadow: var(--arena-shadow); }
+.arena-match .game-screen-stage { background: #794a2d; border-color: #61402b; box-shadow: 0 5px 14px #60412433, inset 0 1px 0 #d2a675; }
+.arena-match .game-player-card { background: #fff9ec; border-color: #cfbfa4; }
+.arena-match .game-player-card--mine { background: #fff3d3; }
+.arena-match .game-player-card--turn { border-color: #17613e; box-shadow: inset 0 0 0 1px #17613e, 0 0 0 1px #17613e22; }
+.arena-match .text-slate-100, .arena-match .text-slate-200, .arena-match .text-slate-300 { color: #504a3d; }
+.arena-match .text-slate-400 { color: #6a6051; }
+.arena-match .text-emerald-200, .arena-match .text-emerald-300 { color: #17613e; }
+.arena-match .text-sky-200, .arena-match .text-sky-300 { color: #096485; }
+.arena-match .text-amber-200, .arena-match .text-amber-300 { color: #79500b; }
+.arena-match .text-rose-200, .arena-match .text-rose-300 { color: #a12e42; }
+.arena-match .bg-slate-900, .arena-match [class~="bg-slate-800/70"], .arena-match [class~="bg-slate-800/75"] { background: #f0e5d0; }
+.arena-match .border-slate-700, .arena-match .border-slate-600, .arena-match .border-slate-500 { border-color: #cdbb9f; }
+.arena-match button.bg-emerald-300 { background: #17613e; color: white; }
+.arena-match .game-chat-compose textarea, .arena-match select, .arena-match input:not([type="range"]) { background: #fffdf6; color: #292a24; border-color: #9b907a; }
+.arena-match .game-chat-compose textarea::placeholder { color: #756a58; }
+.arena-match .game-result-card { border: 3px solid #dfbf76; }
+.arena-match .game-result-card a, .arena-match .game-result-card button { min-height: 44px; }
+.arena-match .game-result-overlay { background: #1d2119b3; }
+.arena-match .game-result-card .bg-slate-900 { background: #fff0c5; }
+@media (max-width: 1023px), (max-height: 639px) {
+  .arena-match .game-page-header { margin-top: 12px; }
+  .arena-match .game-page-header h1 { font-size: 24px; }
+}
+.arena-match .bg-slate-800, .arena-match [class~="bg-slate-800/60"] { background: #f0e5d0; }
+.arena-match .text-slate-500 { color: #6a6051; }
+@media (max-width: 639px) {
+  /* Keep the final court visible; place result actions below it instead of in a tiny scroller. */
+  .arena-match .game-result-overlay { position: relative; inset: auto; margin-top: 8px; background: transparent; }
+  .arena-match .game-result-card { max-height: none; }
+}

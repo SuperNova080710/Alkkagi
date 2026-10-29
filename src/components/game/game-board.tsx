@@ -1,4 +1,5 @@
 'use client';
+import {CourtSurface} from './court-surface';
 
 import { useActionState, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -210,10 +211,7 @@ export function GameBoard({
       onPointerCancel={() => setDrag(null)}
       style={{ touchAction: 'none', width: '100%', display: 'block',
        cursor: myTurn && !pending ? 'crosshair' : 'default' }}>
-      <rect x="0" y="0" width="800" height="500" fill="#064e3b"/>
-      <rect x="23" y="23" width="754" height="454" fill="none"
-       stroke="#34d399" strokeOpacity="0.18" strokeWidth="2"/>
-      <path d="M400 20 V480" stroke="#34d399" strokeOpacity="0.15" strokeDasharray="8 10" strokeWidth="3"/>
+      <CourtSurface/>
       <GamePieces board={board} firstPlayerId={match.player1_id} viewerId={userId}/>
       {drag && <g>
        <line x1={drag.origin.x} y1={drag.origin.y}
