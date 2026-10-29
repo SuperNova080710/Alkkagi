@@ -142,3 +142,58 @@ select public.seed_room_limit_test(4, false);
 select public.verify_room_race('ROOM_ACTIVE_LIMIT', 5, 5);
 select public.seed_room_limit_test(9, true);
 select public.verify_room_race('ROOM_RATE_LIMIT', 10, 1);
+
+-- Time-boundary regressions: expired waiting rooms do not count as active.
+select public.seed_room_limit_test(5, false);
+update public.rooms set created_at = clock_timestamp() - interval '5 minutes',
+  expires_at = clock_timestamp() - interval '1 minute'
+where owner_id = '11111111-1111-4111-8111-111111111111';
+begin;
+set local role authenticated;
+set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+do $$
+declare v_id text;
+begin
+  select public.test_room_creation('ABCDEFGW') into v_id;
+  if v_id !~ '^[0-9a-f-]{36}$' then
+    raise exception 'Expired waiting rooms should be excluded: %', v_id;
+  end if;
+end;
+$$;
+commit;
+do $$
+begin
+  if (select count(*) from public.rooms where status = 'waiting'
+    and expires_at > clock_timestamp()) <> 1 then
+    raise exception 'Expired waiting-room regression';
+  end if;
+  raise notice 'PASS: expired waiting rooms do not consume active quota';
+end;
+$$;
+
+-- Older closed rooms must cease counting toward the rolling ten-minute window.
+select public.seed_room_limit_test(10, true);
+update public.rooms set created_at = clock_timestamp() - interval '11 minutes'
+where owner_id = '11111111-1111-4111-8111-111111111111';
+begin;
+set local role authenticated;
+set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+do $$
+declare v_id text;
+begin
+  select public.test_room_creation('ABCDEFGW') into v_id;
+  if v_id !~ '^[0-9a-f-]{36}$' then
+    raise exception 'Expired rolling window should allow creation: %', v_id;
+  end if;
+end;
+$$;
+commit;
+do $$
+begin
+  if (select count(*) from public.rooms
+    where created_at > clock_timestamp() - interval '10 minutes') <> 1 then
+    raise exception 'Rolling ten-minute window regression';
+  end if;
+  raise notice 'PASS: room creation resumes after the ten-minute window';
+end;
+$$;
