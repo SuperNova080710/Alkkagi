@@ -13,7 +13,7 @@
 * **차단·친구 해제:** 조회, 실시간 Postgres Changes INSERT 수신, 전송 모두 RLS에 의해 제한됨. 과거 메시지는 DB에 보관되며, **나중에 재수락한 경우 과거 내역에 다시 접근할 수 있습니다**. 이것은 메시지 영구 삭제 기능이 아닙니다.
 * **서버 보관:** 1:1 스레드 한 쌍당 유일한 `dm_threads`, `dm_messages`, 읽음 커서 `dm_read_state`.
 * **재전송 방지:** 클라이언트가 한 번 생성한 `requestId` UUID를 통신 재시도에도 동일하게 사용하면 서버가 동일한 메시지 ID를 반환(`alreadySent:true`)하며 중복 저장하지 않음.
-* **스팸 한도:** 스레드·발신자당 1초 1건, 발신자당 같은 스레드에서 최근 24시간 200건, 스레드당 총 5,000건, 본문 1~500자(양끝 공백 제거). 차단/친구 관계 변경과 메시지 전송 모두 프로필 두 행을 정렬 순서로 잠금.
+* **스팸 한도:** 스레드·발신자당 1초 1건, 발신자당 같은 스레드에서 최근 24시간 200건, 스레드당 총 5,000건, 본문 1~500자(양끝 공백 제거). 차단/친구 관계 변경과 메시지 전송 모두 프로필 두 행을 정렬 순서로 잠금. **메시지 `createdAt`은 잠금 획득 후 속도 제한에 사용한 `clock_timestamp()` 값으로 저장**하여 트랜잭션 시작과 잠금 대기 시간에 좌우되지 않도록 합니다.
 * **읽음:** 해당 스레드에 존재하는 `messageId`까지 읽음 표시. 이전 읽음 ID로 역행 금지. 상대방의 읽음 여부는 **이번 V1에서 노출하지 않음**.
 * **Realtime:** Supabase Free에서 사용 가능한 Postgres Changes `INSERT` 이벤트. `dm_threads`, `dm_messages`를 `supabase_realtime` publication에 등록. 클라이언트 SELECT는 친구+비차단 조건의 RLS로 제어. **웹소켓 알림을 최종 진실로 사용하지 않고 반드시 API로 동기화**.
 
@@ -33,6 +33,7 @@
 - `GET` 메시지 목록은 **최신 순**(ID 내림차순)으로 최대 50개입니다. UI는 표시할 때 역순으로 변환하세요. `before`는 마지막 메시지의 ID(미포함)를 그대로 지정합니다.
 - 친구지만 아직 채팅을 시작하지 않았으면 `{threadId:null,messages:[],hasMore:false}`입니다.
 - `POST`·`PUT`은 동일 출처 `Origin` 및 `Content-Type: application/json`, 실제 스트림 포함 4,096 바이트 이내. 본문은 정의된 필드만 허용하며 클라이언트의 `senderId`/타인 읽음 상태는 받지 않습니다.
+- **본문 정규화 계약:** HTTP와 직접 호출 가능한 DB RPC 모두 ECMAScript `String.trim()`과 같은 양끝 공백 정책(스페이스·탭·줄바꿈·비분리 공백을 포함한 Unicode 공백)을 적용합니다. 저장 및 반환되는 `body`는 정규화된 1~500개 Unicode 코드포인트이고, 공백만 있는 본문은 `DM_INVALID_MESSAGE`입니다. 예: 양끝 줄바꿈이 붙은 500자 본문은 허용되어 줄바꿈을 제외한 500자만 저장됩니다. 전송마다 원본 JSON의 크기는 별도 4,096바이트 제한을 받습니다.
 - 읽음 배지 카운트는 내 메시지를 제외한 상대방 발신 메시지 중 `last_read_id`보다 ID가 큰 항목 수입니다.
 
 ### 예시
@@ -99,6 +100,14 @@ supabase.removeChannel(threadChannel);
 **주의:** `dm_threads` 새 행 이벤트는 기존 친구에게만 RLS로 전달되며, 실제 동작은 Supabase의 Realtime 권한·인증 토큰/설정에 의존합니다. 메시지 구독은 채널 연결 끊김, 브라우저 백그라운드, 최초 진입 타이밍 등으로 알림을 놓칠 수 있으므로 진입 시·재연결 시·포커스 복귀 시 HTTP로 동기화해야 합니다. 차단/친구 해제 때 채널을 제거하고 메시지를 메모리에서 지우며 API 재검증을 실시하세요.
 
 **보안/무료 플랜:** Supabase Postgres Changes는 RLS SELECT 정책으로 INSERT 이벤트 접근을 제어합니다. 더 높은 트래픽에서는 Broadcast 기반 구조를 검토해야 합니다. Free 리얼타임 한도는 동시 연결·메시지량 제한이 있으므로 지속적인 폴링보다 이벤트+필요 시 HTTP 재조회 권장. 기존 게임 화면 채팅은 변경하지 않음.
+
+## PR #81 리뷰 보완 검증 (2026-10-29)
+
+- **저장 시각·속도 제한:** `send_direct_message`는 사용자 프로필 잠금 후 `v_checked_at := clock_timestamp()`를 사용하여 1초/24시간 한도를 평가하고 동일 시각을 `dm_messages.created_at`에 기록합니다.
+- **본문:** `public.dm_normalize_body(text)`가 JavaScript `trim()`과 동일한 Unicode 공백 집합으로 정규화합니다. SQL의 저장 제약도 정규화된 1~500자만 허용하고 HTTP는 정규화된 본문을 RPC에 전달합니다.
+- **PGlite/HTTP 회귀:** 1.2초 지연된 트랜잭션의 직후 재전송 제한, 동일 UUID 멱등성, 앞뒤 줄바꿈 포함 500자 및 공백만 입력 거부, Unicode 공백, 저장 내용 검증.
+- **독립 PostgreSQL 연결 실험:** `tests/direct-messages-concurrency.sql` 및 `.github/workflows/direct-messages-concurrency.yml`는 PostgreSQL 16 서비스에서 별도 프로필 잠금 세션과 송신 세션을 사용하여 실제 잠금 대기·커밋 직후 재시도를 검사합니다. **CI 결과가 성공하기 전에는 검증 완료로 간주하지 않습니다.**
+- 운영 Supabase 마이그레이션/실사용자 두 계정 Realtime E2E는 별도 승인·환경 점검 전까지 수행하지 않습니다.
 
 ## 미구현과 후속 이슈
 
