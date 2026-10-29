@@ -106,7 +106,7 @@
 .arena-lobby-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(250px, 1fr); gap: 18px; margin-top: 18px; }
 .arena-play-column, .arena-sidebar { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
 .arena-modes { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
-.arena-recovery { margin-top: auto; }
+.arena-recovery { margin-top: 0; }
 .arena-recovery-links { display: flex; gap: 10px; flex-wrap: wrap; }
 .arena-player-summary { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .arena-player-summary > div { min-width: 0; }
@@ -473,12 +473,54 @@
   .arena-profile-aside { margin-top: 12px; }
 }
 
-/* Lobby-only CTA footer: buttons sit flush with the card bottom (#116).
- * Preserve the framing on the other sides and leave home mode cards unchanged. */
-.arena-lobby-grid .arena-mode { border-bottom-width: 0; }
-.arena-lobby-grid .arena-mode-actions { padding-bottom: 0; }
-.arena-lobby-grid .arena-mode-actions .arena-button { border-radius: 11px 11px 15px 15px; }
-@media (max-width: 639px) {
-  .arena-lobby-grid .arena-mode { border-bottom-width: 7px; }
-  .arena-lobby-grid .arena-mode-actions { padding-bottom: 0; }
+
+/* Lobby mode cards: equal picture/button spacing and rounded photo corners (#118). */
+@media (min-width: 640px) {
+  .arena-lobby-grid .arena-mode {
+    --arena-lobby-mode-gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(max-content, 1fr) auto;
+    gap: var(--arena-lobby-mode-gap);
+    padding: 0;
+  }
+
+  .arena-lobby-grid .arena-mode-art {
+    position: relative;
+    inset: auto;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    z-index: 0;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .arena-lobby-grid .arena-mode-heading {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    z-index: 1;
+  }
+
+  .arena-lobby-grid .arena-mode-actions {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    margin-top: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+}
+
+@media (min-width: 1024px) {
+  .arena-lobby-grid .arena-mode {
+    --arena-lobby-mode-gap: 6px;
+  }
+
+  .arena-lobby-grid .arena-mode-art {
+    border-radius: 11px;
+  }
 }
