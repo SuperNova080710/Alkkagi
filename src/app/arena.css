@@ -545,15 +545,47 @@
 }
 
 
-/* Wide-screen hero: keep the 1920x640 source art visible without distorting it (#122). */
+/* Wide hero: size to remaining space on each route, not a shared pixel offset (#122). */
 @media (min-width: 1600px) and (min-height: 900px) {
-  .arena-hero {
-    /* The source image is 3:1. Taller desktops can show the full scene. */
-    aspect-ratio: 3 / 1;
-    min-height: 0;
-    max-height: min(48dvh, calc(100dvh - 530px));
+  /* A viewport-sized flex layout lets home and lobby reserve their own real content
+     heights. The document may still scroll when content requires more room. */
+  .arena-wrap:has(> main > .arena-hero) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
   }
 
-  /* On shorter browser windows, prioritize the characters over empty sky. */
+  .arena-wrap:has(> main > .arena-hero) > main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .arena-wrap:has(> main > .arena-hero) > main > .arena-hero {
+    flex: 1 1 auto;
+    aspect-ratio: 3 / 1;
+    min-height: 168px;
+    /* 1440px wrapper minus its 20px side paddings, at the source 3:1 ratio. */
+    max-height: calc((min(100vw, 1440px) - 40px) / 3);
+  }
+
+  .arena-wrap:has(> main > .arena-hero--compact) > main > .arena-hero {
+    min-height: 126px;
+  }
+
+  .arena-wrap:has(> main > .arena-home-modes) > main > :not(.arena-hero) {
+    flex: 0 0 auto;
+  }
+
+  .arena-wrap:has(> main > .arena-lobby-grid) > main > .arena-lobby-grid {
+    flex: 1 0 auto;
+  }
+
+  .arena-wrap:has(> main > .arena-hero) > .arena-footer {
+    flex: 0 0 auto;
+  }
+
+  /* When height is constrained, retain the lower glass marbles in the crop. */
   .arena-hero-art { object-position: center 60%; }
 }
