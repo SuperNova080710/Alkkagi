@@ -7,6 +7,7 @@ export default async function ProfilePage() {
   const user = await requireUser();
   const { data: profile, error } = await (await createClient())
     .from('profiles').select('nickname,rating').eq('id', user.id).maybeSingle();
-  if (error || !profile) return <ProfileView profile={null}/>;
+  if (error) return <ProfileView profile={null} unavailableReason="query-error"/>;
+  if (!profile) return <ProfileView profile={null} unavailableReason="missing"/>;
   return <ProfileView profile={profile} editor={<NicknameForm initial={profile.nickname}/>}/>;
 }
