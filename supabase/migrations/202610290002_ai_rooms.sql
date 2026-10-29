@@ -122,7 +122,7 @@ $$;
 revoke all on function public.commit_ai_turn
  from public,anon,authenticated;
 revoke all on function public.forfeit_ai_match(uuid,uuid) from public,anon,authenticated;
-grant execute on function public.commit_ai_turn(uuid,uuid,integer,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb,boolean,uuid) to service_role;
+grant execute on function public.commit_ai_turn to service_role;
 grant execute on function public.forfeit_ai_match(uuid,uuid) to service_role;
 alter publication supabase_realtime add table public.ai_matches;
 commit;
