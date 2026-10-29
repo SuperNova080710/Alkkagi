@@ -165,7 +165,7 @@ begin
   end if;
   select count(*) into v_pending from public.room_friend_invites
     where room_id=v_room;
-  if v_pending <> case when p_operation='accept' then 1 else 0 end then
+  if v_pending <> (case when p_operation='accept' then 1 else 0 end) then
     raise exception '%: failed RPC left an unexpected invite row: %',
       p_operation,v_pending;
   end if;
