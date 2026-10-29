@@ -178,6 +178,16 @@ describe('Room friend invites V1: SQL permissions and concurrency invariants',()
     expect(await received()).toEqual([]);
     await expect(rpc('respond_room_friend_invite',[freshInvite.inviteId,true]))
       .rejects.toThrow('ROOM_INVITE_NOT_FOUND');
+    // A new friendship must not revive a pending invitation created under
+    // the previous friendship, even within its five-minute TTL.
+    await friends(host,guest);
+    await as(guest);
+    expect(await received()).toEqual([]);
+    await expect(rpc('respond_room_friend_invite',[freshInvite.inviteId,true]))
+      .rejects.toThrow('ROOM_INVITE_NOT_FOUND');
+    await as(host);
+    await expect(rpc('send_room_friend_invite',[fresh,guest]))
+      .rejects.toThrow('ROOM_INVITE_ALREADY_SENT');
   },30000);
 
   it('enforces the pending quota even when the caller bypasses the browser UI',async()=>{
