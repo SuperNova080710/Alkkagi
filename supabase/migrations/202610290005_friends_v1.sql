@@ -167,6 +167,12 @@ begin
     raise exception 'FRIEND_NOT_AVAILABLE';
   end if;
   if p_block then
+    if not exists(select 1 from public.player_blocks
+        where blocker_id=actor and blocked_id=p_target)
+       and (select count(*) from public.player_blocks
+        where blocker_id=actor) >= 100 then
+      raise exception 'BLOCK_LIMIT';
+    end if;
     insert into public.player_blocks(blocker_id,blocked_id) values(actor,p_target)
       on conflict do nothing;
     delete from public.friend_links where
