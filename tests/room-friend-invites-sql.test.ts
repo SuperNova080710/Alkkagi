@@ -180,6 +180,34 @@ describe('Room friend invites V1: SQL permissions and concurrency invariants',()
       .rejects.toThrow('ROOM_INVITE_NOT_FOUND');
   },30000);
 
+  it('enforces the pending quota even when the caller bypasses the browser UI',async()=>{
+    await db.exec('reset role;');
+    await db.exec("insert into auth.users(id) select (lpad(to_hex(n),8,'0') || '-0000-4000-8000-000000000000')::uuid from generate_series(1000,1010) n;");
+    const ids=(await db.query<{id:string}>(
+      "select id::text as id from auth.users where id not in ($1,$2,$3) order by id limit 11",
+      [host,guest,other]
+    )).rows.map(x=>x.id);
+    for(const id of ids){
+      await db.query(
+        "insert into public.friend_links(requester_id,recipient_id,status) values($1,$2,'accepted')",
+        [host,id]
+      );
+    }
+    const roomId=await room(9);
+    for(let n=0;n<10;n++){
+      const saved=await send(roomId,ids[n]);
+      expect(saved).toMatchObject({status:'pending',alreadyPending:false});
+    }
+    await expect(send(roomId,ids[10])).rejects.toThrow('ROOM_INVITE_RATE_LIMIT');
+    const duplicate=await send(roomId,ids[0]);
+    expect(duplicate.alreadyPending).toBe(true);
+    await db.exec('reset role;');
+    const total=(await db.query<{count:string}>(
+      'select count(*)::text as count from public.room_friend_invites'
+    )).rows[0].count;
+    expect(total).toBe('10');
+  },30000);
+
   it('rejects AI-started rooms and preserves owner-only send while protecting rank data',async()=>{
     await friends(host,guest);
     const id=await room(8);
