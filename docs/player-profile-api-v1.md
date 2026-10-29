@@ -1,6 +1,6 @@
 # Player Profile API v1 — backend ⇄ UI/UX integration contract
 
-**Current status:** system development in [#59](https://github.com/SuperNova080710/Alkkagi/issues/59). The UI redesign work belongs to [#56](https://github.com/SuperNova080710/Alkkagi/issues/56). Keep this file as the integration source of truth.
+**Status (2026-10-29):** Backend V1 **merged and deployed to Production** in [PR #60](https://github.com/SuperNova080710/Alkkagi/pull/60) (main commit `8f01c9bd41e80fa3202b33bdecfd5d1cf054ac82`); [CI #40812366995](https://github.com/SuperNova080710/Alkkagi/actions/runs/40812366995) passed and Vercel Production is READY. [Backend #59](https://github.com/SuperNova080710/Alkkagi/issues/59). UI integration belongs to [design #56](https://github.com/SuperNova080710/Alkkagi/issues/56) and is **not yet implemented by this backend PR**. This is the integration contract.
 
 ## File ownership / parallel development
 
@@ -94,9 +94,9 @@ No rating, email, contact list or account metadata in search. Empty search is `{
 
 ## Backend acceptance checklist
 
-- [ ] Migration applies to Supabase with no existing RP/nickname changes.
-- [ ] PGlite: auth boundary, owner settings, discovery hide, stats hide, wildcard literal, no direct UPDATE, unchanged ranked ratings.
-- [ ] HTTP input validation and response shape tests, CI lint/typecheck/Vitest/Next build.
-- [ ] Preview READY, main merge, Production READY; actual browser UI acceptance belongs to #56.
+- [x] Migration applied to Supabase, existing 4 profiles and 22 rating entries preserved, net RP 0.
+- [x] PGlite: auth boundary, owner settings, discovery hide, stats hide, wildcard literal, no direct UPDATE, unchanged ranked ratings.
+- [x] HTTP input validation and response shape tests, CI lint/typecheck/Vitest/Next build — #40812366995.
+- [x] Preview READY, main merge, Production READY. **UI integration and manual browser acceptance remain pending in #56.**
 
 This is the shared integration contract. Both chats should post status/changes to the respective issues and check for overlapping file paths before merging.
