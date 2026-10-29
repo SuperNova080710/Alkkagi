@@ -11,7 +11,7 @@ const base={
  mode:'casual' as const,matchId:'00000000-0000-0000-0000-000000001234',
  roomId:'00000000-0000-0000-0000-000000002345',
  winnerId:a,userId:a,rating:null,rematchReadyCount:0,myRematchVote:false,
- rematchAction:(_:FormData)=>{},rematchPending:false,rematchError:'',animating:false,
+ rematchAction:()=>{},rematchPending:false,rematchError:'',animating:false,
 };
 describe('game result overlay and in-match chat SSR',()=>{
  it('shows win then lobby/rematch actions below the outcome',()=>{

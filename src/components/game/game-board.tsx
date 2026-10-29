@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { HEIGHT, MAX_FORCE, MIN_FORCE, RADIUS, WIDTH, type Board } from '@/lib/game/engine';
 import { viewportToBoard } from '@/lib/game/coordinates';

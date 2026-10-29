@@ -13,16 +13,14 @@ type Props={
  players:{seat:number;nickname:string}[];
  messages:MatchMessage[];
  status:string;
- finishedAt:string|null;
 };
-export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,messages,status,finishedAt}:Props){
+export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,messages,status}:Props){
  const router=useRouter();
  const [draft,setDraft]=useState('');
  const [sending,setSending]=useState(false);
  const [error,setError]=useState('');
  const listRef=useRef<HTMLOListElement>(null);
- const endsAt=finishedAt?new Date(finishedAt).getTime()+30*60*1000:null;
- const closed=status!=='active'&&(status!=='finished'||!endsAt||Date.now()>=endsAt);
+ const closed=status!=='active'&&status!=='finished';
  useEffect(()=>{
   if(listRef.current)listRef.current.scrollTop=listRef.current.scrollHeight;
  },[messages]);
