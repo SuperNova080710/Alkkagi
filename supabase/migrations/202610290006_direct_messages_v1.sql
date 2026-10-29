@@ -16,9 +16,9 @@ create index dm_threads_high_idx on public.dm_threads(user_high);
 -- must get the same normalized body as the HTTP API.
 create function public.dm_normalize_body(p_body text)
 returns text language sql immutable strict set search_path=''
-as $
+as $dm_body$
   select btrim(p_body, U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF')
-$;
+$dm_body$;
 revoke all on function public.dm_normalize_body(text) from public,anon,authenticated;
 
 create table public.dm_messages (
