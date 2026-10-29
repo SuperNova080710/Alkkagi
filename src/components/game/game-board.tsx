@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { HEIGHT, MAX_FORCE, MIN_FORCE, RADIUS, WIDTH, type Board } from '@/lib/game/engine';
 import { viewportToBoard } from '@/lib/game/coordinates';
@@ -13,6 +12,8 @@ import { keyboardVector, DIRECTIONS, type Direction } from '@/lib/game/keyboard-
 import { getPlayerIdentities } from '@/lib/game/player-identity';
 import { GameIdentityHeading } from '@/components/game/game-identity-heading';
 import { GamePieces } from '@/components/game/game-pieces';
+import {MatchChat,type MatchMessage} from '@/components/game/match-chat';
+import {GameResult,type RatingChange} from '@/components/game/game-result';
 
 type Match = {
  id: string;
@@ -24,6 +25,7 @@ type Match = {
  winner_id: string | null;
  turn_deadline?: string | null;
  board_state: Board;
+ finished_at?: string|null;
 };
 type Point = { x: number; y: number };
 type Drag = { id: string; origin: Point; at: Point };
@@ -37,11 +39,13 @@ type Props = {
  rematchReadyCount: number;
  myRematchVote: boolean;
  shots: TurnShot[];
+ messages: MatchMessage[];
+ rating?: RatingChange|null;
  mode?: 'casual' | 'ranked';
 };
 
 export function GameBoard({
- match, userId, roomId, players, rematchReadyCount, myRematchVote, shots, mode='casual',
+ match, userId, roomId, players, rematchReadyCount, myRematchVote, shots, messages, rating=null, mode='casual',
 }: Props) {
  const router = useRouter();
  const [drag, setDrag] = useState<Drag | null>(null);
@@ -195,8 +199,11 @@ export function GameBoard({
   <GameIdentityHeading match={match} viewerId={userId} players={identities}
    mode={mode} animating={animating} pending={pending} remaining={remaining}/>
   <div className="game-screen-body">
+   <MatchChat matchId={match.id} userId={userId} firstPlayerId={match.player1_id}
+    secondPlayerId={match.player2_id} players={players} messages={messages}
+    status={match.status}/>
    <div className="game-screen-main">
-    <div className="game-screen-stage overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
+    <div className="game-screen-stage relative overflow-hidden rounded-3xl border-8 border-amber-900 bg-emerald-950 shadow-2xl">
      <svg viewBox="0 0 800 500" role="img"
       aria-label={`알까기 보드. 내 알은 ${identities.find(p => p.isMe)?.colorName ?? "알 수 없는 색상"}이며, 자신의 알을 뒤로 드래그해 발사합니다.`}
       onPointerDown={down} onPointerMove={move} onPointerUp={up}
@@ -217,6 +224,11 @@ export function GameBoard({
         stroke="#fef08a" fill="none" strokeWidth="2" strokeDasharray="4 4"/>
       </g>}
      </svg>
+     {match.status==='finished'&&<GameResult mode={mode} matchId={match.id}
+      roomId={roomId} winnerId={match.winner_id} userId={userId} rating={rating}
+      rematchReadyCount={rematchReadyCount} myRematchVote={myRematchVote}
+      rematchAction={rematchAction} rematchPending={rematchPending}
+      rematchError={rematch.error} animating={animating}/>}
     </div>
     <div className="game-screen-bottom mt-3">
      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300 sm:text-sm">
@@ -281,26 +293,7 @@ export function GameBoard({
       선택한 알 발사
      </button>
     </details>}
-    {match.status === 'finished' && <div className="mt-3 border-t border-slate-700 pt-3">
-     <h4 className="font-bold text-emerald-300">경기 종료</h4>
-     <p className="mt-1 text-sm text-slate-300">
-      {match.winner_id === match.player1_id ? firstLabel + ' 승리' :
-       match.winner_id === match.player2_id ? secondLabel + ' 승리' : '무승부'}
-     </p>
-     {mode === 'ranked' ? <Link href="/ranked" className="mt-4 block rounded-lg bg-emerald-300 px-4 py-3 text-center text-sm font-bold text-slate-950">랭크 로비로 돌아가기</Link> : <>
-     <p className="mt-3 text-xs text-slate-300">
-      재대전 준비 {rematchReadyCount}/2 · 두 명이 모두 수락하면 새 경기를 시작합니다.
-     </p>
-     <form action={rematchAction} className="mt-3">
-      <input type="hidden" name="roomId" value={roomId}/>
-      <button type="submit" disabled={myRematchVote || rematchPending || animating}
-       className="w-full rounded-lg bg-emerald-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-60">
-       {myRematchVote ? '상대방 수락 대기 중' : rematchPending ? '요청 중…' : '다시하기 · 재대전 신청'}
-      </button>
-     </form>
-     {rematch.error && <p role="alert" className="mt-2 text-xs text-rose-300">{rematch.error}</p>}
-     </>}
-    </div>}
+
    </aside>
   </div>
  </section>;
