@@ -4,12 +4,22 @@ import type { CookieMethodsServer } from '@supabase/ssr';
 const mocks = vi.hoisted(() => ({ createServerClient: vi.fn(), config: vi.fn() }));
 vi.mock('@supabase/ssr', () => ({ createServerClient: mocks.createServerClient }));
 vi.mock('../src/lib/supabase/config', () => ({ getSupabaseConfig: mocks.config }));
-import { proxy } from '../src/proxy';
+import { proxy, config as proxyConfig } from '../src/proxy';
 
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.config.mockReturnValue({ url: 'https://test.supabase.co', key: 'test' });
 });
+describe('merged route protection scope', () => {
+  it('retains player discovery, direct messages, and room invite API matchers', () => {
+    expect(proxyConfig.matcher).toEqual(expect.arrayContaining([
+      '/players/:path*',
+      '/api/messages/:path*',
+      '/api/room-invites/:path*',
+    ]));
+  });
+});
+
 describe('session refresh proxy', () => {
   it('passes all refreshed cookie chunks to the page and browser without caching', async () => {
     mocks.createServerClient.mockImplementation((_url, _key, options: { cookies: CookieMethodsServer }) => ({
