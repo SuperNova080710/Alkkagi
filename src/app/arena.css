@@ -590,7 +590,7 @@
      Keep enough minimum height for both title lines when other panels grow. */
   .arena-wrap:has(> main > .arena-hero) > main > .arena-hero,
   .arena-wrap:has(> main > .arena-hero--compact) > main > .arena-hero {
-    min-height: clamp(250px, 27dvh, 290px);
+    min-height: clamp(270px, 30dvh, 320px);
   }
 
   .arena-hero-copy,
