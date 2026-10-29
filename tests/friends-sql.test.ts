@@ -106,6 +106,38 @@ describe('Friends V1: relationship and block SQL boundary',()=>{
   await as(a);
   expect((await rpc<{status:string}>('send_friend_request',[b])).status).toBe('pending');
  });
+ it('enforces outbound pending and block-list limits in database RPCs',async()=>{
+  await db.exec('reset role;');
+  // Seed unique existing accounts without sending email or using live auth.
+  await db.exec(`
+    insert into auth.users(id)
+    select (lpad(to_hex(n),8,'0') || '-0000-4000-8000-000000000000')::uuid
+    from generate_series(1000,1100) n;
+  `);
+  const targetIds=(await db.query<{id:string}>(`
+    select id::text as id from auth.users
+    where id not in ($1::uuid,$2::uuid,$3::uuid,$4::uuid)
+    order by id limit 101
+  `,[a,b,c,d])).rows.map(x=>x.id);
+  for(let i=0;i<20;i++){
+    await db.query('insert into public.friend_links(requester_id,recipient_id) values($1,$2)',
+      [a,targetIds[i]]);
+  }
+  await as(a);
+  await expect(rpc('send_friend_request',[d])).rejects.toThrow('FRIEND_REQUEST_LIMIT');
+
+  await db.exec('reset role; truncate public.friend_links;');
+  for(let i=0;i<100;i++){
+    await db.query('insert into public.player_blocks(blocker_id,blocked_id) values($1,$2)',
+      [a,targetIds[i]]);
+  }
+  await as(a);
+  await expect(rpc('set_player_block',[d,true])).rejects.toThrow('BLOCK_LIMIT');
+  expect(await rpc('set_player_block',[targetIds[0],true]))
+   .toMatchObject({blocked:true,userId:targetIds[0]});
+  await rpc('set_player_block',[targetIds[0],false]);
+  expect(await rpc('set_player_block',[d,true])).toMatchObject({blocked:true,userId:d});
+ },30000);
  it('preserves uniqueness across reversed requests and forbids any RP writes',async()=>{
   await as(a);
   await rpc('send_friend_request',[b]);
