@@ -136,6 +136,24 @@ describe('XP V1 SQL: authoritative finished-game awards',()=>{
     expect((await awards(b))[0].xp_amount).toBe(35);
   },30000);
 
+  it('caps AI rewards after ten finished games per UTC day',async()=>{
+    await db.exec('reset role;');
+    await db.query("insert into public.xp_events(user_id,source_kind,source_id,outcome,xp_amount) select $1::uuid,'ai',('bbbbbbbb-bbbb-4bbb-8bbb-' || lpad(to_hex(n),12,'0'))::uuid,'loss',0 from generate_series(1,10) n",[a]);
+    const r=(await db.query<{id:string}>(
+      "insert into public.rooms(code,owner_id,status) values('AIROOM99',$1,'playing') returning id",[a]
+    )).rows[0].id;
+    await db.query("insert into public.ai_matches(room_id,owner_id,difficulty,board_state) values($1,$2,'hard','{}')",[r,a]);
+    await db.query("update public.ai_matches set status='finished',winner_id=$2,finished_at=now() where room_id=$1",[r,a]);
+    expect((await awards(a)).at(-1)?.xp_amount).toBe(0);
+    expect((await progress(a)).totalXp).toBe(0);
+  },30000);
+
+  it('crosses level 3 boundary on cumulative ranked rewards',async()=>{
+    for(let i=0;i<6;i++)await finish(await createMatch('ranked'),a);
+    const info=await progress(a);
+    expect(info).toMatchObject({totalXp:420,level:3,currentLevelXp:20,nextLevelAt:900});
+  },30000);
+
   it('hides private profiles and never exposes history to another authenticated user',async()=>{
     await finish(await createMatch(),a);
     await actor(b);
