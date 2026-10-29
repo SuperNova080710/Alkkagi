@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./arena.css";
 
 export const metadata: Metadata = {
   title: "Alkkagi Arena | 알까기 아레나",
