@@ -38,7 +38,9 @@ describe('P3+ AI opponent in a waiting room',()=>{
   expect(rows[0].board_state.pieces).toHaveLength(10);
   expect(rows[0].board_state.pieces.filter(p=>p.owner===a)).toHaveLength(5);
   expect(rows[0].board_state.pieces.filter(p=>p.owner==='00000000-0000-4000-8000-0000000000a1')).toHaveLength(5);
+  await db.exec('reset role');
   expect((await db.query("select count(*)::int as n from auth.users")).rows[0]).toEqual({n:3});
+  await as(a);
   await expect(start(id,'easy')).rejects.toThrow('ROOM_UNAVAILABLE');
   await as(b);
   await expect(db.query("select public.join_casual_room('TEST2345')")).rejects.toThrow('ROOM_UNAVAILABLE');
