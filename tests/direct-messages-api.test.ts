@@ -34,6 +34,10 @@ describe('Direct messages HTTP authentication and input contract',()=>{
     expect(isMessageBody(' ')).toBe(false);
     expect(isMessageBody('x'.repeat(501))).toBe(false);
     expect(isMessageBody('hi\u0000there')).toBe(false);
+    expect(isMessageBody('\n'+'a'.repeat(500)+'\n')).toBe(true);
+    expect(isMessageBody('\n\t\r')).toBe(false);
+    expect(isMessageBody('\u00a0Unicode\u2002')).toBe(true);
+
     expect(isSendMessage({body:'hello',requestId:reqid})).toBe(true);
     expect(isSendMessage({body:'hello',requestId:reqid,senderId:peer})).toBe(false);
     expect(isReadReceipt({messageId:'123'})).toBe(true);
@@ -74,6 +78,20 @@ describe('Direct messages HTTP authentication and input contract',()=>{
     expect((await send(request(url,'POST',{body:'x'.repeat(5000),requestId:reqid}),params(peer))).status).toBe(400);
     expect((await send(request(url,'POST',{body:'hi',requestId:reqid,senderId:peer}),params(peer))).status).toBe(400);
     expect((await send(request('/api/messages/bad','POST',{body:'hi',requestId:reqid}),params('bad'))).status).toBe(400);
+    expect(mock.rpc).not.toHaveBeenCalled();
+  });
+  it('sends the same normalized 500-character body accepted by the HTTP boundary',async()=>{
+    mock.rpc.mockResolvedValue({data:{id:'15',body:'a'.repeat(500),alreadySent:false},error:null});
+    const raw='\n'+'a'.repeat(500)+'\n';
+    const url='/api/messages/'+peer;
+    const accepted=await send(request(url,'POST',{body:raw,requestId:reqid}),params(peer));
+    expect(accepted.status).toBe(200);
+    expect(mock.rpc).toHaveBeenCalledWith('send_direct_message',{
+      p_peer:peer,p_body:'a'.repeat(500),p_request_id:reqid,
+    });
+    mock.rpc.mockClear();
+    const denied=await send(request(url,'POST',{body:'\n\t\r',requestId:reqid}),params(peer));
+    expect(denied.status).toBe(400);
     expect(mock.rpc).not.toHaveBeenCalled();
   });
   it('validates reading cursors and requires same origin for PUT',async()=>{
