@@ -472,3 +472,13 @@
   .arena-profile-grid { display: block; }
   .arena-profile-aside { margin-top: 12px; }
 }
+
+/* Lobby-only CTA footer: buttons sit flush with the card bottom (#116).
+ * Preserve the framing on the other sides and leave home mode cards unchanged. */
+.arena-lobby-grid .arena-mode { border-bottom-width: 0; }
+.arena-lobby-grid .arena-mode-actions { padding-bottom: 0; }
+.arena-lobby-grid .arena-mode-actions .arena-button { border-radius: 11px 11px 15px 15px; }
+@media (max-width: 639px) {
+  .arena-lobby-grid .arena-mode { border-bottom-width: 7px; }
+  .arena-lobby-grid .arena-mode-actions { padding-bottom: 0; }
+}
