@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useRef,useState,type PointerEvent} from 'react';
+import {useEffect,useState,type PointerEvent} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {createBrowserClient} from '@supabase/ssr';
@@ -35,8 +35,8 @@ export function AiGameBoard({game,nickname,turns}:Props){
  const [keyboardDirection,setKeyboardDirection]=useState<Direction>('right');
  const [keyboardPower,setKeyboardPower]=useState(80);
  const last=turns.at(-1);
- const seen=useRef(last?.turn_no??0);
- const justUpdated=Boolean(last&&seen.current!==last.turn_no);
+ const [lastAnimatedTurn,setLastAnimatedTurn]=useState(last?.turn_no??0);
+ const justUpdated=Boolean(last&&lastAnimatedTurn!==last.turn_no);
  const board=playback?playback.frames[playback.index]:game.board_state;
  const playing=game.status==='active'&&!pending&&!playback&&!justUpdated;
  const myPieces=board.pieces.filter(piece=>piece.owner===game.owner_id);
@@ -58,18 +58,17 @@ export function AiGameBoard({game,nickname,turns}:Props){
   return ()=>{window.clearInterval(poll);void db.removeChannel(channel);};
  },[game.room_id,router]);
  useEffect(()=>{
-  if(!last||last.turn_no===seen.current)return;
-  seen.current=last.turn_no;
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!last||last.turn_no===lastAnimatedTurn)return;
   const human=Array.isArray(last.human_frames)?last.human_frames:[];
   const ai=Array.isArray(last.ai_frames)?last.ai_frames:[];
   const frames=[...human,...ai];
-  if(frames.length<2)return;
-  const raf=window.requestAnimationFrame(()=>setPlayback({
-   frames,index:0,humanFrames:human.length,
-  }));
+  const raf=window.requestAnimationFrame(()=>{
+   setLastAnimatedTurn(last.turn_no);
+   if(frames.length>=2&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    setPlayback({frames,index:0,humanFrames:human.length});
+  });
   return ()=>window.cancelAnimationFrame(raf);
- },[last]);
+ },[last,lastAnimatedTurn]);
  useEffect(()=>{
   if(!playback)return;
   const interval=window.setInterval(()=>setPlayback(state=>{
