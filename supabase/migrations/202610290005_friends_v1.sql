@@ -175,9 +175,12 @@ begin
     end if;
     insert into public.player_blocks(blocker_id,blocked_id) values(actor,p_target)
       on conflict do nothing;
-    delete from public.friend_links where
-      (requester_id=actor and recipient_id=p_target)
-      or (requester_id=p_target and recipient_id=actor);
+    -- Keep rejected rows (including their original rejection timestamp).
+    -- Otherwise blocking/unblocking can bypass the 24-hour retry cooldown.
+    -- Accepted friendships and pending invitations are still removed.
+    delete from public.friend_links where status in ('pending','accepted')
+      and ((requester_id=actor and recipient_id=p_target)
+        or (requester_id=p_target and recipient_id=actor));
   else
     delete from public.player_blocks where blocker_id=actor and blocked_id=p_target;
   end if;
@@ -218,11 +221,18 @@ begin
       where l.status='pending' and l.requester_id=actor
       order by l.created_at desc,l.id limit 20
     ) o;
-  select coalesce(jsonb_agg(to_jsonb(b) order by b.nickname,b.id),'[]'::jsonb)
+  -- Blocking by a known UUID must not become a private-profile lookup.
+  -- Preserve the blocked ID for unblock; hide nickname for undiscoverable users.
+  select coalesce(jsonb_agg(to_jsonb(b) order by b.nickname nulls last,b.id),'[]'::jsonb)
     into blocked_json from (
-      select p.id,p.nickname from public.player_blocks pb
+      select p.id,
+        case when coalesce(s.discoverable,true) then p.nickname
+          else null end as nickname
+      from public.player_blocks pb
       join public.profiles p on p.id=pb.blocked_id
-      where pb.blocker_id=actor order by p.nickname,p.id limit 100
+      left join public.player_profile_settings s on s.user_id=p.id
+      where pb.blocker_id=actor
+      order by nickname nulls last,p.id limit 100
     ) b;
   return jsonb_build_object('friends',friends_json,'incoming',incoming_json,
     'outgoing',outgoing_json,'blocked',blocked_json);
