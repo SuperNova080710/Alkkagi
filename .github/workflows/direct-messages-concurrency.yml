@@ -1,0 +1,49 @@
+name: Direct message PostgreSQL race
+
+on:
+  push:
+    branches: ['feat/backend-dm-v1']
+    paths:
+      - 'tests/direct-messages-concurrency.sql'
+      - 'supabase/migrations/202610290006_direct_messages_v1.sql'
+      - '.github/workflows/direct-messages-concurrency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/direct-messages-concurrency.sql'
+      - 'supabase/migrations/202610290006_direct_messages_v1.sql'
+      - '.github/workflows/direct-messages-concurrency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  independent-connections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Exercise independent PostgreSQL lock wait and message throttle
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/direct-messages-concurrency.sql
