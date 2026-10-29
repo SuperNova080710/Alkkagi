@@ -71,7 +71,11 @@ begin
   select * into existing from public.room_friend_invites i
     where i.room_id=p_room_id and i.invitee_id=p_target_id for update;
   if found then
-    if existing.status='pending' and existing.expires_at>checked_at then
+    if existing.status='pending' and existing.expires_at>checked_at
+      and exists(select 1 from public.friend_links f
+        where f.status='accepted' and f.updated_at<=existing.created_at
+        and ((f.requester_id=actor and f.recipient_id=p_target_id)
+          or (f.requester_id=p_target_id and f.recipient_id=actor))) then
       return jsonb_build_object('inviteId',existing.id,'status','pending',
         'expiresAt',existing.expires_at,'alreadyPending',true);
     end if;
@@ -120,7 +124,8 @@ begin
       and exists(select 1 from public.room_players rp
         where rp.room_id=r.id and rp.seat=1 and rp.user_id=i.inviter_id)
       and not exists(select 1 from public.ai_matches am where am.room_id=r.id)
-      and exists(select 1 from public.friend_links f where f.status='accepted'
+      and exists(select 1 from public.friend_links f
+        where f.status='accepted' and f.updated_at<=i.created_at
         and ((f.requester_id=actor and f.recipient_id=i.inviter_id)
           or (f.requester_id=i.inviter_id and f.recipient_id=actor)))
       and not exists(select 1 from public.player_blocks b
@@ -195,7 +200,8 @@ begin
     or locked_invite.expires_at<=checked_at
     or locked_room.id is null or locked_room.owner_id<>locked_invite.inviter_id
     or locked_room.status<>'waiting' or locked_room.expires_at<=checked_at
-    or not exists(select 1 from public.friend_links f where f.status='accepted'
+    or not exists(select 1 from public.friend_links f
+      where f.status='accepted' and f.updated_at<=locked_invite.created_at
       and ((f.requester_id=actor and f.recipient_id=locked_invite.inviter_id)
         or (f.requester_id=locked_invite.inviter_id and f.recipient_id=actor)))
     or exists(select 1 from public.player_blocks b
