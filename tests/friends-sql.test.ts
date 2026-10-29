@@ -106,6 +106,71 @@ describe('Friends V1: relationship and block SQL boundary',()=>{
   await as(a);
   expect((await rpc<{status:string}>('send_friend_request',[b])).status).toBe('pending');
  });
+ it('preserves rejection cooldown when the sender blocks and unblocks the recipient',async()=>{
+  await as(a);
+  const first=await rpc<{requestId:string}>('send_friend_request',[b]);
+  await as(b);
+  await rpc('respond_friend_request',[first.requestId,false]);
+  await db.exec('reset role;');
+  const rejected=(await db.query<{updated_at:string}>(
+    'select updated_at::text from public.friend_links where id=$1',[first.requestId]
+  )).rows[0].updated_at;
+
+  await as(a);
+  await expect(rpc('send_friend_request',[b])).rejects.toThrow('FRIEND_REQUEST_COOLDOWN');
+  await rpc('set_player_block',[b,true]);
+  await rpc('set_player_block',[b,false]);
+  await expect(rpc('send_friend_request',[b])).rejects.toThrow('FRIEND_REQUEST_COOLDOWN');
+  await db.exec('reset role;');
+  const kept=(await db.query<{id:string;status:string;updated_at:string}>(
+    'select id,status,updated_at::text from public.friend_links'
+  )).rows;
+  expect(kept).toEqual([{id:first.requestId,status:'rejected',updated_at:rejected}]);
+
+  // Advance the rejection clock without waiting 24 real hours.
+  await db.query("update public.friend_links set updated_at=clock_timestamp()-interval '25 hours' where id=$1",
+    [first.requestId]);
+  await as(a);
+  const retried=await rpc<{requestId:string;status:string;alreadyPending:boolean}>('send_friend_request',[b]);
+  expect(retried).toMatchObject({requestId:first.requestId,status:'pending',alreadyPending:false});
+  expect((await overview()).outgoing.map(x=>x.userId)).toEqual([b]);
+ });
+ it('preserves the rejected cooldown when the recipient blocks and unblocks',async()=>{
+  await as(a);
+  const request=await rpc<{requestId:string}>('send_friend_request',[c]);
+  await as(c);
+  await rpc('respond_friend_request',[request.requestId,false]);
+  await rpc('set_player_block',[a,true]);
+  await rpc('set_player_block',[a,false]);
+  await as(a);
+  await expect(rpc('send_friend_request',[c])).rejects.toThrow('FRIEND_REQUEST_COOLDOWN');
+ });
+ it('does not disclose undiscoverable player nicknames through the block list',async()=>{
+  await as(b);
+  await rpc('set_my_player_profile_settings',[false,false]);
+  await as(a);
+  expect(await rpc('get_public_player_profile',[b])).toBeNull();
+  await rpc('set_player_block',[b,true]);
+  const hidden=await overview();
+  expect(hidden.blocked).toEqual([{id:b,nickname:null}]);
+  await db.exec('reset role;');
+  const rows=(await db.query<{blocker_id:string;blocked_id:string}>(
+    'select blocker_id,blocked_id from public.player_blocks'
+  )).rows;
+  expect(rows).toEqual([{blocker_id:a,blocked_id:b}]);
+
+  // Visibility changes are honored on every overview request, not snapshotted.
+  await as(b);
+  await rpc('set_my_player_profile_settings',[true,true]);
+  await as(a);
+  expect((await overview()).blocked).toEqual([{id:b,nickname:'Bravo'}]);
+  await as(b);
+  await rpc('set_my_player_profile_settings',[false,false]);
+  await as(a);
+  expect((await overview()).blocked).toEqual([{id:b,nickname:null}]);
+  await rpc('set_player_block',[b,false]);
+  expect((await overview()).blocked).toEqual([]);
+ });
  it('enforces outbound pending and block-list limits in database RPCs',async()=>{
   await db.exec('reset role;');
   // Seed unique existing accounts without sending email or using live auth.
