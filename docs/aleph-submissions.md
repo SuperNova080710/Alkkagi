@@ -18,3 +18,13 @@ P2 문서는 수정하지 않고 P3 이후의 기능·검증을 새 파일로 �
 결과물: https://alkkagi-alpha.vercel.app
 
 저장소: https://github.com/SuperNova080710/Alkkagi
+
+## P3 제출 이후 서비스 개발 현황
+
+- [현재 main·미병합 PR·운영 적용·검증 인수](current-status-2026-10-29.md)
+- [게임형 UI 설계](ui-redesign-v1.md) · [구현 QA](design-implementation.md) · [플레이어 UI](player-directory-ui.md)
+- [친구 API](friends-api-v1.md) · [DM API](direct-messages-api-v1.md) · [보안 점검](security-review-2026-10-29.md)
+- 친구방 초대 계약: [PR #90 브랜치](https://github.com/SuperNova080710/Alkkagi/blob/feat/backend-room-invites-v1/docs/room-friend-invites-api-v1.md)
+- 친구 UI 설계: [PR #96 브랜치](https://github.com/SuperNova080710/Alkkagi/pull/96)
+
+이 섹션은 과거 ALEPH P1/P2/P3 제출 문구를 소급 변경하지 않습니다. 코드 병합, DB 적용, 배포 READY, 실제 두 계정 검증은 별개의 사실입니다.

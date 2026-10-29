@@ -122,3 +122,7 @@ supabase.removeChannel(threadChannel);
 - [ ] HTTP: Origin/인증·악성 요청 본문·UUID·오류 마스킹
 - [ ] GitHub Actions lint/typecheck/Vitest/Next.js build, Vercel Preview READY
 - [ ] 운영 SQL 적용 및 실제 Realtime 구독·브라우저 A/B E2E (사용자 병합·적용 결정 후 별도)
+
+## 2026-10-29 병합 및 검증 상태 갱신
+
+**DM 백엔드 PR #81은 main 병합 완료**(`8df4f2f`). Quality checks와 PostgreSQL 16 독립 연결 잠금/전송 간격 CI를 통과했습니다. 기존 문서 위쪽의 미병합·테스트 대기는 과거 구현 기록입니다. SQL 006은 운영 DB 최근 조회에서 미적용, 실제 친구 두 계정 Realtime/읽음 E2E 및 사용자 메신저 화면은 미완료입니다. 운영 DB는 004→005→006 선행 확인이 필요합니다. 초대는 미병합 PR #90에서 분리. [최신 인수](current-status-2026-10-29.md).
