@@ -8,6 +8,9 @@ export default async function Lobby(){
  const user=await requireUser();
  const db=await createClient();
  const {data:profile}=await db.from('profiles').select('nickname').eq('id',user.id).maybeSingle();
+ const {data:activeAi}=await db.from('ai_matches')
+  .select('room_id,difficulty,created_at').eq('owner_id',user.id).eq('status','active')
+  .order('created_at',{ascending:false}).limit(5);
  const {data:activeCasual}=await db.from('matches')
   .select('id,room_id,created_at').eq('mode','casual').eq('status','active')
   .order('created_at',{ascending:false}).limit(5);
@@ -35,7 +38,22 @@ export default async function Lobby(){
     진행 중인 경기 {i+1} 복귀
    </Link>)}</div>
  </section>}
+ {(activeAi??[]).length>0&&<section className="mt-8 rounded-2xl border border-sky-700 bg-sky-950/30 p-5">
+  <h2 className="text-lg font-bold">진행 중인 AI 연습전</h2>
+  <div className="mt-4 flex flex-wrap gap-2">{(activeAi??[]).map((m,i)=>
+   <Link key={m.room_id} href={'/rooms/'+m.room_id+'/ai'}
+    className="rounded-lg border border-sky-300 px-4 py-2 font-semibold text-sky-200">
+    AI 대전 {i+1} 계속하기
+   </Link>)}</div>
+ </section>}
+ <section className="mt-8 rounded-2xl border border-sky-700/70 bg-sky-950/20 p-5">
+  <h2 className="text-xl font-bold">AI 대전</h2>
+  <p className="mt-2 text-sm text-slate-300">
+   아래에서 방을 만든 뒤 대기실의 <strong>AI 상대 추가</strong>를 누르고 쉬움·보통·어려움을 선택하세요.
+   확인하면 즉시 AI 연습전이 시작되며 RP는 변하지 않습니다.
+  </p>
+ </section>
  <RoomForms />
- <p className="mt-8 text-slate-400">초대방 일반전과 랜덤 랭크전 중 원하는 모드로 1:1 알까기를 즐길 수 있습니다.</p>
+ <p className="mt-8 text-slate-400">초대방 일반전·AI 연습전·랜덤 랭크전 중 원하는 모드로 1:1 알까기를 즐길 수 있습니다.</p>
  </main>;
 }
