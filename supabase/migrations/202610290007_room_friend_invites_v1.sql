@@ -42,10 +42,12 @@ begin
   if p_room_id is null or p_target_id is null or actor=p_target_id then
     raise exception 'INVALID_ROOM_INVITE'; end if;
 
-  -- Profile locks agree with Friends V1 block/unfriend lock ordering.
+  -- NO KEY UPDATE still conflicts with Friends V1's FOR UPDATE row locks,
+  -- but permits the KEY SHARE FK check in join_casual_room's room_players INSERT.
+  -- This avoids a room -> profile / profile -> room deadlock.
   select owner_id into initial_host from public.rooms where id=p_room_id;
   if initial_host is distinct from actor then raise exception 'ROOM_NOT_AVAILABLE'; end if;
-  perform 1 from public.profiles where id in (actor,p_target_id) order by id for update;
+  perform 1 from public.profiles where id in (actor,p_target_id) order by id for no key update;
   select * into locked_room from public.rooms where id=p_room_id for update;
   checked_at:=clock_timestamp();
   if not found or locked_room.owner_id<>actor
@@ -183,12 +185,14 @@ begin
   if p_invite_id is null or p_accept is null then raise exception 'INVALID_ROOM_INVITE'; end if;
 
   -- Snapshot only locates lock targets; all security checks are repeated after
-  -- acquiring locks in the same order as friend block/unfriend and invite send.
+  -- locks. Profiles use NO KEY UPDATE so code-entry's profile FK KEY SHARE
+  -- can proceed even when it already holds the room lock; Friends V1's
+  -- FOR UPDATE still serializes block/unfriend transitions.
   select * into original from public.room_friend_invites where id=p_invite_id;
   if not found or original.invitee_id<>actor then
     raise exception 'ROOM_INVITE_NOT_FOUND'; end if;
   perform 1 from public.profiles
-    where id in (original.inviter_id,actor) order by id for update;
+    where id in (original.inviter_id,actor) order by id for no key update;
   select * into locked_room from public.rooms where id=original.room_id for update;
   select * into locked_invite from public.room_friend_invites
     where id=p_invite_id for update;
