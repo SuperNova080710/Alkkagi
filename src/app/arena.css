@@ -586,6 +586,34 @@
     flex: 0 0 auto;
   }
 
+  /* Scale the banner lettering with taller widescreen viewports.
+     Keep enough minimum height for both title lines when other panels grow. */
+  .arena-wrap:has(> main > .arena-hero) > main > .arena-hero,
+  .arena-wrap:has(> main > .arena-hero--compact) > main > .arena-hero {
+    min-height: clamp(250px, 27dvh, 290px);
+  }
+
+  .arena-hero-copy,
+  .arena-hero--compact .arena-hero-copy {
+    padding: clamp(12px, 1.4dvh, 18px) 16px;
+  }
+
+  .arena-eyebrow {
+    font-size: clamp(14px, 1.6dvh, 18px);
+  }
+
+  .arena-hero h1,
+  .arena-hero--compact h1 {
+    font-size: clamp(74px, calc(6.5dvh + 25px), 100px);
+    margin: 9px 0 11px;
+  }
+
+  .arena-hero-tagline {
+    font-size: clamp(16px, 1.8dvh, 20px);
+    margin-top: 7px;
+    padding: 5px clamp(16px, 1.5vw, 26px);
+  }
+
   /* When height is constrained, retain the lower glass marbles in the crop. */
   .arena-hero-art { object-position: center 60%; }
 }
