@@ -1,8 +1,9 @@
 'use client';
-import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {useEffect,useRef,useState,type FormEvent,type KeyboardEvent} from 'react';
 import {useRouter} from 'next/navigation';
 import {createBrowserClient} from '@supabase/ssr';
 import {sendMatchMessage} from '@/app/matches/chat-actions';
+import {shouldSubmitChatOnEnter} from '@/lib/chat/keyboard';
 
 export type MatchMessage={id:string;sender_id:string;body:string;created_at:string};
 type Props={
@@ -46,6 +47,17 @@ export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,m
   }catch{setError('채팅을 전송하지 못했습니다.');}
   finally{setSending(false);}
  }
+ function onChatKeyDown(event:KeyboardEvent<HTMLTextAreaElement>){
+  if(!shouldSubmitChatOnEnter({
+   key:event.key,shiftKey:event.shiftKey,
+   isComposing:event.nativeEvent.isComposing,
+   keyCode:event.nativeEvent.keyCode,
+   repeat:event.repeat,
+  }))return;
+  event.preventDefault();
+  if(sending||closed||!draft.trim())return;
+  event.currentTarget.form?.requestSubmit();
+ }
  function nickname(user:string){
   const seat=user===firstPlayerId?1:user===secondPlayerId?2:0;
   return players.find(p=>p.seat===seat)?.nickname??'플레이어';
@@ -74,8 +86,10 @@ export function MatchChat({matchId,userId,firstPlayerId,secondPlayerId,players,m
   <form onSubmit={submit} className="game-chat-compose mt-3 border-t border-slate-700 pt-3">
    <label className="sr-only" htmlFor={'match-chat-'+matchId}>채팅 메시지</label>
    <textarea id={'match-chat-'+matchId} value={draft} onChange={e=>{setDraft(e.target.value);setError('');}}
-    maxLength={280} rows={2} disabled={sending||closed} placeholder={closed?'종료된 채팅입니다':'상대방에게 메시지 보내기'}
+    maxLength={280} rows={2} disabled={sending||closed} onKeyDown={onChatKeyDown} placeholder={closed?'종료된 채팅입니다':'상대방에게 메시지 보내기'}
+    aria-describedby={'match-chat-shortcut-'+matchId}
     className="w-full resize-none rounded-xl border border-slate-600 bg-slate-950 p-3 text-sm outline-offset-2 focus:outline-emerald-300 disabled:opacity-60"/>
+   <p id={'match-chat-shortcut-'+matchId} className="mt-1 text-xs text-slate-400">Enter 전송 · Shift+Enter 줄바꿈</p>
    <div className="mt-2 flex items-center justify-between gap-2">
     <span className="text-xs tabular-nums text-slate-500">{draft.length}/280</span>
     <button type="submit" disabled={sending||closed||!draft.trim()}
