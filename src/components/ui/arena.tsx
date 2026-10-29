@@ -29,7 +29,7 @@ export function ArenaShell({ children, current, account }: {
 
 export function ArenaHero({ children, compact = false }: { children?: ReactNode; compact?: boolean }) {
   return <section className={`arena-hero${compact ? ' arena-hero--compact' : ''}`} aria-label="알까기 아레나">
-    <Image src="/art/hero.webp" alt="" fill sizes="(max-width: 1440px) 100vw, 1440px" priority className="arena-hero-art" />
+    <Image src="/art/hero.webp" alt="" fill sizes="(max-width: 1440px) 100vw, 1440px" preload className="arena-hero-art" />
     <div className="arena-hero-copy">
       <p className="arena-eyebrow">손끝에서 시작되는 작은 승부</p>
       <h1><span>ALKKAGI</span><span>ARENA</span></h1>
