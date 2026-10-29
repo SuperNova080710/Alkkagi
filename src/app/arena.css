@@ -333,3 +333,27 @@
 .arena-directory-panel #search-guide { margin-top: 12px; }
 .arena-directory-panel form > .arena-button { margin-block: 16px 8px; }
 .arena-directory > .arena-panel, .arena-directory > .arena-stats { margin-top: 24px; }
+
+/* Friends UI — enabled only after deployment readiness is confirmed. */
+.arena-friends-toolbar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.arena-friends-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.arena-friends-list { list-style: none; padding: 0; display: grid; gap: 12px; margin-block: 16px; max-height: 440px; overflow: auto; }
+.arena-friends-list li { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; background: #f0e7d5; border-radius: 14px; padding: 14px; }
+.arena-friend-name { font-weight: 800; overflow-wrap: anywhere; min-width: 0; }
+.arena-friend-name:is(a) { color: var(--arena-forest); text-decoration: underline; text-underline-offset: 4px; }
+.arena-friend-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.arena-friend-actions button { min-height: 44px; padding: 8px 14px; border: 1px solid #9a8e76; border-radius: 10px; font-weight: 700; }
+.arena-friend-badge { color: #65553b; font-size: 13px; }
+.arena-friend-request { margin-top: 24px; padding: 20px; border: 1px solid #d8c8a8; border-radius: 16px; background: var(--arena-cream); }
+.arena-friend-request [role="alert"] { color: #872d22; margin-top: 12px; }
+.arena-friend-dialog { width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; margin: auto; border: 1px solid #d8c8a8; border-radius: 22px; background: #fff9ed; color: #243e30; padding: 24px; box-shadow: 0 20px 60px #0005; }
+.arena-friend-dialog::backdrop { background: #102c26aa; }
+.arena-friend-dialog h2 { font-size: 23px; font-weight: 900; }
+.arena-friend-dialog-name { font-weight: 800; font-size: 20px; margin-block: 16px 8px; overflow-wrap: anywhere; }
+.arena-friend-dialog .arena-friend-actions { margin-top: 24px; justify-content: flex-end; }
+.arena-friends-toolbar button:disabled, .arena-friend-actions button:disabled, .arena-friend-request button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 639px) {
+ .arena-friends-grid { grid-template-columns: 1fr; gap: 16px; }
+ .arena-nav { flex-wrap: wrap; gap: 2px; }
+ .arena-nav a { padding-inline: 5px; font-size: 13px; }
+}

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 export function ArenaShell({ children, current, account }: {
   children: ReactNode;
-  current?: 'lobby' | 'ranked' | 'profile' | 'players';
+  current?: 'lobby' | 'ranked' | 'profile' | 'players' | 'friends';
   account?: ReactNode;
 }) {
   return <div className="arena">
@@ -18,6 +18,7 @@ export function ArenaShell({ children, current, account }: {
           <Link href="/lobby" aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
           <Link href="/ranked" aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
           <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
+          <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
           <Link href="/profile" aria-current={current === 'profile' ? 'page' : undefined}>내 프로필</Link>
         </nav>
         {account && <div className="arena-account">{account}</div>}
