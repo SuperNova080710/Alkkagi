@@ -29,14 +29,14 @@ export default async function RankedMatchPage({params}:{params:Promise<{id:strin
  ];
  const shots=((history??[]) as TurnShot[]).reverse();
  const messages=((chatHistory??[]) as import('@/components/game/match-chat').MatchMessage[]).reverse();
- return <main className="game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6">
+ return <div className="arena arena-match"><main className="game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6">
   <Link href="/ranked" className="game-page-back text-sm font-semibold text-emerald-300">← 랭크 로비</Link>
   <div className="game-page-header mt-8 flex flex-wrap items-center justify-between gap-4">
    <div><p className="text-sm font-bold tracking-widest text-amber-300">RANKED · RP 대전</p>
     <h1 className="mt-3 text-4xl font-black">랭크 알까기</h1></div>
-   <span className="rounded-lg bg-amber-900/40 px-4 py-2 text-sm font-semibold text-amber-200">Elo K=32</span>
+   <span className="rounded-lg bg-amber-900/40 px-4 py-2 text-sm font-semibold text-amber-200">랭크 포인트 대전</span>
   </div>
   <GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
    roomId={id} players={players} rematchReadyCount={0} myRematchVote={false} shots={shots} messages={messages} rating={ratingData} mode="ranked"/>
- </main>;
+ </main></div>;
 }

@@ -1,4 +1,5 @@
 'use client';
+import {CourtSurface} from './court-surface';
 import {useEffect,useState,type PointerEvent} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -163,9 +164,7 @@ export function AiGameBoard({game,nickname,turns}:Props){
       onPointerDown={down} onPointerMove={move} onPointerUp={up}
       onPointerCancel={()=>setDrag(null)}
       style={{touchAction:'none',width:'100%',display:'block',cursor:playing?'crosshair':'default'}}>
-      <rect x="0" y="0" width="800" height="500" fill="#064e3b"/>
-      <rect x="23" y="23" width="754" height="454" fill="none" stroke="#34d399" strokeOpacity=".18" strokeWidth="2"/>
-      <path d="M400 20 V480" stroke="#34d399" strokeOpacity=".15" strokeDasharray="8 10" strokeWidth="3"/>
+      <CourtSurface/>
       <GamePieces board={board} firstPlayerId={game.owner_id} viewerId={game.owner_id}/>
       {drag&&<g>
        <line x1={drag.origin.x} y1={drag.origin.y} x2={drag.origin.x+(drag.origin.x-drag.at.x)}

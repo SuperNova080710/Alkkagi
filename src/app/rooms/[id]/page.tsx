@@ -34,7 +34,7 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  const shots=((history??[]) as TurnShot[]).reverse();
  const messages=((chatHistory??[]) as import('@/components/game/match-chat').MatchMessage[]).reverse();
  const hasMatch=Boolean(match&&validBoard(match.board_state));
- return <div className={hasMatch ? undefined : 'arena'}><main className={hasMatch ? "game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6" : "arena-waiting mx-auto max-w-5xl px-6 py-12"}>
+ return <div className={hasMatch ? 'arena arena-match' : 'arena'}><main className={hasMatch ? "game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6" : "arena-waiting mx-auto max-w-5xl px-6 py-12"}>
  <Link href="/lobby" className="game-page-back text-sm font-semibold text-emerald-300">← 로비</Link>
  <div className="game-page-header mt-8 flex flex-wrap items-center justify-between gap-4">
  <div><p className="text-sm font-bold tracking-widest text-emerald-300">일반전 · ALKKAGI ARENA</p>

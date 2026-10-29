@@ -21,7 +21,7 @@ export default async function AiRoomPage({params}:{params:Promise<{id:string}>})
   .select('turn_no,human_input,human_frames,ai_input,ai_frames')
   .eq('room_id',id).order('turn_no',{ascending:false}).limit(50);
  const game=raw as AiGame;
- return <main className="game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6">
+ return <div className="arena arena-match"><main className="game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6">
   <Link href="/lobby" className="game-page-back text-sm font-semibold text-emerald-300">← 로비</Link>
   <div className="game-page-header mt-8 flex flex-wrap items-center justify-between gap-4">
    <div><p className="text-sm font-bold tracking-widest text-sky-300">SOLO PRACTICE · RP 미반영</p>
@@ -31,5 +31,5 @@ export default async function AiRoomPage({params}:{params:Promise<{id:string}>})
   </div>
   <AiGameBoard key={game.room_id} game={game} nickname={profile?.nickname??'나'}
    turns={((history??[]) as AiTurn[]).reverse()}/>
- </main>;
+ </main></div>;
 }
