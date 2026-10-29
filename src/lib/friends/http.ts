@@ -23,6 +23,12 @@ export function friendDbFailure(message?:string){
   }
   return friendError('FRIEND_SERVICE_UNAVAILABLE',503);
 }
+export async function friendDeletion(request:NextRequest):Promise<NextResponse|null>{
+  if(!await getVerifiedUser())return friendError('AUTH_REQUIRED',401);
+  if(request.headers.get('origin')!==request.nextUrl.origin)
+    return friendError('ORIGIN_NOT_ALLOWED',403);
+  return null;
+}
 export async function friendMutation(request:NextRequest):Promise<
   {ok:true;body:unknown}|{ok:false;response:NextResponse}
 >{
