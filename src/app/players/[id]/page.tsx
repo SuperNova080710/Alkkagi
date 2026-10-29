@@ -8,5 +8,5 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
   await requireUser();
   const { id } = await params;
   if (!PLAYER_UUID.test(id)) notFound();
-  return <ArenaShell current="players"><div className="arena-service arena-directory"><header className="arena-service-heading"><div><p className="arena-section-kicker">PLAYER PROFILE</p><h1>플레이어 프로필</h1><p>이 플레이어가 공개한 정보입니다.</p></div></header><PublicPlayer id={id}/></div></ArenaShell>;
+  return <ArenaShell current="players"><div className="arena-service arena-directory"><header className="arena-service-heading"><div><p className="arena-section-kicker">PLAYER PROFILE</p><h1>플레이어 프로필</h1><p>이 플레이어가 공개한 정보입니다.</p></div></header><PublicPlayer id={id} friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}/></div></ArenaShell>;
 }
