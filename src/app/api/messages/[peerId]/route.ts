@@ -1,7 +1,7 @@
 import {NextRequest} from 'next/server';
 import {getVerifiedUser} from '@/lib/auth/user';
 import {createClient} from '@/lib/supabase/server';
-import {isFriendId,isSendMessage,parseMessagePage} from '@/lib/messages/validation';
+import {isFriendId,isSendMessage,normalizeMessageBody,parseMessagePage} from '@/lib/messages/validation';
 import {messageData,messageError,messageRpcError,mutation} from '@/lib/messages/http';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -26,7 +26,7 @@ export async function POST(request:NextRequest,{params}:Context){
   if(!isFriendId(peerId)||!isSendMessage(m.body))return messageError('DM_INVALID_MESSAGE',400);
   try{
     const {data,error}=await (await createClient()).rpc('send_direct_message',{
-      p_peer:peerId,p_body:m.body.body,p_request_id:m.body.requestId,
+      p_peer:peerId,p_body:normalizeMessageBody(m.body.body),p_request_id:m.body.requestId,
     });
     if(error||!data||typeof data.id!=='string')return messageRpcError(error?.message);
     return messageData(data);
