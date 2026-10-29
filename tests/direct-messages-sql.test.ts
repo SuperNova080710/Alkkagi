@@ -112,6 +112,64 @@ describe('Direct Messages V1 SQL and privacy',()=>{
     expect(owner).toBe('2');
   },30000);
 
+  it('uses the post-wait clock when saving a message in a long transaction',async()=>{
+    await inviteAndAccept();
+    await as(a);
+    await db.exec('begin;');
+    let first:{id:string;body:string;alreadySent:boolean};
+    try{
+      // now() is fixed when the transaction begins; clock_timestamp() is not.
+      await db.query('select pg_sleep(1.2)');
+      first=await rpc('send_direct_message',[b,'delayed',uniqueRequest(80)]);
+      await db.exec('commit;');
+    }catch(error){
+      await db.exec('rollback;');
+      throw error;
+    }
+    expect(first).toMatchObject({body:'delayed',alreadySent:false});
+    await as(a);
+    await expect(rpc('send_direct_message',[b,'rapid',uniqueRequest(81)]))
+      .rejects.toThrow('DM_RATE_LIMIT');
+    expect(await rpc('send_direct_message',[b,'ignored retry',uniqueRequest(80)]))
+      .toMatchObject({id:first.id,body:'delayed',alreadySent:true});
+    await db.exec('reset role;');
+    const saved=(await db.query<{count:string}>(
+      'select count(*)::text as count from public.dm_messages'
+    )).rows[0];
+    expect(saved.count).toBe('1');
+  },30000);
+
+  it('normalizes ASCII and Unicode edge whitespace identically for RPC and storage',async()=>{
+    await inviteAndAccept();
+    const maxBody='\n'+'a'.repeat(500)+'\n';
+    const first=await send(a,b,82,maxBody);
+    expect(first.body).toBe('a'.repeat(500));
+    await as(a);
+    await expect(rpc('send_direct_message',[b,'\n\t\r  ',uniqueRequest(83)]))
+      .rejects.toThrow('DM_INVALID_MESSAGE');
+    await expect(rpc('send_direct_message',[b,'\n'+'a'.repeat(501)+'\n',uniqueRequest(84)]))
+      .rejects.toThrow('DM_INVALID_MESSAGE');
+    const second=await send(b,a,85,'\n\tHello\t\n');
+    expect(second.body).toBe('Hello');
+
+    await db.exec('reset role;');
+    // Bypass throttle only for the next independently-authorized RPC example.
+    await db.query(
+      "update public.dm_messages set created_at=clock_timestamp()-interval '5 seconds' where id=$1",
+      [first.id]
+    );
+    const third=await send(a,b,86,'\u00A0Unicode\u2002');
+    expect(third.body).toBe('Unicode');
+    const actual=await db.query<{body:string}>(
+      'select body from public.dm_messages order by id'
+    );
+    expect(actual.rows.map(x=>x.body)).toEqual(['a'.repeat(500),'Hello','Unicode']);
+    await expect(db.query(
+      'insert into public.dm_messages(thread_id,sender_id,request_id,body) values($1,$2,$3,$4)',
+      [third.threadId,a,uniqueRequest(87),'\nnot normalized\n']
+    )).rejects.toThrow(/check constraint/i);
+  },30000);
+
   it('supports cursor pagination, unread counts and monotonic read receipts',async()=>{
     await inviteAndAccept();
     const ids:string[]=[];
