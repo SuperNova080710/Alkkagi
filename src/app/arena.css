@@ -357,3 +357,118 @@
  .arena-nav { flex-wrap: wrap; gap: 2px; }
  .arena-nav a { padding-inline: 5px; font-size: 13px; }
 }
+
+
+/* Desktop density: viewport-aware sizing without page-level clipping or zoom (#102, #103). */
+@media (min-width: 1024px) {
+  /* Keep the existing art and visual language, but spend less vertical space on chrome. */
+  .arena-wrap { padding-inline: 20px; }
+  .arena-header { min-height: 62px; gap: 18px; padding: 7px 17px; border-radius: 0 0 16px 16px; }
+  .arena-brand { font-size: 21px; }
+  .arena-nav { gap: clamp(5px, 1.4vw, 22px); }
+  .arena-nav a { padding: 5px 8px; font-size: 14px; }
+  .arena-footer { padding: 11px 8px; }
+  .arena-hero { min-height: clamp(168px, 23dvh, 244px); margin-top: 10px; }
+  .arena-hero-copy { padding: 12px; }
+  .arena-eyebrow { font-size: 11px; }
+  .arena-hero h1 { margin: 3px 0 6px; font-size: clamp(42px, 5.8dvh, 68px); }
+  .arena-hero-tagline { margin-top: 4px; padding: 3px 14px; font-size: 13px; }
+  .arena-hero--compact { min-height: clamp(126px, 18dvh, 180px); }
+  .arena-hero--compact .arena-hero-copy { padding: 8px 12px; }
+  .arena-hero--compact h1 { font-size: clamp(37px, 5dvh, 58px); }
+  .arena-button { min-height: 44px; padding: 7px 12px; font-size: 14px; border-radius: 11px; }
+  .arena-panel { padding: 14px 16px; border-radius: 17px; }
+  .arena-panel h2 { margin-bottom: 9px; font-size: 17px; }
+  .arena-modes { gap: 10px; }
+  .arena-mode { min-height: clamp(208px, 29dvh, 292px); border-width: 6px; border-radius: 17px; }
+  .arena-mode-heading { padding: 12px 13px; }
+  .arena-mode-heading h2 { font-size: clamp(23px, 2vw, 29px); }
+  .arena-mode-heading p { margin-top: 5px; font-size: 12px; }
+  .arena-mode-actions { padding: 9px 5px 5px; gap: 5px; }
+  .arena-home-intro { margin: 10px 0; padding: 12px 18px; gap: 18px; border-radius: 16px; }
+  .arena-home-intro h2 { font-size: clamp(21px, 2vw, 26px); }
+  .arena-home-intro p:last-child { font-size: 13px; }
+  .arena-home-modes .arena-mode { min-height: clamp(205px, 28dvh, 284px); }
+  .arena-home-note { margin-top: 10px; }
+  .arena-lobby-grid { grid-template-columns: minmax(0, 3fr) minmax(225px, 1fr); gap: 12px; margin-top: 12px; }
+  .arena-play-column, .arena-sidebar { gap: 12px; }
+  .arena-recovery-links { gap: 6px; }
+  .arena-player-summary { gap: 9px; }
+  .arena-avatar { width: 42px; height: 42px; }
+  .arena-text-link { margin-top: 7px; }
+  .arena-leaderboard { gap: 5px; }
+  .arena-leaderboard li { padding: 6px; }
+  .arena-future { padding: 9px 12px; }
+  .arena-auth { max-width: 840px; margin: clamp(14px, 3dvh, 32px) auto; border-radius: 20px; }
+  .arena-auth-art { min-height: 345px; }
+  .arena-auth-form { padding: 22px 27px; }
+  .arena-auth h1 { margin-top: 9px; font-size: 26px; }
+  .arena-auth-form form { margin-top: 15px; }
+  .arena-auth-form form, .arena-auth-form fieldset { row-gap: 13px; }
+  .arena-auth-form form input { padding-block: 10px; }
+  .arena-waiting { padding-top: 16px; padding-bottom: 16px; }
+  .arena-waiting .game-page-header { margin-top: 8px; padding: 15px 19px; }
+  .arena-waiting .game-page-header h1 { font-size: 29px; }
+  .arena-waiting > section { margin-top: 12px; padding: 17px 20px; }
+  .arena-waiting ol li { min-height: 72px; }
+  .arena-service { padding: 12px 0; }
+  .arena-service-heading { gap: 18px; padding: 13px 20px; border-radius: 18px; }
+  .arena-service-heading h1 { margin: 3px 0 6px; font-size: clamp(25px, 2.8vw, 32px); }
+  .arena-service-heading img { width: 90px; height: 90px; border-width: 4px; }
+  .arena-service-heading p:last-child { font-size: 13px; }
+  .arena-service-name { margin: 9px 0; padding: 9px 14px; }
+  .arena-stats { gap: 10px; }
+  .arena-stats .arena-panel { padding: 11px 14px; }
+  .arena-stats h2 { margin-bottom: 6px; font-size: 13px; }
+  .arena-stats p { font-size: 23px; }
+  .arena-ranked-main { display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 2.2fr); gap: 12px; margin-top: 12px; align-items: stretch; }
+  .arena-ranked-main .arena-service-controls > section { height: 100%; margin-top: 0; padding: 14px; }
+  .arena-ranked-main .arena-service-controls > section > p { margin-top: 9px; }
+  .arena-ranked-main .arena-service-controls > section > button { margin-top: 10px; padding: 9px 14px; }
+  .arena-ranked-main .arena-ranking-grid { margin-top: 0; gap: 12px; }
+  .arena-ranking-grid > .arena-panel { min-width: 0; }
+  .arena-table-scroll, .arena-history { max-height: clamp(145px, 24dvh, 300px); overscroll-behavior: contain; scrollbar-width: thin; }
+  .arena-table-scroll td, .arena-table-scroll th { padding: 7px 6px; }
+  .arena-history li { padding: 9px; margin-bottom: 6px; }
+  .arena-profile { max-width: 1100px; }
+  .arena-profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 14px; margin-top: 12px; }
+  .arena-profile-main, .arena-profile-aside { min-width: 0; }
+  .arena-profile-grid .arena-panel { margin-top: 0; }
+  .arena-profile-grid .arena-service-controls > div { margin-top: 10px; padding: 15px 17px; }
+  .arena-profile-grid .arena-service-controls > div > div { margin-top: 10px; }
+  .arena-profile-grid .arena-service-controls button { padding-block: 8px; }
+  .arena-profile-summary { gap: 12px; }
+  .arena-profile-summary strong { font-size: 23px; }
+  .arena-profile-help { margin: 9px 2px; }
+  .arena-profile-future { margin-top: 10px; padding: 13px 16px; }
+  .arena-profile-future > span { top: 12px; right: 12px; }
+  .arena-profile-future p { padding-right: 30px; }
+  .arena-visibility-options { margin: 11px 0; gap: 8px; }
+  .arena-visibility-options label { padding: 9px 11px; }
+  .arena-directory-panel { margin-block: 12px; }
+  .arena-directory-panel > label { margin-block: 10px 5px; }
+  .arena-directory-panel input[type="search"] { min-height: 44px; padding: 8px 13px; }
+  .arena-directory-status { min-height: 23px; margin-block: 9px; }
+  .arena-player-list { max-height: min(38dvh, 400px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  .arena-player-list a { padding: 9px 13px; gap: 11px; }
+  .arena-player-mark { width: 38px; height: 38px; font-size: 21px; }
+  .arena-friends-toolbar { margin-top: 12px; }
+  .arena-friends-grid { gap: 12px; }
+  .arena-friends-list { max-height: clamp(145px, 25dvh, 290px); margin-block: 9px; gap: 7px; overscroll-behavior: contain; scrollbar-width: thin; }
+  .arena-friends-list li { padding: 9px; gap: 7px; }
+  .arena-friend-actions { gap: 6px; margin-top: 4px; }
+  .arena-friend-actions button { padding: 6px 9px; }
+}
+@media (min-width: 1200px) {
+  .arena-friends-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+/* At high zoom, narrow windows and short heights, keep ordinary page scrolling.
+   No overflow:hidden on body/main, and no scale/zoom-based shrinking. */
+@media (min-width: 1024px) and (max-height: 679px) {
+  .arena-hero { min-height: 156px; }
+  .arena-hero--compact { min-height: 128px; }
+  .arena-ranked-main { display: block; }
+  .arena-ranked-main .arena-ranking-grid { margin-top: 12px; }
+  .arena-profile-grid { display: block; }
+  .arena-profile-aside { margin-top: 12px; }
+}
