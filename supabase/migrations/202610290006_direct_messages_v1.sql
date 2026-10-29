@@ -11,12 +11,23 @@ create table public.dm_threads (
 );
 create index dm_threads_high_idx on public.dm_threads(user_high);
 
+-- Match ECMAScript String.trim() at the RPC boundary, including tabs,
+-- newlines, non-breaking spaces and Unicode whitespace. A direct RPC caller
+-- must get the same normalized body as the HTTP API.
+create function public.dm_normalize_body(p_body text)
+returns text language sql immutable strict set search_path=''
+as $
+  select btrim(p_body, U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF')
+$;
+revoke all on function public.dm_normalize_body(text) from public,anon,authenticated;
+
 create table public.dm_messages (
   id bigint generated always as identity primary key,
   thread_id uuid not null references public.dm_threads(id) on delete cascade,
   sender_id uuid not null references public.profiles(id) on delete cascade,
   request_id uuid not null,
-  body text not null check (char_length(btrim(body)) between 1 and 500),
+  body text not null check (body=public.dm_normalize_body(body)
+    and char_length(body) between 1 and 500),
   created_at timestamptz not null default now(),
   unique(thread_id, sender_id, request_id)
 );
@@ -87,11 +98,13 @@ declare
   saved public.dm_messages%rowtype;
   last_sent timestamptz;
   v_checked_at timestamptz;
+  v_body text;
 begin
   if actor is null then raise exception 'AUTH_REQUIRED'; end if;
   if p_peer is null or actor=p_peer then raise exception 'DM_NOT_AVAILABLE'; end if;
-  if p_request_id is null or p_body is null
-     or char_length(btrim(p_body)) not between 1 and 500 then
+  v_body:=public.dm_normalize_body(p_body);
+  if p_request_id is null or v_body is null
+     or char_length(v_body) not between 1 and 500 then
     raise exception 'DM_INVALID_MESSAGE';
   end if;
   -- All friendship/block mutations use the same sorted profile lock order.
@@ -128,8 +141,10 @@ begin
       and m.created_at > v_checked_at - interval '24 hours') >= 200 then
     raise exception 'DM_DAILY_LIMIT';
   end if;
-  insert into public.dm_messages(thread_id,sender_id,request_id,body)
-    values(tid,actor,p_request_id,btrim(p_body)) returning * into saved;
+  -- now() is fixed at transaction start and may precede a lock wait.
+  -- Use the post-lock throttle clock for the stored timestamp as well.
+  insert into public.dm_messages(thread_id,sender_id,request_id,body,created_at)
+    values(tid,actor,p_request_id,v_body,v_checked_at) returning * into saved;
   return jsonb_build_object('threadId',tid,'id',saved.id::text,
     'senderId',actor,'body',saved.body,'createdAt',saved.created_at,
     'alreadySent',false);
