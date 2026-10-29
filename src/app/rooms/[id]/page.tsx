@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import {notFound} from 'next/navigation';
+import {notFound,redirect} from 'next/navigation';
 import {requireUser} from '@/lib/auth/user';
 import {createClient} from '@/lib/supabase/server';
 import {validBoard} from '@/lib/game/engine';
 import {GameBoard} from '@/components/game/game-board';
 import {RoomRefresh} from '@/components/rooms/room-refresh';
+import {AddAiOpponent} from '@/components/rooms/add-ai-opponent';
 import {leaveRoom} from '../actions';
 import {startGame} from '../start';
 import {type TurnShot} from '@/lib/game/turn-history';
@@ -19,6 +20,8 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  if(error||!data||typeof data!=='object'||Array.isArray(data))notFound();
  const room=data as Room;
  if(!Array.isArray(room.players))notFound();
+ const {data:aiMatch}=await db.from('ai_matches').select('room_id').eq('room_id',id).maybeSingle();
+ if(aiMatch)redirect('/rooms/'+id+'/ai');
  const {data:match}=await db.from('matches').select('id,status,turn_user_id,turn_no,player1_id,player2_id,winner_id,board_state,turn_deadline,finished_at')
   .eq('room_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle();
  const [{data:history},{data:chatHistory}]=match?await Promise.all([db.from('shots')
@@ -48,8 +51,10 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
   {room.status==='waiting'&&room.players.length===2&&room.yourSeat===1&&
     <form action={startGame} className="mt-6"><input type="hidden" name="id" value={id}/>
      <button className="rounded-xl bg-emerald-300 px-6 py-3 font-bold text-slate-950">경기 시작</button></form>}
-  {room.status==='waiting'&&room.players.length<2&&
-    <p className="mt-5 text-slate-300">친구에게 초대 코드를 보내면 자동으로 입장 상태가 갱신됩니다.</p>}
+  {room.status==='waiting'&&room.players.length<2&&<>
+    <p className="mt-5 text-slate-300">친구에게 초대 코드를 보내면 자동으로 입장 상태가 갱신됩니다.</p>
+    {room.yourSeat===1&&<AddAiOpponent roomId={room.id}/>}
+   </>}
   {room.status==='waiting'&&<form action={leaveRoom} className="mt-5"><input type="hidden" name="id" value={id}/>
    <button className="rounded-xl border border-slate-500 px-5 py-3 text-sm">{room.yourSeat===1?'방 닫기':'방 나가기'}</button></form>}
   {query.error&&<p role="alert" className="mt-5 text-rose-300">경기를 시작할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>}

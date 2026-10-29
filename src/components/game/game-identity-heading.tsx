@@ -4,7 +4,7 @@ type Props = {
  match: IdentityMatch;
  viewerId: string;
  players: [DisplayPlayer, DisplayPlayer];
- mode: 'casual' | 'ranked';
+ mode: 'casual' | 'ranked' | 'ai';
  animating: boolean;
  pending: boolean;
  remaining: number | null;
@@ -16,7 +16,7 @@ export function GameIdentityHeading({
  const message = getTurnMessage(match, viewerId, players, { animating, pending, remaining });
  return <div className="game-screen-heading flex items-center justify-between gap-3">
   <div className="game-identity-announcement min-w-0 flex-1">
-   <h2 className="text-lg font-extrabold sm:text-xl">{mode === 'ranked' ? '랭크 대전' : '알까기 대전'}</h2>
+   <h2 className="text-lg font-extrabold sm:text-xl">{mode === 'ranked' ? '랭크 대전' : mode === 'ai' ? 'AI 연습전' : '알까기 대전'}</h2>
    <p className="mt-1 truncate text-sm font-bold text-emerald-200" role="status" aria-live="polite"
     aria-atomic="true" title={message}>{message}</p>
   </div>
