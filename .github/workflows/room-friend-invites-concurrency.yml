@@ -1,0 +1,49 @@
+name: Room invite PostgreSQL deadlock regression
+
+on:
+  push:
+    branches: ['feat/backend-room-invites-v1']
+    paths:
+      - 'tests/room-friend-invites-concurrency.sql'
+      - 'supabase/migrations/202610290007_room_friend_invites_v1.sql'
+      - '.github/workflows/room-friend-invites-concurrency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/room-friend-invites-concurrency.sql'
+      - 'supabase/migrations/202610290007_room_friend_invites_v1.sql'
+      - '.github/workflows/room-friend-invites-concurrency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  independent-postgres-connections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify code entry versus invite acceptance/send and friend locks
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/room-friend-invites-concurrency.sql
