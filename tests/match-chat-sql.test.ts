@@ -27,9 +27,9 @@ describe('P3 private match chat and rate protection',()=>{
   ])await db.exec(readFileSync(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
   await as(a);
   const room=(await db.query<{create_casual_room:string}>(
-   "select public.create_casual_room('CHAT1234')")).rows[0].create_casual_room;
+   "select public.create_casual_room('CHAT2345')")).rows[0].create_casual_room;
   await as(b);
-  await db.query("select public.join_casual_room('CHAT1234')");
+  await db.query("select public.join_casual_room('CHAT2345')");
   await as(a);
   matchId=(await db.query<{start_casual_match:string}>(
    "select public.start_casual_match('"+room+"')")).rows[0].start_casual_match;
