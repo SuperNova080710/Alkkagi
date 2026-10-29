@@ -204,3 +204,23 @@ body {
 @media (max-width:1023px), (max-height:639px) {
   .game-chat-panel { max-height:24rem; }
 }
+
+/* Match result: brief, quiet entrance that never affects board geometry. */
+@keyframes alkkagi-result-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes alkkagi-result-card-in {
+  from { opacity: 0; transform: translateY(9px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.game-result-overlay {
+  animation: alkkagi-result-backdrop-in 180ms ease-out both;
+}
+.game-result-card {
+  animation: alkkagi-result-card-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-result-overlay,
+  .game-result-card { animation: none; }
+}

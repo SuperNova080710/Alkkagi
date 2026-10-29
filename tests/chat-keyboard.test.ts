@@ -26,5 +26,6 @@ describe('chat keyboard shortcuts',()=>{
   expect(source).toContain("if(sending||closed||!draft.trim())return;");
   expect(source).toContain('Enter 전송 · Shift+Enter 줄바꿈');
   expect(source).toContain('<form onSubmit={submit}');
+  expect(source).toContain('readOnly={sending} disabled={closed}');
  });
 });
