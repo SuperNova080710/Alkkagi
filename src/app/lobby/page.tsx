@@ -46,13 +46,6 @@ export default async function Lobby(){
     AI 대전 {i+1} 계속하기
    </Link>)}</div>
  </section>}
- <section className="mt-8 rounded-2xl border border-sky-700/70 bg-sky-950/20 p-5">
-  <h2 className="text-xl font-bold">AI 대전</h2>
-  <p className="mt-2 text-sm text-slate-300">
-   아래에서 방을 만든 뒤 대기실의 <strong>AI 상대 추가</strong>를 누르고 쉬움·보통·어려움을 선택하세요.
-   확인하면 즉시 AI 연습전이 시작되며 RP는 변하지 않습니다.
-  </p>
- </section>
  <RoomForms />
  <p className="mt-8 text-slate-400">초대방 일반전·AI 연습전·랜덤 랭크전 중 원하는 모드로 1:1 알까기를 즐길 수 있습니다.</p>
  </main>;
