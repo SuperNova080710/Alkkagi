@@ -164,6 +164,7 @@ describe('Direct Messages V1 SQL and privacy',()=>{
       'select body from public.dm_messages order by id'
     );
     expect(actual.rows.map(x=>x.body)).toEqual(['a'.repeat(500),'Hello','Unicode']);
+    await db.exec('reset role;');
     await expect(db.query(
       'insert into public.dm_messages(thread_id,sender_id,request_id,body) values($1,$2,$3,$4)',
       [third.threadId,a,uniqueRequest(87),'\nnot normalized\n']
