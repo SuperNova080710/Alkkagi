@@ -42,7 +42,7 @@ describe('game result overlay and in-match chat SSR',()=>{
    players={[{seat:1,nickname:'나비'},{seat:2,nickname:'태양'}]}
    messages={[{id:'1',sender_id:a,body:'안녕',created_at:'2026-10-29T00:00:00Z'},
    {id:'2',sender_id:b,body:'<script>alert(1)</script>',created_at:'2026-10-29T00:00:01Z'}]}
-   status="active" finishedAt={null}/>);
+   status="active"/>);
   expect(html).toContain('대전 채팅');
   expect(html).toContain('태양');
   expect(html).toContain('&lt;script&gt;');
