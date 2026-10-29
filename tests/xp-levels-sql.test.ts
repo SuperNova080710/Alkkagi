@@ -98,6 +98,29 @@ describe('XP V1 SQL: authoritative finished-game awards',()=>{
     expect((await progress(a)).totalXp).toBe(95);
   },30000);
 
+  it('credits server timeout settlement once to the actual winner',async()=>{
+    const id=await createMatch('ranked');
+    await db.exec('reset role;');
+    await db.query("update public.matches set turn_deadline=now()-interval '1 minute' where id=$1",[id]);
+    await db.exec('set role service_role;');
+    const timed=await rpc<{expired:boolean;status:string;winnerId:string}>('expire_match',[id]);
+    expect(timed).toMatchObject({expired:true,status:'finished',winnerId:b});
+    const retry=await rpc<{expired:boolean}>('expire_match',[id]);
+    expect(retry.expired).toBe(false);
+    expect((await awards(a))[0]).toMatchObject({xp_amount:35,outcome:'loss'});
+    expect((await awards(b))[0]).toMatchObject({xp_amount:70,outcome:'win'});
+    await db.exec('reset role;');
+    expect((await db.query<{count:string}>(
+      'select count(*)::text as count from public.rating_history where match_id=$1',[id]
+    )).rows[0].count).toBe('2');
+  },30000);
+
+  it('credits ranked draw to both users without inventing a winner',async()=>{
+    await finish(await createMatch('ranked'),null);
+    expect((await awards(a))[0]).toMatchObject({xp_amount:50,outcome:'draw'});
+    expect((await awards(b))[0]).toMatchObject({xp_amount:50,outcome:'draw'});
+  },30000);
+
   it('awards AI victory by difficulty and zero for AI forfeit',async()=>{
     await db.exec('reset role;');
     async function createAi(difficulty:string){
