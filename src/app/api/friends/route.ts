@@ -1,4 +1,3 @@
-import {NextResponse} from 'next/server';
 import {getVerifiedUser} from '@/lib/auth/user';
 import {createClient} from '@/lib/supabase/server';
 import {friendData,friendDbFailure,friendError} from '@/lib/friends/http';
