@@ -3,8 +3,8 @@ import {readFileSync} from 'node:fs';
 import {afterAll,beforeAll,describe,expect,it} from 'vitest';
 
 const a='00000000-0000-0000-0000-000000000011';
-const b='00000000-0000-0000-0000-000000000012';
-const c='00000000-0000-0000-0000-000000000013';
+const b='11111111-1111-1111-1111-111111111112';
+const c='22222222-2222-2222-2222-222222222223';
 let db:PGlite;
 async function as(id:string){
  await db.exec("reset role;set role authenticated;select set_config('request.jwt.claim.sub','"+id+"',false);");
