@@ -29,6 +29,8 @@ beforeEach(()=>{
 describe('Direct messages HTTP authentication and input contract',()=>{
   it('validates strict JSON and safe message cursor',()=>{
     expect(isMessageBody('hello')).toBe(true);
+    expect(isMessageBody('💬'.repeat(300))).toBe(true);
+    expect(isMessageBody('💬'.repeat(501))).toBe(false);
     expect(isMessageBody(' ')).toBe(false);
     expect(isMessageBody('x'.repeat(501))).toBe(false);
     expect(isMessageBody('hi\u0000there')).toBe(false);
