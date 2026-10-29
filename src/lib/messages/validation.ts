@@ -7,7 +7,7 @@ const exact=(x:unknown,fields:string[]):x is Record<string,unknown> =>
 export const isMessageId=(x:unknown):x is string=>
   typeof x==='string'&&/^[1-9][0-9]{0,14}$/.test(x)&&Number.isSafeInteger(Number(x));
 export const isMessageBody=(x:unknown):x is string=>
-  typeof x==='string'&&x.trim().length>=1&&x.trim().length<=500
+  typeof x==='string'&&Array.from(x.trim()).length>=1&&Array.from(x.trim()).length<=500
     &&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(x);
 export const isSendMessage=(x:unknown):x is {body:string;requestId:string}=>
   exact(x,['body','requestId'])&&isMessageBody(x.body)&&isFriendId(x.requestId);
