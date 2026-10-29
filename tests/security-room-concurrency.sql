@@ -108,6 +108,8 @@ begin
 
   perform dblink_exec('race_first', 'commit');
   select result into v_second from dblink_get_result('race_second') as t(result text);
+  -- dblink asynchronous calls require a second fetch to drain the command.
+  perform result from dblink_get_result('race_second') as t(result text);
   if v_second is distinct from 'ERROR:' || p_expected_error then
     raise exception 'Expected % but second call returned %', p_expected_error, v_second;
   end if;
