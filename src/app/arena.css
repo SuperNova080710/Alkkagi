@@ -1426,3 +1426,17 @@
 @media (prefers-reduced-motion: reduce) {
   .arena-cosmetic-art { transform: none; }
 }
+
+/* Only the opt-in six-item nav needs wrapping at narrow widths / 200% zoom. */
+@media (max-width: 639px) {
+  .arena-nav:has(a[href="/cosmetics"]) {
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    justify-content: center;
+    min-width: 0;
+  }
+  .arena-nav:has(a[href="/cosmetics"]) a {
+    min-height: 42px;
+    padding: 5px 8px;
+  }
+}
