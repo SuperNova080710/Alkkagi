@@ -137,6 +137,6 @@ describe('cosmetics wardrobe UI and safety contract', () => {
     const html = renderToStaticMarkup(<CosmeticWardrobe/>);
     expect(html).toContain('보유 아이템을 불러오고 있습니다');
     expect(html).not.toContain('기본 알');
-    expect(html).not.toContain('보유');
+    expect(html).not.toContain('장착하기');
   });
 });
