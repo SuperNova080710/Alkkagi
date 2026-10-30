@@ -125,10 +125,17 @@ begin
   ] loop
     foreach v_role in array ARRAY['anon','authenticated'] loop
       foreach v_privilege in array ARRAY['INSERT','UPDATE','DELETE'] loop
-        if pg_catalog.has_table_privilege(v_role,v_table,v_privilege)
-          or pg_catalog.has_any_column_privilege(v_role,v_table,v_privilege) then
+        if pg_catalog.has_table_privilege(v_role,v_table,v_privilege) then
           raise exception 'CLIENT_WRITE_PRIVILEGE: % on % to %',
             v_privilege,v_table,v_role;
+        end if;
+        -- PostgreSQL has no column-level DELETE grant; only INSERT/UPDATE
+        -- can be used to mutate a table through individual columns.
+        if v_privilege in ('INSERT','UPDATE') then
+          if pg_catalog.has_any_column_privilege(v_role,v_table,v_privilege) then
+            raise exception 'CLIENT_WRITE_PRIVILEGE: % on % to %',
+              v_privilege,v_table,v_role;
+          end if;
         end if;
       end loop;
     end loop;
