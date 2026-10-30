@@ -1,4 +1,4 @@
-# Alkkagi Arena — ALEPH 프로젝트 계획 v9
+# Alkkagi Arena — ALEPH 프로젝트 계획 v10
 
 > 갱신일: 2026-10-30. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
 > 이 문서는 작업 시작용 GitHub 버전입니다. ALEPH 제출용 상세 계획서 원본과 함께 관리하고, 변경 시 사유와 버전을 기록합니다.
@@ -133,6 +133,14 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 - SEO #131/#137 코드는 병합됐지만 실제 Production HTTP·Search Console 소유권/색인 요청은 별도입니다.
 - [릴리스 프로세스](docs/release-process.md) · [통합 현황](docs/current-status-2026-10-30.md).
 
+## 최신 개발 중인 프론트 및 운영 사전점검 (2026-10-30)
+
+- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (open, base develop): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현 제안. Quality 49파일·248테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
+- **코스메틱 UI** [#162](https://github.com/SuperNova080710/Alkkagi/issues/162), 하위 #163~#165: 내 인벤토리·6종 미리보기·일반/랭크/AI 경기 알 외형 구현 예정. 아직 개발 PR/운영 SQL 009 결과 없음.
+- **Production DB 사전점검** [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161): 실제 **PostgreSQL 17.11**, SELECT-only 68항목(기초 7 ready, 004 inspect 1, 005~009 pending 60). 이력/객체 미적용 확인, 실제 SQL DDL/운영 릴리스/PG17 쓰기 E2E는 하지 않음. PG16 경합 CI를 운영 PG17 검증으로 혼동 금지.
+- **릴리스 준비** #144: `main`과 `develop` SHA `8cf4dc0` 일치, Vercel Production 최신 READY(#161 기록), 첫 RC Preview·실제 Git 자동 Preview 제한 효과·버전 태그/릴리스는 미확인. 운영 DB 적용 전 `docs/db-rollout-preflight.md`(PR #161 브랜치)에 정의된 STOP 조건 검토 필수.
+- 작성 범위: 이번 문서 PR [#160](https://github.com/SuperNova080710/Alkkagi/pull/160)에서 문서/이슈만 업데이트하며 기능 코드·운영 DB·Vercel 설정은 수정하지 않음.
+
 ## 계획 변경 이력
 
 | 버전 | 날짜 | 내용 |
@@ -146,5 +154,6 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 | v7 | 2026-10-30 | #90/#96 및 PC·로비·히어로 개선 병합 반영. XP/코스메틱/SEO Draft와 운영 DB·배포·E2E 검증 경계 |
 | v8 | 2026-10-30 | #110 XP, #115 코스메틱, #131 SEO, #137 공개 가이드 병합; PG16 경합 검사·운영 DDL/실사용 E2E 경계 명시 |
 | v9 | 2026-10-30 | 메신저 UI 병합, develop/RC/main 릴리스 체계 및 기능별 플래그·운영 검증 미완료 경계 반영 |
+| v10 | 2026-10-30 | XP UI #159, 코스메틱 UI #162, PG17.11 사전점검 #161 및 STOP/릴리스 인수 현황 반영 |
 
 ALEPH는 반 추가 과제가 아닌 프리미엄 앱 프로젝트 P1→P2→P3만 진행합니다.
