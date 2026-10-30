@@ -32,8 +32,8 @@ P2 문서는 수정하지 않고 P3 이후의 기능·검증을 새 파일로 �
 ## 신규 작업 및 공개 검색 대비 (2026-10-30)
 
 - [데스크톱 밀도 QA 기록](ui-density-2026-10-29.md) · [와이드 히어로 QA 기록](ui-hero-wide-review-2026-10-29.md) · 반응형 타이포 PR #125
-- [XP/레벨 Draft PR #110](https://github.com/SuperNova080710/Alkkagi/pull/110) · [XP API 계약(브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/backend-xp-levels-v1/docs/experience-api-v1.md)
-- [코스메틱 Draft PR #115](https://github.com/SuperNova080710/Alkkagi/pull/115) · [API 계약(브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/backend-cosmetics-v1/docs/cosmetics-api-v1.md)
-- [SEO Draft PR #131](https://github.com/SuperNova080710/Alkkagi/pull/131) · [검색 콘솔 인계(브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/seo-google-indexing/docs/google-search-seo.md) · [공개 규칙 가이드 PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137) (미병합)
+- [XP/레벨 병합 PR #110](https://github.com/SuperNova080710/Alkkagi/pull/110) · [XP API 계약](experience-api-v1.md)
+- [코스메틱 병합 PR #115](https://github.com/SuperNova080710/Alkkagi/pull/115) · [API 계약](cosmetics-api-v1.md)
+- [SEO 병합 PR #131](https://github.com/SuperNova080710/Alkkagi/pull/131) · [검색 콘솔 인계](google-search-seo.md) · [공개 규칙 가이드 병합 PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137)
 
 아직 병합하지 않은 문서는 **main에 있다고 가정하지 마세요.** 검색 색인·사이트맵 제출·Google 상위 노출도 완료되지 않았습니다.

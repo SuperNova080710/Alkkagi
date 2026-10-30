@@ -183,11 +183,11 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | 친구 1:1 DM·읽음 | **PR #81 병합** | SQL 006 적용 미확인, **메신저 전용 화면 미구현** |
 | 친구 대전방 초대 백엔드 | **PR #90 병합** | SQL 007 적용 미확인, 초대 발신·수신 UI 미구현 |
 | 방 생성 남용 제한 | PR #69 병합 | SQL 004 운영 적용 미확인 |
-| XP·레벨 시스템 | **Draft PR #110 미병합** | SQL 008·XP 지급/화면 미배포; GitHub CI 206 tests PASS |
-| 알·캐릭터 보유·해금·장착 | **Draft PR #115 미병합** | SQL 009·외형 UI 미배포; GitHub CI 205 tests PASS |
-| 기술 SEO: canonical·sitemap·robots | **Draft PR #131 미병합** | CI 198 tests PASS, Production/Search Console/Google 색인 미진행 |
-| 공개 알까기 규칙·조작법·FAQ | [PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137) 열림·미병합 | `/how-to-play` 페이지·홈 링크 코드 작성, CI/실브라우저 E2E·최신 Production 미확인; SEO #131과 홈페이지 변경 통합 필요 |
+| XP·레벨 시스템 | **PR #110 main 병합** | SQL 008 운영 적용 및 사용자 UI 미완료; PG16 독립 연결 경합·Quality CI 통과(44파일/216테스트) |
+| 알·캐릭터 보유·해금·장착 | **PR #115 main 병합** | SQL 009 운영 적용·외형 UI 미완료; 비공개 아이템 마스킹·PG16 경합 및 Quality CI 통과(46파일/231테스트) |
+| 기술 SEO: canonical·sitemap·robots | **PR #131 main 병합** | robots/noindex 충돌 수정·CI 통과; 최신 Production 응답·Search Console 색인 별도 |
+| 공개 알까기 규칙·조작법·FAQ | **PR #137 main 병합** | `/how-to-play` 공개 페이지·홈 링크·SEO 사이트맵 2건 통합 CI 통과; 실제 Production HTTP/E2E 별도 |
 
-Vercel Free 배포 한도 이후 최신 SHA의 Preview/Production이 READY인지 확인되지 않은 작업은 배포 성공으로 표시하지 않았습니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 이어서 Draft 008/009 선행 관계를 검사해야 합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
+Vercel Free 배포 한도 이후 최신 SHA의 Preview/Production이 READY인지 확인되지 않은 작업은 배포 성공으로 표시하지 않았습니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 008/009도 main에 SQL 소스가 포함됐지만 **운영 적용은 별도 확인·승인**이 필요합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
 
 자세한 담당/파일 경계와 검증 근거: **[2026-10-30 최신 인수 현황](docs/current-status-2026-10-30.md)**. [2026-10-29 문서](docs/current-status-2026-10-29.md)는 당시 스냅샷으로 보존합니다.
