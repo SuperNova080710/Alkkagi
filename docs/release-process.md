@@ -76,3 +76,11 @@ Preview 배포에서 동일 코드가 통과해도 Production에는 환경변수
 - 리뷰 담당: 리뷰/병합만, 미검증 상태에서 `main` 병합 금지
 
 브랜치 정책 반영 시점에는 PR #115(코스메틱)·#138(문서)·#143(메신저 UI)가 이미 `main`에 병합됐습니다. 따라서 이 PR들의 base를 변경하지 않습니다. 정책 병합 후 `develop`을 새 `main`으로 동기화하여 후속 기능 PR을 `develop` 기준으로 작성하고, 변경된 브랜치 정책의 CI를 확인합니다.
+
+## 운영 정책 병합 후 확인 (2026-10-30)
+
+- PR [#148](https://github.com/SuperNova080710/Alkkagi/pull/148)은 **2026-10-30 main 병합 완료** (`8cf4dc0`). `develop`을 main과 동일 SHA에서 생성했고 조회 시점에도 두 브랜치가 일치했습니다.
+- `vercel.json`에는 Git 자동 배포를 `main`만 허용하는 `deploymentEnabled` 규칙이 존재합니다. **실제 Vercel 배포 설정 반영/차단 동작 및 첫 Release Candidate CLI Preview는 확인되지 않았으므로 완료로 단정하지 않습니다.**
+- 전환 전 PR #115/#138/#143은 이미 main에 병합된 상태였으므로 base 변경 대상이 아닙니다. **후속 신규 기능 및 문서 PR은 `develop`을 base**로 사용합니다.
+- `package.json`의 `0.1.0`은 소스 문자열일 뿐, 실제 확인된 정식 `v0.1.0` 태그나 GitHub Release는 없습니다. `CHANGELOG.md`의 Unreleased 항목도 공식 출시를 뜻하지 않습니다.
+- [상위 릴리스 이슈 #144](https://github.com/SuperNova080710/Alkkagi/issues/144)는 운영 정책 실제 동작·첫 RC 검증이 끝날 때까지 열어 둡니다.
