@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArenaHero, ArenaModeCard, ArenaShell } from '@/components/ui/arena';
+
+// Keep the homepage canonical local; the public how-to guide has its own canonical.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default function Home() {
   return <ArenaShell account={<Link href="/login" className="arena-login-link">로그인</Link>}>
