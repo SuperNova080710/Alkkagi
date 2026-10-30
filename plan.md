@@ -129,16 +129,16 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 - [PR #148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합으로 `develop` 통합 → `release/vX.Y.Z` QA·수동 Preview → `main` 승인 병합·Production → 배포 확인 후 `vX.Y.Z` 태그·GitHub Release 순서로 전환합니다. 기존 열린 PR을 임의로 재대상화하지 않습니다.
 - `vercel.json`에는 Git 자동 배포를 `main`으로 제한하는 설정이 병합됐지만, **정책 실제 적용 및 첫 RC CLI Preview는 아직 확인 전**입니다. 현재 공식 릴리스 버전과 태그는 미확정이고, `package.json 0.1.0`을 이미 배포된 릴리스로 간주하지 않습니다.
 - [PR #143](https://github.com/SuperNova080710/Alkkagi/pull/143) 친구 1:1 메신저 UI 코드 병합. `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED` 기본 OFF이며, SQL 004→005→006·두 계정 E2E/Realtime 검증·운영 플래그 활성화는 별도입니다.
-- XP UI [#149](https://github.com/SuperNova080710/Alkkagi/issues/149): 본인/공개 프로필 진행률과 최근 보상 표시 작업은 **진행 중**. `EXPERIENCE_UI_ENABLED` 기본 OFF, SQL 008 미확인. 코스메틱 SQL 009·외형 UI 및 운영 활성화도 미완료입니다.
+- XP UI [#149](https://github.com/SuperNova080710/Alkkagi/issues/149): 본인/공개 프로필 진행률과 최근 보상 UI가 **PR #159로 develop 병합 완료**됐습니다. `EXPERIENCE_UI_ENABLED` 기본 OFF, SQL 008 미확인. 코스메틱 SQL 009·외형 UI 및 운영 활성화도 미완료입니다.
 - SEO #131/#137 코드는 병합됐지만 실제 Production HTTP·Search Console 소유권/색인 요청은 별도입니다.
 - [릴리스 프로세스](docs/release-process.md) · [통합 현황](docs/current-status-2026-10-30.md).
 
 ## 최신 개발 중인 프론트 및 운영 사전점검 (2026-10-30)
 
-- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (open, base develop): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현 제안. Quality 49파일·248테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
+- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (develop 병합 완료): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현. 최종 Quality 49파일·249테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
 - **코스메틱 UI** [#162](https://github.com/SuperNova080710/Alkkagi/issues/162), 하위 #163~#165: 내 인벤토리·6종 미리보기·일반/랭크/AI 경기 알 외형 구현 예정. 아직 개발 PR/운영 SQL 009 결과 없음.
 - **Production DB 사전점검** [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161): 실제 **PostgreSQL 17.11**, SELECT-only 68항목(기초 7 ready, 004 inspect 1, 005~009 pending 60). 이력/객체 미적용 확인, 실제 SQL DDL/운영 릴리스/PG17 쓰기 E2E는 하지 않음. PG16 경합 CI를 운영 PG17 검증으로 혼동 금지.
-- **릴리스 준비** #144: `main`과 `develop` SHA `8cf4dc0` 일치, Vercel Production 최신 READY(#161 기록), 첫 RC Preview·실제 Git 자동 Preview 제한 효과·버전 태그/릴리스는 미확인. 운영 DB 적용 전 `docs/db-rollout-preflight.md`(PR #161 브랜치)에 정의된 STOP 조건 검토 필수.
+- **릴리스 준비** #144: 전환 시점 `main`과 `develop` SHA `8cf4dc0` 일치(현시점은 #159 병합으로 분기), Vercel Production 마지막 확인 READY(#161 기록), 첫 RC Preview·실제 Git 자동 Preview 제한 효과·버전 태그/릴리스는 미확인. 운영 DB 적용 전 `docs/db-rollout-preflight.md`(PR #161 브랜치)에 정의된 STOP 조건 검토 필수.
 - 작성 범위: 이번 문서 PR [#160](https://github.com/SuperNova080710/Alkkagi/pull/160)에서 문서/이슈만 업데이트하며 기능 코드·운영 DB·Vercel 설정은 수정하지 않음.
 
 ## 계획 변경 이력
