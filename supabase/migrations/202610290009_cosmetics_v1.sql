@@ -106,6 +106,19 @@ $$;
 revoke all on function private.sync_player_cosmetics(uuid)
   from public,anon,authenticated,service_role;
 
+-- A previously equipped item may be unpublished without changing the stored
+-- loadout. Never disclose unpublished item codes through public RPC responses.
+-- If the item is republished, the user's prior selection becomes visible again.
+create function private.visible_cosmetic_code(p_code text,p_fallback text)
+returns text language sql stable security definer set search_path=''
+as $
+  select case when exists(
+    select 1 from public.cosmetic_items where code=p_code and published
+  ) then p_code else p_fallback end;
+$;
+revoke all on function private.visible_cosmetic_code(text,text)
+  from public,anon,authenticated,service_role;
+
 create function public.get_my_cosmetics()
 returns jsonb language plpgsql security definer set search_path=''
 as $$
@@ -117,6 +130,8 @@ begin
   if not found then raise exception 'PROFILE_NOT_FOUND'; end if;
   perform private.sync_player_cosmetics(actor);
   select * into equipped from public.player_cosmetic_loadouts where user_id=actor;
+  equipped.piece_code:=private.visible_cosmetic_code(equipped.piece_code,'piece-classic');
+  equipped.avatar_code:=private.visible_cosmetic_code(equipped.avatar_code,'avatar-classic');
   select ranked_wins into wins from public.profiles where id=actor;
   current_level:=private.cosmetic_xp_level(actor);
 
@@ -166,6 +181,8 @@ begin
     where user_id=actor and avatar_code<>p_item_code;
   end if;
   select * into equipped from public.player_cosmetic_loadouts where user_id=actor;
+  equipped.piece_code:=private.visible_cosmetic_code(equipped.piece_code,'piece-classic');
+  equipped.avatar_code:=private.visible_cosmetic_code(equipped.avatar_code,'avatar-classic');
   return jsonb_build_object('pieceCode',equipped.piece_code,'avatarCode',equipped.avatar_code);
 end;
 $$;
@@ -184,8 +201,8 @@ begin
   ) then return null; end if;
   select * into equipped from public.player_cosmetic_loadouts where user_id=p_player_id;
   return jsonb_build_object('userId',p_player_id,
-    'pieceCode',coalesce(equipped.piece_code,'piece-classic'),
-    'avatarCode',coalesce(equipped.avatar_code,'avatar-classic'));
+    'pieceCode',private.visible_cosmetic_code(equipped.piece_code,'piece-classic'),
+    'avatarCode',private.visible_cosmetic_code(equipped.avatar_code,'avatar-classic'));
 end;
 $$;
 
