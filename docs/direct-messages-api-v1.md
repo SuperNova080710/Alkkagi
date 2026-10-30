@@ -126,3 +126,9 @@ supabase.removeChannel(threadChannel);
 ## 2026-10-29 병합 및 검증 상태 갱신
 
 **DM 백엔드 PR #81은 main 병합 완료**(`8df4f2f`). Quality checks와 PostgreSQL 16 독립 연결 잠금/전송 간격 CI를 통과했습니다. 기존 문서 위쪽의 미병합·테스트 대기는 과거 구현 기록입니다. SQL 006은 운영 DB 최근 조회에서 미적용, 실제 친구 두 계정 Realtime/읽음 E2E 및 사용자 메신저 화면은 미완료입니다. 운영 DB는 004→005→006 선행 확인이 필요합니다. 초대는 미병합 PR #90에서 분리. [최신 인수](current-status-2026-10-29.md).
+
+## 메신저 화면 통합 최신화 (2026-10-30)
+
+- 친구 DM 백엔드 #81에 더해 **UI PR #143 main 병합**. 기존 '메신저 UI 미구현' 표현은 초기 백엔드 작업 기록으로만 읽으세요.
+- `/messages`와 친구 목록의 DM 링크는 `FRIENDS_UI_ENABLED=true`와 `MESSAGES_UI_ENABLED=true`가 모두 필요하며 기본은 OFF. [메신저 UI 인수](direct-messages-ui-v1.md).
+- 실제 운영 SQL 006 적용·친구 수락→송신→읽음·Realtime A/B 검증 및 Vercel 최신 배포는 별도로 확인해야 합니다. 코드 병합만으로 운영 기능 활성화를 주장하지 않습니다.
