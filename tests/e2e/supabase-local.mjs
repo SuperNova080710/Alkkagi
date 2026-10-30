@@ -5,7 +5,6 @@
  */
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {setTimeout as sleep} from 'node:timers/promises';
 import {createClient} from '@supabase/supabase-js';
 
 function requireLocalApi(urlValue) {
