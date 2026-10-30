@@ -1,43 +1,57 @@
 #!/usr/bin/env bash
-# Reject manual dispatches that attempt to checkout an unrelated or invalid SHA.
-# This script must run immediately after actions/checkout and before npm, Docker
-# or any repository-controlled build/test script executes.
+# SECURITY BOUNDARY:
+# Run this script from a checkout of the trusted default branch (main).
+# NEVER source or execute a validator from the unverified target SHA.
 set -euo pipefail
-if [[ "${GITHUB_EVENT_NAME:-}" != workflow_dispatch ]]; then
-  echo "Release gate using event checkout (PR merge commit or push SHA)"
-  exit 0
+
+if [[ "${GITHUB_EVENT_NAME:-}" != "workflow_dispatch" ]]; then
+  echo "::error::Trusted release validator is for manual workflow_dispatch only"
+  exit 1
 fi
 
-sha="${RELEASE_TARGET_SHA:-}"
-if [[ -z "$sha" ]]; then
-  echo "Release gate using selected dispatch branch/tag HEAD"
-  exit 0
+selected_ref="${RELEASE_REF:-}"
+if [[ "$selected_ref" != "develop" &&
+      ! "$selected_ref" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]; then
+  echo "::error::Manual validation requires develop or release/vX.Y.Z ref"
+  exit 1
 fi
 
+# An omitted target_sha means the exact commit captured by GitHub when the
+# dispatch was created. Never resolve a moving branch HEAD after validation.
+sha="${RELEASE_TARGET_SHA:-${RELEASE_EVENT_SHA:-}}"
 if [[ ! "$sha" =~ ^[0-9a-fA-F]{40}$ ]]; then
   echo "::error::target_sha must be an exact 40-character Git commit SHA"
   exit 1
 fi
 sha="${sha,,}"
-if [[ "$(git rev-parse --verify 'HEAD^{commit}')" != "$sha" ]]; then
-  echo "::error::Checked out HEAD differs from requested target_sha"
+
+# The trusted checkout has its own git database. Fetch ONLY the selected
+# ref; do not fetch the unvalidated SHA and do not run any target scripts.
+ref="refs/remotes/origin/$selected_ref"
+git fetch --quiet --no-tags origin \
+  "+refs/heads/$selected_ref:$ref"
+if ! git show-ref --verify --quiet "$ref"; then
+  echo "::error::Selected ref was not fetched"
   exit 1
 fi
 
-# Allow only commits reachable from develop or a release/v* branch. This
-# avoids accidentally testing arbitrary external or unrelated references.
-git fetch --quiet --no-tags origin \
-  '+refs/heads/develop:refs/remotes/origin/develop' \
-  '+refs/heads/release/v*:refs/remotes/origin/release/v*'
-if git merge-base --is-ancestor "$sha" refs/remotes/origin/develop; then
-  echo "PASS: manual SHA is reachable from develop"
-  exit 0
+if ! git cat-file -e "${sha}^{commit}" 2>/dev/null ||
+   ! git merge-base --is-ancestor "$sha" "$ref"; then
+  echo "::error::Requested commit is not reachable from the selected trusted ref"
+  exit 1
 fi
-while IFS= read -r ref; do
-  if git merge-base --is-ancestor "$sha" "$ref"; then
-    echo "PASS: manual SHA is reachable from a release/v* branch"
-    exit 0
-  fi
-done < <(git for-each-ref --format='%(refname)' refs/remotes/origin/release/v)
-echo "::error::target_sha is not reachable from develop or a release/v* branch"
-exit 1
+
+# GitHub's event SHA must also belong to the selected ref. Prevent a dispatch
+# on an unrelated branch from passing by supplying a known develop SHA.
+if [[ ! "${RELEASE_EVENT_SHA:-}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+   ! git merge-base --is-ancestor "${RELEASE_EVENT_SHA,,}" "$ref"; then
+  echo "::error::Dispatch commit is not reachable from the selected trusted ref"
+  exit 1
+fi
+
+if [[ -z "${GITHUB_OUTPUT:-}" ]]; then
+  echo "::error::GITHUB_OUTPUT required for checked-out commit binding"
+  exit 1
+fi
+printf 'target_sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+echo "PASS: trusted policy approved an ancestor of $selected_ref"
