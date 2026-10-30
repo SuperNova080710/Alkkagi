@@ -78,7 +78,7 @@ PUT 요청은 `Origin` 동일 출처, `Content-Type: application/json`, **2KiB**
 
 ## 보안과 상태 관리
 
-1. DB의 `public.cosmetic_items`는 공개 상태 `published=true`인 레코드만 인증 사용자 SELECT 가능. 향후 미출시 아이템은 응답/장착에서 제외됩니다.
+1. DB의 `public.cosmetic_items`는 공개 상태 `published=true`인 레코드만 인증 사용자 SELECT 가능. **장착 후 운영자가 `published=false`로 변경한 아이템은 본인·타인 RPC의 `pieceCode`/`avatarCode` 응답에서 각 기본 코드(`piece-classic`/`avatar-classic`)로 대체**되며 카탈로그에서도 제외합니다. 저장된 장착 행과 보유권은 유지하여 재공개 시 이전 선택이 복원될 수 있습니다. 기본 스타터 코드 자체는 상시 공개 상태로 유지해야 합니다.
 2. `public.player_cosmetic_inventory`에는 소유자/아이템 코드 UNIQUE. 보유 해금은 DB RPC에서 랭크 승수 또는 누적 XP로 평가합니다.
 3. `public.player_cosmetic_loadouts`에는 소유자당 **알 1개·캐릭터 1개**. 아이템 코드+슬롯 및 사용자+보유품에 대한 복합 FK로 잘못된 슬롯·미보유 장착을 DB 자체에서도 거부합니다.
 4. 모든 테이블 RLS ON. 클라이언트 역할은 본인 인벤토리/장착 목록 읽기 가능하지만 직접 INSERT/UPDATE/DELETE 권한 없음. 제한된 3개 Auth RPC만 상태 변경·공개 조회.
@@ -91,7 +91,7 @@ PUT 요청은 `Origin` 동일 출처, `Content-Type: application/json`, **2KiB**
 
 - 플레이어 설정에서 `GET /api/cosmetics/me`로 인벤토리 및 현재 장착을 조회합니다. `items[].owned`가 true일 때만 장착 버튼 활성화.
 - 장착 버튼은 `PUT /api/cosmetics/equip`로 코드 전달. 성공 시 반환 `loadout`으로 화면 업데이트.
-- 다른 사람의 아바타/알은 `GET /api/cosmetics/players/:id`의 **두 개 코드**를 사용해 렌더링. 반드시 정적 매핑에 등록된 안전한 asset만 보여주고 모르는 코드면 starter fallback 사용.
+- 다른 사람의 아바타/알은 `GET /api/cosmetics/players/:id`의 **두 개 코드**를 사용해 렌더링. 서버가 현재 비공개 아이템을 기본 코드로 대체하며, 프론트도 반드시 정적 매핑에 등록된 안전한 asset만 보여주고 모르는 코드면 starter fallback 사용.
 - 디자인 소유 파일: `src/app/**/page.tsx`, `src/components/**`, `src/app/globals.css`, `src/app/arena.css`, `src/app/layout.tsx`, `public/art/**`. 본 시스템 PR은 해당 파일들 일절 변경하지 않음.
 - 기능의 운영 활성화는 별도 작업입니다. `009` DB 적용·실계정 권한/E2E 전에는 사용자에게 완료된 기능으로 표시하지 않습니다.
 
