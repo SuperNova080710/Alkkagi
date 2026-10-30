@@ -10,7 +10,7 @@ vi.mock('@/lib/auth/user', () => ({ requireUser: mocks.user }));
 vi.mock('@/lib/supabase/server', () => ({ createClient: async () => ({
   from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.maybeSingle }) }) }),
 }) }));
-vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
+vi.mock('next/navigation', () => ({ notFound: mocks.notFound, useRouter: () => ({ refresh: vi.fn(), replace: vi.fn(), push: vi.fn() }) }));
 
 import { ExperiencePanel, ExperienceSummary, experiencePercent, isExperienceData, type ExperienceData } from '../src/components/experience/experience-panel';
 import { ProfileView } from '../src/components/profile/profile-view';
