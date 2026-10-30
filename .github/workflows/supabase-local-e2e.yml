@@ -1,26 +1,37 @@
 name: Supabase local Auth + Realtime integration E2E
 
 on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Optional full 40-character SHA from develop or release/v* (empty = selected ref HEAD)'
+        type: string
+        required: false
   push:
-    branches: ['feat/ops-supabase-local-e2e']
+    branches: ['feat/ops-supabase-local-e2e', 'chore/ci-release-gates']
     paths:
       - 'supabase/migrations/**'
       - 'supabase/config.toml'
       - 'tests/e2e/supabase-local.mjs'
       - '.github/workflows/supabase-local-e2e.yml'
   pull_request:
-    branches: [develop, 'release/**']
-    paths:
-      - 'supabase/migrations/**'
-      - 'supabase/config.toml'
-      - 'tests/e2e/supabase-local.mjs'
-      - '.github/workflows/supabase-local-e2e.yml'
+    branches: [develop, main]
+    # No paths filter: an app-only release/v* -> main PR MUST run all gates.
+    # The job if-condition below skips unrelated PRs without starting Docker.
 
 permissions:
   contents: read
 
 jobs:
   local-supabase:
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+          ((github.base_ref == 'main' && startsWith(github.head_ref, 'release/v')) ||
+           (github.base_ref == 'develop' && startsWith(github.head_ref, 'chore/ci-'))))
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # Do not attach an Actions environment, organization secrets or remote DB.
@@ -29,6 +40,16 @@ jobs:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Default PR checkout tests GitHub's synthetic merge commit, while
+          # dispatch may validate a specific develop/RC ancestor SHA.
+          fetch-depth: 0
+          ref: ${{ inputs.target_sha || github.sha }}
+      - name: Validate manual target SHA before executing repository code
+        shell: bash
+        env:
+          RELEASE_TARGET_SHA: ${{ inputs.target_sha }}
+        run: bash scripts/ci/validate-release-target.sh
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
