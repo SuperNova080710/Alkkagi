@@ -18,15 +18,18 @@
 검사 항목:
 
 1. `202610280001` ~ `202610280010`, `202610290001` ~ `003` **기존 기본 migration 전체 실행**.
-2. `202610290004_security_room_create_limits.sql`: 적용 성공 및 `ROOM_ACTIVE_LIMIT` 마커 검사.
+2. `202610290004_security_room_create_limits.sql`: 적용 후 **실제 RPC 호출로** 활성 대기방 5개까지 허용, 6번째 `ROOM_ACTIVE_LIMIT` 거부, 기존 방을 닫아도 10분간 생성된 10개를 집계해 11번째 `ROOM_RATE_LIMIT` 거부, 실패 시 방·좌석이 추가되지 않는지 확인.
 3. `005_friends_v1.sql`: 친구/차단 데이터 모델과 RPC 생성.
 4. `006_direct_messages_v1.sql`: DM 테이블·RPC와 publication 등록.
 5. `007_room_friend_invites_v1.sql`: 초대 정책/RPC 생성.
 6. `008_xp_levels_v1.sql`: 원장/누적 요약·완료 트리거 설치.
 7. `009_cosmetics_v1.sql`: 아이템 카탈로그·인벤토리·장착/RLS/해금 RPC.
-8. 후속 **검증 DO 블록**: 신규 테이블 11개 RLS ON, `anon`/인증 직접 쓰기 금지, `anon` RPC 실행 금지, DM publication 2종, XP 트리거 2개, 스타터 코스메틱 2개.
-9. **게임 통합**: 합성 2인 랭크전 2경기 완료(동일 상태 반복 업데이트 포함), 기대값 승자 140 XP·패자 70 XP, 원장 총 4행(중복 없음).
-10. **시각 아이템**: 140 XP로 Lv.2 달성 → `avatar-orbit` 해금 → 자기 장착 API 정상 → 다른 계정 RLS 인벤토리 조회 0행, 공개 장착 코드만 조회.
+8. 후속 **검증 DO 블록**: 신규 테이블 **11개 × 역할 2개(`anon`, `authenticated`) × 쓰기 권한 3개(`INSERT`, `UPDATE`, `DELETE`) = 66개 조합** 전부 검사. RLS ON, 익명 RPC 실행 금지, DM publication 2종, XP 트리거 2개, 스타터 코스메틱 2개도 검사.
+9. **음성 권한 테스트**: `xp_events`에 6가지 금지 쓰기 권한을 각각 임시로 부여해 같은 보안 검사기가 **실패하는지** 확인하고 개별 REVOKE. 최종 보안 검사를 다시 통과해야 함.
+10. **게임 통합**: 합성 2인 랭크전 2경기 완료(동일 상태 반복 업데이트 포함), 기대값 승자 140 XP·패자 70 XP, 원장 총 4행(중복 없음).
+11. **시각 아이템**: 140 XP로 Lv.2 달성 → `avatar-orbit` 해금 → 자기 장착 API 정상 → 다른 계정 RLS 인벤토리 조회 0행, 공개 장착 코드만 조회.
+
+위 음성 테스트는 실제 프로덕션 권한 변경이 아니라 격리된 PostgreSQL 17 CI 컨테이너에서만 수행합니다. 단, SQL의 권한 조회는 **테이블 수준 ACL**만 검사하므로 향후 컬럼 단위 GRANT와 정책 조합을 포함한 종합 보안 감사 및 실제 관리형 환경 테스트를 대체하지 않습니다.
 
 결과는 GitHub Actions 로그의 `PASS PG17` 줄과 종료 코드로 확인합니다. `psql -v ON_ERROR_STOP=1`로 어느 한 단계라도 오류가 나면 즉시 실패합니다. 이 기능은 Production 데이터를 읽거나 바꾸지 않습니다.
 
