@@ -8,7 +8,7 @@ on:
       - 'supabase/migrations/202610290007_room_friend_invites_v1.sql'
       - '.github/workflows/room-friend-invites-concurrency.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release/**']
     paths:
       - 'tests/room-friend-invites-concurrency.sql'
       - 'supabase/migrations/202610290007_room_friend_invites_v1.sql'
