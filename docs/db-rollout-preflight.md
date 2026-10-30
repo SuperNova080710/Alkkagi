@@ -11,7 +11,7 @@
 - 운영 프로젝트: Supabase 연결된 Alkkagi 프로젝트(`igjvccohxthmgbfilzxi`). **PostgreSQL 17.11** (기존 GitHub 독립 연결 경합 CI의 PG16과 다름).
 - `supabase_migrations.schema_migrations`의 지원되는 마이그레이션 목록에는 `player_profile_discovery`까지 기록되어 있으며 **004~009 이력이 없음**. 기존 migration history는 SQL 소스 버전명과 대응 테이블이 다르므로 버전 숫자만으로 적용 상태를 판정하면 안 됩니다.
 - 기초 `profiles`, `rooms`, `room_players`, `matches`, `ai_matches`, `player_profile_settings` 및 `supabase_realtime` publication이 존재함.
-- **004:** `public.create_casual_room(text)`는 있지만 `ROOM_ACTIVE_LIMIT` / `ROOM_RATE_LIMIT` 보호 코드 마커가 없어서 **inspect**.
+- **004:** `public.create_casual_room(text)`가 존재하더라도 **항상 `inspect`**로 판정합니다. 오류 메시지 문자열(실행되지 않는 코드·주석 포함)은 5개 활성방/10분당 10개 생성 제한이 실제 실행된다는 증거가 아닙니다.
 - **005~009:** `friend_links`, `player_blocks`, `dm_threads`, `dm_messages`, `room_friend_invites`, `player_progress`, `xp_events`, `cosmetic_items`, `player_cosmetic_inventory`, `player_cosmetic_loadouts` 등은 없음. RPC, 트리거, DM Realtime 등록도 해당 단계 미적용.
 - GitHub `main`과 `develop`은 조회 당시 **동일 SHA `8cf4dc06b5069f917a1604b53c50a73b1d8242fc`**. Vercel Production 최신 Deployment SHA도 이 값으로 READY. **외부 HTTP 200·Googlebot/브라우저 E2E는 별도 미검증**.
 - SEO `/sitemap.xml` 소스에는 **`/`와 `/how-to-play` 2건**이 이미 존재. 검색 콘솔 인증·색인 확인은 사용자 Google 계정 단계.
@@ -42,9 +42,13 @@ object       009    public.cosmetic_items                    pending
 | `ready` | 해당 객체/보안 항목 존재 | migration history·실제 정의·데이터 제약 확인 후 다음으로 |
 | `pending` | 아직 객체 없음 또는 기대되는 등록 누락 | 적용 전이면 정상. 앞선 단계는 모두 ready인데 개별 pending이면 **STOP**, 부분 적용 조사 |
 | `blocked` | 기초 객체 누락, 존재하는 테이블의 RLS OFF/직접 쓰기 권한 열림, 익명 RPC 실행 허용 | **STOP**. 릴리스 및 기능 플래그 활성화 금지. 정책·권한 수정안 별도 PR |
-| `inspect` | 기존 004 RPC는 존재하나 새 제한 코드 확인 불가 | **STOP**. 함수 `pg_proc.prosrc`·실제 SQL 정의 및 권한·migration history 대조 후 승인된 004 적용 여부 판정 |
+| `inspect` | 기존 004 RPC 존재, 실제 제한 동작은 미검증(오류 문자열 존재와 무관) | **STOP**. 함수 정의·권한·migration history 대조와 별도 PostgreSQL 17 환경에서 5개 활성방/10분당 10개 제한 및 동시성 재현 결과를 확인한 후 수동 승인 |
 
-**중요:** `ready`는 객체의 존재·일부 ACL만 확인합니다. 함수 본문의 정확성, 정책의 모든 조건, 시드 데이터, migration history를 증명하지 않습니다. `004` 판정은 **코드 문자열 마커 검사**라 직접 정의 검토/업무 재현을 대체하지 않습니다. 운영 DB에 SQL이 일부 수동 적용됐거나 적용 이력과 달라지면 무조건 중지합니다.
+**중요:** `ready`는 객체의 존재·일부 ACL만 확인합니다. 함수 본문의 정확성, 정책의 모든 조건, 시드 데이터, migration history를 증명하지 않습니다. **004는 오류 문자열을 전혀 판정에 사용하지 않고 존재 시 무조건 `inspect`를 반환합니다.** 사전점검 SQL만으로 004를 자동 `ready`로 바꿀 수 없으며, 마이그레이션 SHA/함수 정의 대조 및 별도 안전한 DB에서 제한·경합 동작 검증을 완료해야 운영 적용을 별도 승인할 수 있습니다. 운영 DB에 SQL이 일부 수동 적용됐거나 적용 이력과 달라지면 무조건 중지합니다.
+
+### 004 상태의 수동 승인 근거
+
+004 함수가 있는 상태는 `inspect`로 유지합니다. `ROOM_ACTIVE_LIMIT` / `ROOM_RATE_LIMIT` 문자열이 함수에 존재해도 `ready`로 바뀌지 않습니다. 운영 적용 전 마이그레이션 원본·배포 기록·현재 함수 정의가 일치하는지 확인하고, **실사용자 데이터와 분리된 PG17 호환 환경**에서 활성방 5개 제한, 10분당 생성 10개 제한, 동시 생성 경합 및 이전 방 생성 흐름을 검증한 근거를 별도 인수 문서에 남겨야 합니다. 근거가 없으면 **STOP**입니다. 사전점검 SQL은 실행 자체가 데이터를 수정하지 않는 점검 전용입니다.
 
 ## 실제 운영 적용 전 STOP 게이트
 
@@ -86,7 +90,7 @@ object       009    public.cosmetic_items                    pending
 ## 검증의 한계
 
 - [x] 운영 Supabase Catalog SELECT 조회: 위 결손 현황 확인. 실제 쓰기/DDL 0건.
-- [ ] GitHub Actions lint/typecheck/Vitest/Next.js build (PR 생성 후 최종 HEAD 확인).
+- [ ] 최신 보완 HEAD의 GitHub Actions lint/typecheck/Vitest/Next.js build 확인(완료 시 실행 링크 기입).
 - [ ] PostgreSQL 17 실제 신규 마이그레이션 적용·여러 연결 동시 테스트 (미실시).
 - [ ] 2계정 Auth/Realtime/랭크·XP·꾸미기 E2E (미실시).
 - [ ] Google Search Console 실제 소유권/색인 (미실시).
