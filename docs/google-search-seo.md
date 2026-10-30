@@ -20,20 +20,38 @@
 | 단일 정식 주소(canonical) | `https://alkkagi-alpha.vercel.app/` | 홈 `src/app/page.tsx`의 metadata export만 |
 | 링크 공유/검색 메타 | `metadataBase`, Open Graph, Twitter summary, description | `src/app/layout.tsx` |
 | Google 소유권 확인 | 선택적 `GOOGLE_SITE_VERIFICATION` 메타 태그 | `src/app/layout.tsx` |
-| robots.txt | production '/' 공개, 인증/게임/동적 사용자 경로 크롤링 제한 | `src/app/robots.ts` |
+| robots.txt | production·preview의 HTML 크롤링 허용(비색인 헤더 확인용), `/api/`·`/auth/` 크롤링 제한 | `src/app/robots.ts` |
 | sitemap.xml | production 공개 홈페이지 1건만 | `src/app/sitemap.ts` |
 | 검색 비색인 | private 페이지/로그인/가입: `X-Robots-Tag: noindex,nofollow` | `next.config.ts` |
-| 중복 Preview 방지 | Vercel Preview/개발 환경 전체 noindex + robots disallow | 위 metadata/robots/next.config |
+| 중복 Preview 방지 | Vercel Preview/개발 환경 전체 noindex(응답 헤더·메타). robots는 HTML을 허용해 이를 읽게 함 | 위 metadata/robots/next.config |
 | QA | production/preview 분기, sitemap 내용, 사적 경로 헤더 테스트 | `tests/seo.test.ts` |
 
-검색 대상은 **공개 홈페이지 1개**입니다. 로그인 후 플레이어 프로필, 방 번호, 경기, 개인 정보, API URL은 검색 결과에 나타나면 안 되므로 사이트맵에 절대 넣지 않습니다. 로그인/가입 폼은 크롤링할 수 있지만 HTTP `X-Robots-Tag: noindex`로 색인을 금지합니다. 기존 페이지/컴포넌트의 화면 배치나 텍스트·스타일은 건드리지 않았습니다.
+검색 대상은 **공개 홈페이지 1개**입니다. 로그인 후 플레이어 프로필, 방 번호, 경기, 개인 정보, API URL은 사이트맵에 절대 넣지 않습니다. 로그인/가입, 로비·랭크·방·프로필·플레이어 검색·친구 목록 등의 **HTML 경로는 robots.txt에서 크롤링을 허용**하되, HTTP `X-Robots-Tag: noindex, nofollow`로 색인을 금지합니다. 크롤러가 해당 헤더를 읽어야 검색 결과 제외가 유효하기 때문입니다. 기존 페이지/컴포넌트의 화면 배치나 텍스트·스타일은 건드리지 않았습니다.
+
+## 크롤링과 색인 정책 — PR #131 리뷰 보완
+
+Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, `noindex`가 작동하려면 Googlebot이 해당 URL의 응답 헤더/HTML에 접근할 수 있어야 한다고 설명합니다.
+- [noindex로 색인 차단하기](https://developers.google.com/search/docs/crawling-indexing/block-indexing?hl=ko)
+- [robots.txt 소개](https://developers.google.com/search/docs/crawling-indexing/robots/intro?hl=ko)
+
+| URL 종류 | Production robots | Production 비색인 | Preview/개발 |
+| --- | --- | --- | --- |
+| 공개 홈 `/` | Allow | noindex 없음, sitemap에 1건 | robots Allow + 전역 noindex |
+| `/login`, `/signup` | Allow | X-Robots-Tag noindex,nofollow | robots Allow + 전역 noindex |
+| `/lobby`, `/ranked`, `/rooms/*`, `/profile/*`, `/players/*`, `/friends/*` | Allow | X-Robots-Tag noindex,nofollow | robots Allow + 전역 noindex |
+| `/api/*`, `/auth/*` | Disallow (트래픽 관리) | X-Robots-Tag도 지정하지만 robots로 차단되어 검색엔진이 확인한다고 보장할 수 없음 | Disallow + 전역 noindex, 같은 제약 |
+| `/sitemap.xml` | Allow | 공개 홈만 안내 | 빈 사이트맵 |
+
+**보안 경계:** robots.txt의 Allow/Disallow는 접근 권한 설정이 아닙니다. 로그인 필수 페이지와 API에 대한 실제 데이터 보호는 Auth, 서버 측 권한 검사, Supabase RLS가 수행합니다. Preview URL이 공개로 접근되는 경우에도 `noindex`는 검색 색인 설정일 뿐 비밀 유지 수단이 아닙니다. Preview 환경의 전체 응답은 별도 `X-Robots-Tag` 및 메타 태그로 noindex 처리합니다.
+
+**검증 방법:** Production에서 `/`은 `noindex` 헤더가 없어야 하고, `/login`·`/rooms/유효한ID` 같은 HTML 응답(로그인 리디렉션이 있다면 최종 응답 포함)에는 `noindex`가 적용되어야 합니다. Preview에서도 HTML 접근이 robots 정책으로 가로막히지 않으며 `noindex` 응답을 확인해야 합니다. GitHub 단위 테스트는 정책 함수와 설정값을 확인하지만, 실제 HTTP 응답과 Search Console의 Googlebot 크롤링 검증을 대신하지 않습니다.
 
 ## 배포 및 Google Search Console 등록
 
 **PR이 검토·병합되고 Vercel production 배포가 완료된 후** 아래를 순서대로 실행합니다. PR 또는 Preview가 존재하는 것만으로 Google 검색에 자동 등록되는 것은 아닙니다.
 
 1. 브라우저의 시크릿 창에서 [정식 사이트](https://alkkagi-alpha.vercel.app/) 열기: 로그인 없이 홈페이지가 열려야 합니다. 응답은 HTTP 200이어야 하고, 홈에는 `X-Robots-Tag: noindex`가 없어야 합니다. Vercel Deployment Protection이 production 페이지를 가로막는 경우 해당 도메인을 공개하도록 설정해야 합니다.
-2. [robots.txt](https://alkkagi-alpha.vercel.app/robots.txt)에서 `Allow: /`와 `Sitemap: https://alkkagi-alpha.vercel.app/sitemap.xml` 확인. [sitemap.xml](https://alkkagi-alpha.vercel.app/sitemap.xml)에서 홈 주소 한 건 확인.
+2. [robots.txt](https://alkkagi-alpha.vercel.app/robots.txt)에서 `Allow: /`, `Disallow: /api/`, `Disallow: /auth/`와 `Sitemap: https://alkkagi-alpha.vercel.app/sitemap.xml` 확인. **HTML 경로 `/lobby`, `/rooms`, `/players` 등은 Disallow에 포함하지 않습니다.** [sitemap.xml](https://alkkagi-alpha.vercel.app/sitemap.xml)에서 홈 주소 한 건 확인.
 3. [Google Search Console](https://search.google.com/search-console/welcome)에서 **URL 접두어(URL prefix)** → `https://alkkagi-alpha.vercel.app/` 속성을 추가합니다. `vercel.app`의 DNS 전체에 대한 권한을 요구하는 도메인 속성이 아니라 URL 접두어 방식으로 설정합니다.
 4. 소유권 확인에서 **HTML 태그** 방식을 선택합니다. 예: `<meta name="google-site-verification" content="YOUR_TOKEN" />`. `YOUR_TOKEN` **값만** Vercel 해당 프로젝트의 환경 변수 `GOOGLE_SITE_VERIFICATION`에 production 범위로 넣습니다. 검증 토큰은 GitHub 소스에 직접 커밋하지 않습니다.
 5. production을 다시 배포하고 페이지 소스에서 `google-site-verification` meta가 실제로 출력되는지 확인한 다음 Search Console의 **확인** 버튼을 누릅니다. HTML 확인 토큰을 제거하면 확인이 해제될 수 있으므로 보존합니다. Vercel Free 배포 한도에 걸리면 제한이 해제된 후 진행합니다.
@@ -59,7 +77,8 @@
 
 ## 검증 및 롤아웃
 
-- [ ] 최종 HEAD GitHub CI: lint/typecheck/Vitest/Next.js build
+- [ ] 최종 HEAD GitHub CI: lint/typecheck/Vitest/Next.js build (검증 후 실행 링크 기록)
+- [ ] 운영 HTTP 응답: `/login`·`/rooms/*`·Preview의 `X-Robots-Tag`, robots.txt와의 비충돌 확인
 - [ ] 최종 HEAD Vercel Preview: 무료 한도와 Deployment Protection에 따른 실제 READY 확인
 - [ ] PR 리뷰·main 병합 후 production: 공개 HTTP 200, robots/sitemap/HTML 메타·noindex 헤더 검사
 - [ ] **사용자 소유 Google Search Console**: HTML 태그 인증, 사이트맵 제출, URL 색인 요청 및 보고서 모니터링
