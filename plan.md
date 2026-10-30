@@ -118,7 +118,7 @@
 | PC 밀도·로비·히어로 | #109/#117/#119/#121/#123/#125 병합 | 실제 로그인 화면의 화면폭·높이·200% 확대·긴 데이터/스크롤 QA |
 | XP/레벨 #105 | Draft #110, 206 tests CI 성공 | 리뷰/병합, SQL 008 운영 적용, 독립 연결 경합·실계정 E2E, UI |
 | 코스메틱 #111 | Draft #115, 205 tests CI 성공 | 리뷰/병합, SQL 009 및 XP 008 의존 확인, 에셋·장착 UI, 실사용 검증 |
-| 검색 노출 #126 | Draft #131, 198 tests CI 성공 | PR 리뷰/배포 이후 HTTP/robots/sitemap 확인, Search Console 등록·색인 요청; 공개 가이드 #130 |
+| 검색 노출 #126 | 기술 SEO Draft #131(198 tests CI 성공), 공개 게임 가이드 PR #137 열림 | PR 리뷰/배포 이후 HTTP/robots/sitemap 확인, Search Console 등록·색인 요청; `/how-to-play` sitemap 등록은 #131과 통합 후 |
 
 **운영과 코드 분리:** 이전 조회에서 004~007은 운영 Supabase 미적용, Draft 008/009는 main에도 없음. 최신 운영 마이그레이션/배포 상태는 [현재 인수](docs/current-status-2026-10-30.md)에서 확인해야 합니다. GitHub Merge가 운영 DDL 실행을 의미하지 않습니다.
 
