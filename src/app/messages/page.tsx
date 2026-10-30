@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth/user';
 import { ArenaPanel, ArenaShell } from '@/components/ui/arena';
@@ -5,6 +6,7 @@ import { MessengerView } from '@/components/messages/messenger-view';
 import { isDmPeerId } from '@/components/messages/message-api';
 
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function MessagesPage({
   searchParams,
