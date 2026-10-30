@@ -1,0 +1,49 @@
+name: Cosmetics PostgreSQL concurrency and privacy
+
+on:
+  push:
+    branches: ['feat/backend-cosmetics-v1']
+    paths:
+      - 'tests/cosmetics-concurrency.sql'
+      - 'supabase/migrations/202610290009_cosmetics_v1.sql'
+      - '.github/workflows/cosmetics-concurrency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/cosmetics-concurrency.sql'
+      - 'supabase/migrations/202610290009_cosmetics_v1.sql'
+      - '.github/workflows/cosmetics-concurrency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  independent-postgres-connections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Validate equip locks and unpublished item privacy
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/cosmetics-concurrency.sql
