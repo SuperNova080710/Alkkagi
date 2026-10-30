@@ -8,7 +8,7 @@ on:
       - 'supabase/migrations/202610290006_direct_messages_v1.sql'
       - '.github/workflows/direct-messages-concurrency.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release/**']
     paths:
       - 'tests/direct-messages-concurrency.sql'
       - 'supabase/migrations/202610290006_direct_messages_v1.sql'

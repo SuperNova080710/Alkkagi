@@ -8,7 +8,7 @@ on:
       - 'supabase/migrations/202610290004_security_room_create_limits.sql'
       - '.github/workflows/security-room-concurrency.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release/**']
     paths:
       - 'tests/security-room-concurrency.sql'
       - 'supabase/migrations/202610290004_security_room_create_limits.sql'
