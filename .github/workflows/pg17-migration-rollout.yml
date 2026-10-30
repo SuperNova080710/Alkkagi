@@ -1,24 +1,36 @@
 name: PostgreSQL 17 full migration rollout
 
 on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Optional full 40-character SHA from develop or release/v* (empty = selected ref HEAD)'
+        type: string
+        required: false
   push:
-    branches: ['feat/ops-pg17-rollout']
+    branches: ['feat/ops-pg17-rollout', 'chore/ci-release-gates']
     paths:
       - 'tests/pg17-migration-rollout.sql'
       - 'supabase/migrations/**'
       - '.github/workflows/pg17-migration-rollout.yml'
   pull_request:
-    branches: [develop, 'release/**']
-    paths:
-      - 'tests/pg17-migration-rollout.sql'
-      - 'supabase/migrations/**'
-      - '.github/workflows/pg17-migration-rollout.yml'
+    branches: [develop, main]
+    # No paths filter: an app-only release/v* -> main PR MUST run all gates.
+    # The job if-condition below skips unrelated PRs without starting Docker.
 
 permissions:
   contents: read
 
 jobs:
   pg17-disposable-integration:
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+          ((github.base_ref == 'main' && startsWith(github.head_ref, 'release/v')) ||
+           (github.base_ref == 'develop' && startsWith(github.head_ref, 'chore/ci-'))))
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     services:
@@ -37,6 +49,16 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Default PR checkout tests GitHub's synthetic merge commit, while
+          # dispatch may validate a specific develop/RC ancestor SHA.
+          fetch-depth: 0
+          ref: ${{ inputs.target_sha || github.sha }}
+      - name: Validate manual target SHA before executing repository code
+        shell: bash
+        env:
+          RELEASE_TARGET_SHA: ${{ inputs.target_sha }}
+        run: bash scripts/ci/validate-release-target.sh
       - name: Install PostgreSQL client (disposable DB only)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Enforce isolated test connection
