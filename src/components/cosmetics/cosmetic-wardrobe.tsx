@@ -7,7 +7,7 @@ import { usePlayerResource } from '@/components/players/use-player-resource';
 import { CosmeticPreview } from './cosmetic-preview';
 import {
   COSMETIC_STYLES, safeCosmeticCode, isCosmeticInventory, cosmeticErrorText, cosmeticUnlockLabel, equipCosmetic,
-  type CosmeticInventory, type CosmeticItem,
+  type CosmeticItem,
 } from './cosmetic-api';
 
 const groups = [
@@ -70,15 +70,32 @@ export function CosmeticCollection({
 }
 
 /** Back-end authoritative inventory/equip UI. No local unlock or fake item grants. */
+/** Only fully verified inventory values may reach the display and equip actions. */
+export function CosmeticInventoryResult({
+  value, busyCode, onEquip,
+}: {
+  value: unknown;
+  busyCode?: string | null;
+  onEquip: (code: string) => void;
+}) {
+  if (!isCosmeticInventory(value)) {
+    return <p role="alert" className="arena-cosmetics-warning">
+      아이템 정보 형식이 올바르지 않습니다. 새로고침 후 다시 확인해 주세요.
+    </p>;
+  }
+  return <CosmeticCollection inventory={value} busyCode={busyCode} onEquip={onEquip}/>;
+}
+
 export function CosmeticWardrobe() {
   const { data, error, loading, retry } =
-    usePlayerResource<CosmeticInventory>('/api/cosmetics/me');
+    usePlayerResource<unknown>('/api/cosmetics/me');
   const [busyCode, setBusyCode] = useState<string | null>(null);
   const [errorText, setErrorText] = useState('');
   const [notice, setNotice] = useState('');
 
   async function onEquip(code: string) {
-    if (busyCode || !data?.items.some(item => item.code === code && canEquip(item))) return;
+    if (busyCode || !isCosmeticInventory(data) ||
+      !data.items.some(item => item.code === code && canEquip(item))) return;
     setBusyCode(code);
     setErrorText('');
     setNotice('');
@@ -98,7 +115,6 @@ export function CosmeticWardrobe() {
     }
   }
 
-  const validData = isCosmeticInventory(data) ? data : null;
   return <div className="arena-cosmetics-wardrobe">
     {loading && <p role="status" className="arena-muted">보유 아이템을 불러오고 있습니다…</p>}
     {error != null && <ArenaPanel title="꾸미기 정보를 확인할 수 없습니다">
@@ -108,9 +124,8 @@ export function CosmeticWardrobe() {
       {error === 401 ? <Link className="arena-text-link" href="/login">로그인하기 ›</Link> :
         <button className="arena-button arena-button--outline" type="button" onClick={retry}>다시 시도</button>}
     </ArenaPanel>}
-    {data !== undefined && !validData && <p role="alert" className="arena-cosmetics-warning">
-      아이템 정보 형식이 올바르지 않습니다. 새로고침 후 다시 확인해 주세요.</p>}
-    {validData && <CosmeticCollection inventory={validData} busyCode={busyCode} onEquip={code => { void onEquip(code); }}/> }
+    {data !== undefined && <CosmeticInventoryResult value={data} busyCode={busyCode}
+      onEquip={code => { void onEquip(code); }}/>} 
     <p className="arena-cosmetics-alert" role="status" aria-live="polite">{notice}</p>
     {errorText && <div className="arena-cosmetics-warning" role="alert">{errorText}
       <button type="button" onClick={() => { setErrorText(''); retry(); }}>다시 조회</button>
