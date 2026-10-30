@@ -11,7 +11,7 @@ import { CosmeticCollection, CosmeticWardrobe } from '../src/components/cosmetic
 import { CosmeticPreview } from '../src/components/cosmetics/cosmetic-preview';
 import {
   cosmeticErrorText, cosmeticRequest, cosmeticUnlockLabel, equipCosmetic,
-  safeCosmeticCode, CosmeticRequestError, type CosmeticInventory,
+  safeCosmeticCode, isCosmeticInventory, CosmeticRequestError, type CosmeticInventory,
 } from '../src/components/cosmetics/cosmetic-api';
 import { ArenaShell } from '../src/components/ui/arena';
 
@@ -87,6 +87,22 @@ describe('cosmetics wardrobe UI and safety contract', () => {
     // Ownership stays authoritative even if the server ranked wins count has dropped back to 0.
     expect(html).toContain('랭크 1승 필요 · 현재 0승');
     expect(cosmeticUnlockLabel(inventory.items[2], 0, 1)).toContain('레벨 3');
+  });
+
+  it('rejects malformed inventory JSON before rendering any nested item rows', () => {
+    expect(isCosmeticInventory(inventory)).toBe(true);
+    for (const bad of [
+      null, 'bad', {}, { ...inventory, items: 'broken' },
+      { ...inventory, items: [null] },
+      { ...inventory, items: [{ ...inventory.items[0], code: null }] },
+      { ...inventory, items: [{ ...inventory.items[0], owned: false, equipped: true }] },
+      { ...inventory, items: [{ ...inventory.items[0], slot: 'wrong' }] },
+      { ...inventory, items: [{ ...inventory.items[0], name: null }] },
+      { ...inventory, loadout: 'broken' },
+      { ...inventory, loadout: { avatarCode: null, pieceCode: 'piece-classic' } },
+      { ...inventory, level: NaN },
+      { ...inventory, rankedWins: -1 },
+    ]) expect(isCosmeticInventory(bad)).toBe(false);
   });
 
   it('uses a static allowlist with correct-slot starter fallback, never a dynamic asset URL', () => {
