@@ -71,13 +71,13 @@ describe('Production 004–009 migration readiness preflight (read-only)',()=>{
   });
 
   it('never treats 004 exception strings in dead code as proof of active limits',async()=>{
-    await db.exec('create function public.create_casual_room(text) returns uuid language plpgsql as $begin return null; end;$;');
+    await db.exec('create function public.create_casual_room(text) returns uuid language plpgsql as $verify_room$begin return null; end;$verify_room$;');
     expect(find(await run(),'004','public.create_casual_room(text)')).toBe('inspect');
     // The two markers exist but are unreachable. A text check is an unsafe
     // false positive, especially in a production migration STOP gate.
-    await db.exec("create or replace function public.create_casual_room(text) returns uuid language plpgsql as $ begin if false then raise exception 'ROOM_ACTIVE_LIMIT'; end if; if false then raise exception 'ROOM_RATE_LIMIT'; end if; return null; end; $;");
+    await db.exec("create or replace function public.create_casual_room(text) returns uuid language plpgsql as $verify_room$ begin if false then raise exception 'ROOM_ACTIVE_LIMIT'; end if; if false then raise exception 'ROOM_RATE_LIMIT'; end if; return null; end; $verify_room$;");
     expect(find(await run(),'004','public.create_casual_room(text)')).toBe('inspect');
-    await db.exec("create or replace function public.create_casual_room(text) returns uuid language plpgsql as $ begin raise exception 'ROOM_ACTIVE_LIMIT'; end; $;");
+    await db.exec("create or replace function public.create_casual_room(text) returns uuid language plpgsql as $verify_room$ begin raise exception 'ROOM_ACTIVE_LIMIT'; end; $verify_room$;");
     // Even plausible source alone is insufficient: runtime limits must be
     // checked in an isolated DB with the same migration/version.
     expect(find(await run(),'004','public.create_casual_room(text)')).toBe('inspect');
