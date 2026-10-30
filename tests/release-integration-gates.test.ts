@@ -28,8 +28,12 @@ describe('release/vX.Y.Z -> main mandatory integration gates (#188)',()=>{
   it.each(contents)('$name retains cheap branch-specific push and manual SHA selection',({source})=>{
     expect(source).toContain('workflow_dispatch:');
     expect(source).toContain('target_sha:');
-    expect(source).toContain('ref: ${{ inputs.target_sha || github.sha }}');
+    expect(source).toContain("ref: ${{ github.event.repository.default_branch }}");
+    expect(source).toContain('path: .release-policy');
+    expect(source).toContain('ref: ${{ steps.validate.outputs.target_sha || github.sha }}');
+    expect(source).not.toContain('ref: ${{ inputs.target_sha || github.sha }}');
     expect(source).toContain('bash scripts/ci/validate-release-target.sh');
+    expect(source).toContain('working-directory: .release-policy');
     expect(source).toContain("github.event_name == 'workflow_dispatch'");
     expect(source).toMatch(/push:\s*\n\s+branches:[^\n]*chore\/ci-release-gates/);
     const pushBlock=source.split('  push:')[1]?.split('  pull_request:')[0]??'';
@@ -40,11 +44,16 @@ describe('release/vX.Y.Z -> main mandatory integration gates (#188)',()=>{
   it('validates SHA against known develop and release histories before any test steps',()=>{
     expect(validate).toContain('^\u005b0-9a-fA-F\u005d{40}$');
     expect(validate).toContain('git merge-base --is-ancestor "$sha"');
-    expect(validate).toContain('refs/remotes/origin/develop');
-    expect(validate).toContain('refs/remotes/origin/release/v');
+    expect(validate).toContain('ref="refs/remotes/origin/$selected_ref"');
+    expect(validate).toContain('GITHUB_OUTPUT');
+    expect(validate).toContain('RELEASE_EVENT_SHA');
     for(const {source} of contents){
+      const trustedCheckout=source.indexOf('name: Checkout trusted policy from main');
       const verifyStep=source.indexOf('bash scripts/ci/validate-release-target.sh');
-      expect(verifyStep).toBeGreaterThan(-1);
+      const targetCheckout=source.indexOf('name: Checkout verified target or PR merge commit');
+      expect(trustedCheckout).toBeGreaterThan(-1);
+      expect(verifyStep).toBeGreaterThan(trustedCheckout);
+      expect(targetCheckout).toBeGreaterThan(verifyStep);
       expect(verifyStep).toBeLessThan(source.indexOf('npm ci')>-1?source.indexOf('npm ci'):Number.POSITIVE_INFINITY);
       expect(verifyStep).toBeLessThan(source.indexOf('psql -X')>-1?source.indexOf('psql -X'):Number.POSITIVE_INFINITY);
       expect(verifyStep).toBeLessThan(source.indexOf('docker run')>-1?source.indexOf('docker run'):Number.POSITIVE_INFINITY);
