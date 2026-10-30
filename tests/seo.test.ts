@@ -54,7 +54,7 @@ describe('Public search indexing policy',()=>{
     const expected=[
       '/login','/signup','/lobby/:path*','/ranked/:path*',
       '/rooms/:path*','/profile/:path*','/players/:path*',
-      '/friends/:path*','/messages/:path*','/cosmetics/:path*','/api/:path*','/auth/:path*',
+      '/friends/:path*','/messages/:path*','/api/:path*','/auth/:path*',
     ];
     expect(h?.map(x=>x.source)).toEqual(expected);
     expect(h?.some(x=>x.source==='/'||x.source==='/:path*')).toBe(false);

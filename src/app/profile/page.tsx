@@ -10,5 +10,5 @@ export default async function ProfilePage() {
     .from('profiles').select('nickname,rating').eq('id', user.id).maybeSingle();
   if (error) return <ProfileView profile={null} unavailableReason="query-error"/>;
   if (!profile) return <ProfileView profile={null} unavailableReason="missing"/>;
-  return <ProfileView profile={profile} editor={<NicknameForm initial={profile.nickname}/>} settings={<VisibilitySettings/>}/>;
+  return <ProfileView profile={profile} editor={<NicknameForm initial={profile.nickname}/>} settings={<VisibilitySettings/>} experienceEnabled={process.env.EXPERIENCE_UI_ENABLED === "true"}/>;
 }
