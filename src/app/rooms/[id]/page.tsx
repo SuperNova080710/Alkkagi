@@ -42,7 +42,8 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  {hasMatch ? <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 text-center"><p className="text-xs text-slate-400">초대 코드</p><p className="text-xl font-extrabold tracking-widest">{room.code}</p></div> : <CopyInvite code={room.code}/>}</div>
  {match&&validBoard(match.board_state)?<GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
  roomId={room.id} players={room.players} rematchReadyCount={room.rematchReadyCount??0}
- myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}/>:
+ myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}
+ cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>:
  <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
   <h2 className="text-xl font-bold">참가자 {room.players.length}/2</h2>
   <ol className="mt-4 grid gap-3 sm:grid-cols-2">{[1,2].map(seat=><li key={seat} className="rounded-xl border border-slate-600 p-4">
