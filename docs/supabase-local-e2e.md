@@ -30,13 +30,17 @@ GitHub Actions 배포 환경/비밀변수에 연결되지 않은 job입니다. �
 1. 실제 Supabase Auth로 신규 사용자 A/B 가입. JWT 발급과 프로필 생성 트리거 확인.
 2. A는 자기 프로필 SELECT 가능, B는 A의 프로필 SELECT 불가, anon 공개가 아닌 RPC 금지, 인증 사용자의 직접 친구 테이블 쓰기 금지.
 3. A → B 친구 요청 → B 승인, 유효한 accepted 상태 확인.
-4. B의 **인증 JWT**로 PostgreSQL `dm_messages` Realtime INSERT 구독. 구독 확인 후 A가 전용 RPC로 DM 전송; B가 메시지 API를 통해 조회하고 실제 WebSocket 이벤트 수신. 20초 이내 수신되지 않으면 실패.
+4. B의 **인증 JWT**로 PostgreSQL `dm_messages` Realtime INSERT 구독. `SUBSCRIBED`만으로 복제 준비 완료로 간주하지 않고, A가 전용 RPC로 전송한 **고유 DM의 실제 WebSocket INSERT 이벤트**를 확인합니다. 이벤트가 보이지 않으면 최대 5회, 회당 3초까지 별도 메시지로 재시도합니다(전체 약 15초 수신 관찰 상한, RPC 시간 별도). 응답의 `id`와 WebSocket 수신 `id`를 대조하고 B의 메시지 API 조회도 확인합니다. 이벤트가 끝내 수신되지 않으면 실패하며 REST 조회 성공만으로 통과하지 않습니다.
 5. A가 일반전 대기방 생성·B에게 방 초대 → B가 수락 → B의 방 참여 좌석 2번 검증.
 6. 격리 테스트 DB의 service_role로 합성 랭크전 2경기를 생성·완료. 완료 시 XP 원장 지급: A 140 / B 70, A Lv.2 상승.
 7. A가 `get_my_cosmetics`에서 레벨 2 조건의 캐릭터 보유 확인 후 `equip_my_cosmetic` 장착. B는 A의 비공개 인벤토리 SELECT 불가.
 8. B가 A 차단 후 A가 새 DM을 보낼 수 없음을 확인.
 
-모든 호출은 반환 `error`를 확인합니다. 실패는 GitHub CI 실패로 이어지며 인증/기밀 값은 에러 설명에 출력하지 않습니다.
+모든 호출은 반환 `error`를 확인합니다. 실패는 GitHub CI 실패로 이어지며 인증/기밀 값은 에러 설명에 출력하지 않습니다. API 오류는 내부 메시지를 그대로 출력하지 않고 제한된 오류 코드만 기록합니다. CI에서는 Supabase 서비스를 시작하기 전에 **원격 API/DB URL을 지정한 부정 테스트**도 실행하여 키를 읽거나 클라이언트를 생성하기 전에 연결이 거부되는지 확인합니다.
+
+### Realtime 준비 상태와 CI 안정성
+
+`SUBSCRIBED`는 채널 연결 확인일 뿐 PostgreSQL 변경 스트림의 이벤트 수신 준비를 보장하지 않습니다. 기존 고정 1.5초 대기는 삭제하고 **실제 인증된 B의 INSERT 수신**을 기준으로 시험을 통과시킵니다. 매 재시도는 다른 요청 UUID/메시지를 사용하며 로컬 임시 DB에만 저장됩니다. 3초 대기 간격은 서버의 **DM 1초 전송 제한**을 침해하지 않습니다. 마지막 시도까지 이벤트가 없으면 실패하며, 메시지 수신 없이 성공으로 간주하거나 단순 이벤트 개수만으로 통과하지 않습니다. Supabase의 [Postgres Changes 문제해결 가이드](https://supabase.com/kb/troubleshooting/realtime-postgres-changes-troubleshooting)에서도 채널 SUBSCRIBED와 실제 복제 스트림 준비는 별개라고 설명합니다.
 
 ## 로컬 실행 (개발 Ubuntu 등)
 
