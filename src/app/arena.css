@@ -1126,3 +1126,158 @@
   .arena-dm-message > p { max-width: 90%; }
   .arena-dm-compose-bottom { align-items: flex-end; }
 }
+
+
+/* Experience V1 profile panels (#149): no board, lobby or API layout changes. */
+.arena-xp-panel {
+  margin-top: 14px;
+  min-width: 0;
+}
+.arena-xp {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.arena-xp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.arena-xp-head > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.arena-xp-head strong {
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 1000;
+  line-height: 1.2;
+  color: var(--arena-forest);
+  font-variant-numeric: tabular-nums;
+}
+.arena-xp-total {
+  color: var(--arena-muted);
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.arena-xp-level-mark {
+  display: grid;
+  flex: 0 0 66px;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border: 5px solid #edcb81;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #87dda7, #208252 70%);
+  box-shadow: 0 3px 0 #a18047, inset 0 1px 8px #ffffff55;
+  color: #fffbea;
+  font-size: 24px;
+  font-weight: 1000;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+.arena-xp-meter-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--arena-muted);
+}
+.arena-xp-meter-label strong {
+  color: var(--arena-forest);
+  font-variant-numeric: tabular-nums;
+}
+.arena-xp-meter {
+  display: block;
+  width: 100%;
+  height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 2px solid #b6c5a5;
+  background: #e7e3d6;
+  appearance: none;
+}
+.arena-xp-meter::-webkit-progress-bar { background: #e7e3d6; border-radius: 999px; }
+.arena-xp-meter::-webkit-progress-value { background: linear-gradient(90deg, #58a96b, #f5cb65); border-radius: 999px; }
+.arena-xp-meter::-moz-progress-bar { background: linear-gradient(90deg, #58a96b, #f5cb65); border-radius: 999px; }
+.arena-xp-hint {
+  font-size: 12px;
+  color: var(--arena-muted);
+  line-height: 1.6;
+}
+.arena-xp-rewards-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  padding-top: 13px;
+  margin-top: 4px;
+  border-top: 1px solid #e2d4bd;
+}
+.arena-xp-rewards-heading h3 {
+  color: var(--arena-forest);
+  font-size: 15px;
+  font-weight: 900;
+}
+.arena-xp-rewards-heading span { font-size: 11px; color: var(--arena-muted); }
+.arena-xp-rewards {
+  list-style: none;
+  max-height: 196px;
+  margin: 0;
+  padding: 0 3px 0 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.arena-xp-rewards li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 9px 10px;
+  border-radius: 11px;
+  background: #f3ecdf;
+  font-size: 12px;
+}
+.arena-xp-rewards li + li { margin-top: 5px; }
+.arena-xp-reward-label { display: flex; flex-direction: column; min-width: 0; gap: 2px; overflow-wrap: anywhere; }
+.arena-xp-reward-label strong { color: var(--arena-forest); font-weight: 800; }
+.arena-xp-reward-label time { font-size: 11px; color: var(--arena-muted); }
+.arena-xp-amount {
+  white-space: nowrap;
+  flex: 0 0 auto;
+  color: #14714a;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.arena-xp-empty, .arena-xp-unavailable {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--arena-muted);
+  padding-block: 6px;
+}
+.arena-xp-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 13px;
+  margin-top: 9px;
+  border-radius: 10px;
+  border: 1px solid #9cbd98;
+  background: #e5f0df;
+  color: var(--arena-forest);
+  font-size: 13px;
+  font-weight: 800;
+}
+@media (max-width: 639px) {
+  .arena-xp-panel { margin-top: 12px; }
+  .arena-xp-level-mark { width: 55px; height: 55px; flex-basis: 55px; font-size: 20px; border-width: 4px; }
+  .arena-xp-head strong { font-size: 27px; }
+}
