@@ -1,0 +1,88 @@
+name: PostgreSQL 17 backup and restore drill
+
+on:
+  push:
+    branches: ['feat/ops-pg17-restore-drill']
+    paths:
+      - '.github/workflows/pg17-backup-restore.yml'
+      - 'tests/pg17-migration-rollout.sql'
+      - 'tests/pg17-backup-source.sql'
+      - 'tests/pg17-backup-restore-assertions.sql'
+      - 'supabase/migrations/**'
+  pull_request:
+    branches: [develop, 'release/**']
+    paths:
+      - '.github/workflows/pg17-backup-restore.yml'
+      - 'tests/pg17-migration-rollout.sql'
+      - 'tests/pg17-backup-source.sql'
+      - 'tests/pg17-backup-restore-assertions.sql'
+      - 'supabase/migrations/**'
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-pg17-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify isolated PostgreSQL 17 and restore a custom-format archive
+        shell: bash
+        env:
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: |
+          set -euo pipefail
+          # Never use production connection strings, GitHub environment secrets,
+          # external endpoints, or any database other than these disposable DBs.
+          test "${PGHOST}" = '127.0.0.1'
+          test "${PGPORT}" = '5432'
+          test "${PGUSER}" = postgres
+          test "${PGDATABASE}" = postgres
+          source_db=alkkagi_source
+          restore_db=alkkagi_restored
+          test "${source_db}" != "${restore_db}"
+          test "$PWD" = "$GITHUB_WORKSPACE"
+          archive="$(mktemp -p "$RUNNER_TEMP" alkkagi-restore-XXXXXXXX.dump)"
+          trap 'rm -f "$archive"' EXIT
+
+          # Use the PostgreSQL 17 client FROM the same image as the service:
+          # Ubuntu's distro pg_dump 16 cannot dump a PostgreSQL 17 server.
+          client=(docker run --rm -i --network host
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD
+            -v "$PWD:/workspace:ro" -w /workspace postgres:17)
+          version="$("${client[@]}" psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')"
+          echo "Disposable PostgreSQL server version: $version"
+          test "$version" -ge 170000
+          test "$version" -lt 180000
+          "${client[@]}" pg_dump --version | grep -Eq 'PostgreSQL.*17[.]'
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -c "create database ${source_db}"
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -c "create database ${restore_db}"
+
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$source_db" -f tests/pg17-migration-rollout.sql
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$source_db" -f tests/pg17-backup-source.sql
+          "${client[@]}" pg_dump --format=custom --compress=6 -d "$source_db" > "$archive"
+          test -s "$archive"
+          # Do not publish or upload the archive; it stays only in RUNNER_TEMP.
+          "${client[@]}" pg_restore --list < "$archive" > /dev/null
+          "${client[@]}" pg_restore --exit-on-error --single-transaction -d "$restore_db" < "$archive"
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$restore_db" -f tests/pg17-backup-restore-assertions.sql
+          echo 'PASS R5: disposable PG17 archive restores state, grants, policies, triggers, Realtime and RPC behavior'
