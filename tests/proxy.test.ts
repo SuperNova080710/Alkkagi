@@ -16,6 +16,7 @@ describe('merged route protection scope', () => {
       '/players/:path*',
       '/api/messages/:path*',
       '/api/room-invites/:path*',
+      '/api/experience/:path*',
     ]));
   });
 });

@@ -102,7 +102,8 @@ GitHub: 상위 [#105](https://github.com/SuperNova080710/Alkkagi/issues/105) · 
 - [ ] HTTP: 본인·공개/비공개·익명·에러·no-store
 - [ ] GitHub Actions 전체 lint/typecheck/Vitest/Next.js build
 - [ ] Vercel Preview 최신 SHA READY (무료 플랜 배포 제한 시 미검증 명시)
-- [ ] 실제 PostgreSQL 독립 연결 동시 종료와 운영 두 계정 E2E (아직 미실시)
+- [x] 독립 PostgreSQL 16 연결 2개에서 같은 플레이어 경기 동시 종료·PvP 일일 20회 한도·RP와 XP 원장 합산·트랜잭션 롤백 테스트 성공 (GitHub Actions)
+- [ ] 운영 Supabase 2계정 E2E 및 실제 배포 후 XP 활성 확인 (운영 DDL 적용 전 미실시)
 - [ ] 운영 DB 004~008 선행 migration 기록/테이블 확인, 실제 적용은 사용자 별도 승인 후
 
 **PR 작성까지만 진행합니다. 병합하거나 운영 Supabase 데이터베이스에 SQL을 적용하지 않습니다.**
