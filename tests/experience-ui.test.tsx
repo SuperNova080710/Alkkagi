@@ -67,6 +67,28 @@ describe('experience and level profile UI', () => {
     expect(isExperienceData(example)).toBe(true);
   });
 
+  it('rejects malformed network reward JSON and contradictory XP intervals without crashing', () => {
+    const badCases: unknown[] = [
+      null, 'oops', [], { ...example, recentRewards: 'oops' },
+      { ...example, recentRewards: {} },
+      { ...example, recentRewards: [null] },
+      { ...example, recentRewards: [{ ...example.recentRewards![0], id: null }] },
+      { ...example, recentRewards: [{ ...example.recentRewards![0], earnedXp: '70' }] },
+      { ...example, recentRewards: [{ ...example.recentRewards![0], createdAt: 'invalid' }] },
+      { ...example, currentLevelXp: 301 },
+      { ...example, currentLevelXp: 80, nextLevelAt: 401 },
+      { ...example, totalXp: 50, currentLevelXp: 80 },
+      { ...example, userId: null },
+    ];
+    for (const value of badCases) {
+      expect(isExperienceData(value)).toBe(false);
+    }
+    expect(isExperienceData({ ...example, recentRewards: null })).toBe(true);
+    expect(isExperienceData({ ...example, recentRewards: [] })).toBe(true);
+    // A malformed object must never enter ExperienceSummary's .map() path.
+    expect(isExperienceData({ ...example, recentRewards: 'oops' })).toBe(false);
+  });
+
   it('limits the private history to 20 records and does not output raw ids', () => {
     const many = { ...example, recentRewards: Array.from({ length: 25 }, (_, i) => ({
       ...example.recentRewards![0], id: String(i + 1), earnedXp: i + 1,
