@@ -71,7 +71,7 @@ export function ReceivedRoomInvites() {
     {!loading && error == null && !received.length &&
       <p className="arena-received-empty">지금 받은 대전 초대가 없습니다.</p>}
     <ul className="arena-received-list">
-      {received.filter(invite => isRoomUuid(invite.id) && isRoomUuid(invite.roomId)).map(invite =>
+      {received.filter(invite => invite && isRoomUuid(invite.id) && isRoomUuid(invite.roomId)).map(invite =>
         <li key={invite.id}>
           <div><strong>{invite.inviterNickname || '친구'}</strong>
             <span>함께 일반전 한 판!</span>
