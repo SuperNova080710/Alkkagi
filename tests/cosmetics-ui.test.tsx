@@ -7,7 +7,7 @@ const { requireUser } = vi.hoisted(() => ({
 vi.mock('@/lib/auth/user', () => ({ requireUser }));
 
 import CosmeticsPage, { metadata } from '../src/app/cosmetics/page';
-import { CosmeticCollection, CosmeticWardrobe } from '../src/components/cosmetics/cosmetic-wardrobe';
+import { CosmeticCollection, CosmeticInventoryResult, CosmeticWardrobe } from '../src/components/cosmetics/cosmetic-wardrobe';
 import { CosmeticPreview } from '../src/components/cosmetics/cosmetic-preview';
 import {
   cosmeticErrorText, cosmeticRequest, cosmeticUnlockLabel, equipCosmetic,
@@ -103,6 +103,30 @@ describe('cosmetics wardrobe UI and safety contract', () => {
       { ...inventory, level: NaN },
       { ...inventory, rankedWins: -1 },
     ]) expect(isCosmeticInventory(bad)).toBe(false);
+  });
+
+  it('renders a neutral error for malformed server JSON and never renders partial inventory', () => {
+    const invalid: unknown[] = [
+      null, {}, { ...inventory, items: [null] },
+      { ...inventory, items: { bad: true } },
+      { ...inventory, loadout: null },
+      { ...inventory, items: [{ ...inventory.items[0], owned: 'yes' }] },
+      { ...inventory, items: [{ ...inventory.items[0], equipped: 'yes' }] },
+      { ...inventory, items: [{ ...inventory.items[0], requiredValue: -1 }] },
+      { ...inventory, rankedWins: Infinity },
+    ];
+    for (const value of invalid) {
+      expect(isCosmeticInventory(value)).toBe(false);
+      const html = renderToStaticMarkup(<CosmeticInventoryResult value={value} onEquip={() => { }}/>);
+      expect(html).toContain('role="alert"');
+      expect(html).toContain('아이템 정보 형식이 올바르지 않습니다');
+      expect(html).not.toContain('arena-cosmetics-grid');
+      expect(html).not.toContain('장착하기');
+    }
+    const valid = renderToStaticMarkup(<CosmeticInventoryResult value={inventory} onEquip={() => { }}/>);
+    expect(valid).toContain('현재 장착');
+    expect(valid).toContain('기본 알');
+    expect(valid).not.toContain('아이템 정보 형식이 올바르지 않습니다');
   });
 
   it('uses a static allowlist with correct-slot starter fallback, never a dynamic asset URL', () => {
