@@ -42,7 +42,11 @@ gh workflow run pg17-migration-rollout.yml --ref release/v0.2.0 -f target_sha=01
 
 **유의:** GitHub의 `workflow_dispatch`는 워크플로 파일이 **기본 브랜치에 존재해야** 실행할 수 있습니다. 이번 PR을 `develop`에 병합하는 것만으로 `main` 기본 브랜치에 새 dispatch 정의가 즉시 반영되지 않을 수 있습니다. 최초 버전 릴리스에 CI 정책이 포함돼 main까지 반영됐는지 확인한 후 사용하세요. 배포 전에 RC PR 검증은 자동으로 작동하도록 설계돼 있습니다.
 
-워크플로는 체크아웃 뒤 빌드·npm·Docker 테스트를 시작하기 전에 `scripts/ci/validate-release-target.sh`를 실행합니다. 수동 지정 SHA는 실제 checkout HEAD와 일치해야 하고 `develop` 또는 `release/v*` 히스토리에 속해야 합니다. **pull_request** 검증에는 GitHub가 제공하는 *PR 테스트 병합 커밋*을 그대로 사용하므로 RC 소스만 검사하는 것이 아니라 `main`과 통합된 결과를 검증합니다.
+**SHA 신뢰 경계(리뷰 보완):** 수동 실행에서는 먼저 **신뢰하는 기본 브랜치 `main`의 검증 스크립트를 별도 `.release-policy` 디렉터리에 체크아웃**합니다. 그 검증 스크립트가 `RELEASE_REF`가 `develop` 또는 `release/vX.Y.Z`인지 확인하고, 이벤트 SHA와 선택적 `target_sha`가 모두 **선택된 동일 브랜치의 조상 커밋인지 검증**한 후에만 `GITHUB_OUTPUT.target_sha`를 생성합니다. 다음 checkout 단계는 **직접 입력값을 읽지 않고 이 검증된 step output만 사용**합니다. SHA가 없는 수동 실행도 GitHub 이벤트 시점 SHA를 검증합니다.
+
+**검증 대상 커밋의 `scripts/ci/validate-release-target.sh`는 실행하지 않습니다.** 그 커밋에서 스크립트를 `exit 0`으로 변경하더라도, `main`의 검사기가 SHA를 거부하는 **실제 Git fixture 음성 회귀 테스트**를 포함합니다. 다만 이 방법은 `main`과 릴리스 브랜치 쓰기 권한이 신뢰된다는 전제하므로 브랜치 보호/리뷰 정책을 대체하지 않습니다.
+
+`main`에 아직 이 정책 파일이 없을 때의 수동 dispatch는 **파일이 없어 안전하게 실패**합니다. 따라서 먼저 정상 리뷰·릴리스 절차로 해당 코드를 `main`에 반영하고, 그 후 실제 `workflow_dispatch`를 확인해야 합니다. **pull_request** 검증에는 GitHub가 제공하는 *PR 테스트 병합 커밋*을 그대로 사용하므로 RC 소스만 검사하는 것이 아니라 `main`과 통합된 결과를 검증합니다.
 
 ## 반드시 확인할 체크/릴리스 중단 조건
 
