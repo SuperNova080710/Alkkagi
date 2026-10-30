@@ -48,17 +48,33 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
-      - uses: actions/checkout@v4
+      # Manual dispatch: obtain policy from the trusted default branch first.
+      # The user-provided target_sha is NEVER checked out or executed here.
+      - name: Checkout trusted policy from main
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
         with:
-          # Default PR checkout tests GitHub's synthetic merge commit, while
-          # dispatch may validate a specific develop/RC ancestor SHA.
+          ref: ${{ github.event.repository.default_branch }}
+          path: .release-policy
           fetch-depth: 0
-          ref: ${{ inputs.target_sha || github.sha }}
-      - name: Validate manual target SHA before executing repository code
+          persist-credentials: false
+      - name: Validate manual SHA using trusted policy before target checkout
+        if: github.event_name == 'workflow_dispatch'
+        id: validate
         shell: bash
         env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          RELEASE_REF: ${{ github.ref_name }}
+          RELEASE_EVENT_SHA: ${{ github.sha }}
           RELEASE_TARGET_SHA: ${{ inputs.target_sha }}
+        working-directory: .release-policy
         run: bash scripts/ci/validate-release-target.sh
+      - name: Checkout verified target or PR merge commit
+        uses: actions/checkout@v4
+        with:
+          # Never derive a checkout ref directly from unverified user input.
+          ref: ${{ steps.validate.outputs.target_sha || github.sha }}
+          fetch-depth: 0
       - name: Install PostgreSQL client (disposable DB only)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Enforce isolated test connection
