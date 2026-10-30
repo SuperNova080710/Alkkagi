@@ -186,7 +186,7 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | XP·레벨 시스템 | **Draft PR #110 미병합** | SQL 008·XP 지급/화면 미배포; GitHub CI 206 tests PASS |
 | 알·캐릭터 보유·해금·장착 | **Draft PR #115 미병합** | SQL 009·외형 UI 미배포; GitHub CI 205 tests PASS |
 | 기술 SEO: canonical·sitemap·robots | **Draft PR #131 미병합** | CI 198 tests PASS, Production/Search Console/Google 색인 미진행 |
-| 공개 알까기 규칙·FAQ | [Issue #130](https://github.com/SuperNova080710/Alkkagi/issues/130) | 콘텐츠·UI 작업 대기 |
+| 공개 알까기 규칙·조작법·FAQ | [PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137) 열림·미병합 | `/how-to-play` 페이지·홈 링크 코드 작성, CI/실브라우저 E2E·최신 Production 미확인; SEO #131과 홈페이지 변경 통합 필요 |
 
 Vercel Free 배포 한도 이후 최신 SHA의 Preview/Production이 READY인지 확인되지 않은 작업은 배포 성공으로 표시하지 않았습니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 이어서 Draft 008/009 선행 관계를 검사해야 합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
 
