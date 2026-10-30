@@ -1,6 +1,6 @@
 # Alkkagi Arena — 현재 개발·운영 상태 및 인수인계 (2026-10-30)
 
-> **기준 시점:** 2026-10-30 KST, GitHub `main` HEAD `cd5739bf0b33ef52acf9eda6b81a5e366f2d9aa7`. 조회 당시 GitHub 일반 이슈 **87건**, PR **44건**(문서화 이슈 #134 이후 신규 생성분은 집계 제외). 현황은 계속 변할 수 있으며 최신 이슈/PR 상태가 우선합니다.
+> **기준 시점:** 2026-10-30 KST, GitHub `main` HEAD `cd5739bf0b33ef52acf9eda6b81a5e366f2d9aa7`. 조회 당시 GitHub 일반 이슈 **87건**, PR **44건**(문서화 이슈 #134 이후 신규 생성분은 집계 제외). 이후 같은 날 공개 가이드 PR #137 및 문서 PR #138이 생성됐습니다. 현황은 계속 변할 수 있으며 최신 이슈/PR 상태가 우선합니다.
 >
 > **핵심 구분:** GitHub 병합 ≠ Supabase 운영 마이그레이션 적용 ≠ Vercel 최신 SHA 배포 ≠ 실제 두 계정·기기 E2E 성공. 아래 운영 항목은 관련 이슈에 기록된 **최종 확인 시점**을 인용합니다. 이 문서화 작업에서 운영 환경에 직접 변경을 가하지 않았습니다.
 
@@ -30,7 +30,7 @@
 | 알·캐릭터 코스메틱 카탈로그·해금·장착 API | [#115](https://github.com/SuperNova080710/Alkkagi/pull/115) · `638c644` | 42 파일 / **205 tests**, lint/typecheck/build 성공 | **SQL 009 미병합·미적용**, 운영 A/B·동시 장착 E2E 미검증, 외형 이미지/장착 UI 없음; XP 008 선행 시 레벨 해금 |
 | 기술 SEO (canonical·robots·sitemap·noindex) | [#131](https://github.com/SuperNova080710/Alkkagi/pull/131) · `09ab3d8` | 41 파일 / **198 tests**, lint/typecheck/build 성공 | Preview/Production 미배포, Search Console 소유권 인증·사이트맵 제출·실제 Google 색인 미진행 |
 
-기술 SEO는 **코드가 준비됐다는 것**과 **Google 검색에 실제 노출·상위 노출됐다는 것**이 다릅니다. 공개 조작법·규칙·FAQ 및 홈 내부 링크는 별도 디자인 담당 [#130](https://github.com/SuperNova080710/Alkkagi/issues/130)에서 관리합니다. Search Console 절차 문서는 [PR #131 브랜치](https://github.com/SuperNova080710/Alkkagi/blob/feat/seo-google-indexing/docs/google-search-seo.md)를 사용하며 main에는 아직 없습니다.
+기술 SEO는 **코드가 준비됐다는 것**과 **Google 검색에 실제 노출·상위 노출됐다는 것**이 다릅니다. 공개 조작법·규칙·FAQ 및 홈 내부 링크는 [디자인 PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137)에서 구현 제안됐으며 **열림·미병합**, 실제 브라우저/Production E2E 미검증입니다. `src/app/page.tsx`는 SEO #131의 metadata export와 #137의 링크 JSX를 모두 보존하도록 통합해야 합니다. 가이드가 실제 공개되면 사이트맵에 `/how-to-play` 등록을 SEO 이슈 #126에서 별도 확인하세요. Search Console 절차 문서는 [PR #131 브랜치](https://github.com/SuperNova080710/Alkkagi/blob/feat/seo-google-indexing/docs/google-search-seo.md)를 사용하며 main에는 아직 없습니다.
 
 ## 3. Supabase 운영 DB 및 배포의 정확한 경계
 
@@ -65,7 +65,7 @@
 2. **친구·초대/DM 통합** [#72](https://github.com/SuperNova080710/Alkkagi/issues/72), [#77](https://github.com/SuperNova080710/Alkkagi/issues/77), [#82](https://github.com/SuperNova080710/Alkkagi/issues/82), [#92](https://github.com/SuperNova080710/Alkkagi/issues/92): 005~007 실제 DB·두 계정 E2E·UI 활성화·DM/초대 전용 화면.
 3. **UI 수용** [#102](https://github.com/SuperNova080710/Alkkagi/issues/102), [#118](https://github.com/SuperNova080710/Alkkagi/issues/118), [#122](https://github.com/SuperNova080710/Alkkagi/issues/122), [#124](https://github.com/SuperNova080710/Alkkagi/issues/124): 병합된 CSS/반응형 조정의 실제 앱 크기별·200% zoom·긴 데이터 접근 및 미세 스크롤 확인.
 4. **신규 시스템 PR** [#110](https://github.com/SuperNova080710/Alkkagi/pull/110), [#115](https://github.com/SuperNova080710/Alkkagi/pull/115): 리뷰·병합 여부부터 결정하고 DB 008/009는 분리 승인 및 운영 검증. 신규 코스메틱 외형/XP UI는 후속 디자인 이슈 필요.
-5. **SEO** [#131](https://github.com/SuperNova080710/Alkkagi/pull/131), [#130](https://github.com/SuperNova080710/Alkkagi/issues/130): 기술 SEO PR 리뷰, 배포 후 HTTP/robots/sitemap, Search Console 등록·URL 검사, 공개 규칙 안내 페이지.
+5. **SEO** [#131](https://github.com/SuperNova080710/Alkkagi/pull/131), [#130](https://github.com/SuperNova080710/Alkkagi/issues/130): 기술 SEO PR 리뷰, 배포 후 HTTP/robots/sitemap, Search Console 등록·URL 검사, 공개 규칙 안내 페이지 PR #137 검토 및 SEO 홈 메타데이터와 충돌 없이 통합.
 6. **ALEPH** [#3](https://github.com/SuperNova080710/Alkkagi/issues/3): 최종 제출 접수 여부 확인 후 상태 정리.
 
 ## 근거 문서
