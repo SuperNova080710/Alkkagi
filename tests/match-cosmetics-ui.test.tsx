@@ -104,7 +104,7 @@ describe('cosmetic piece rendering without game physics changes', () => {
   });
 
   it('never fetches a fake AI public account, even when my own API fails', async () => {
-    const request = vi.fn(async () => { throw new Error('not installed'); });
+    const request = vi.fn(async (_url: string) => { throw new Error('not installed'); });
     vi.stubGlobal('fetch', request);
     expect(await fetchMatchCosmeticLooks(a, null)).toEqual({ [a]: DEFAULT_MATCH_LOOK });
     expect(request).toHaveBeenCalledTimes(1);
