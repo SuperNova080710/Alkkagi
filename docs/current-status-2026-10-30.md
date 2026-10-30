@@ -1,6 +1,6 @@
 # Alkkagi Arena — 현재 개발·운영 상태 및 인수인계 (2026-10-30)
 
-> **기준 시점:** 2026-10-30 KST, 릴리스 정책 전환 시점에는 `main`/`develop`이 `8cf4dc0`으로 같았으나 #159 develop 병합 후 서로 다른 HEAD가 됐습니다. 기존 PR **51건** 및 열린 PR **#159/#160/#161**은 당시 스냅샷입니다. 이후 **#159는 develop에 병합**됐으며 신규 코스메틱 UI #167·PG17 검사 #171이 열렸습니다. 이슈·PR 수량은 조회 시점의 스냅샷이며 이후 변경될 수 있습니다.
+> **기준 시점:** 2026-10-30 KST 재조회. `main` HEAD `8cf4dc06b5069f917a1604b53c50a73b1d8242fc`, `develop` HEAD `f6cb2e9bcd53599c42015a45019d3bf4268dc9e7` (XP UI PR #159 Squash 병합). 이 시점 PR 총 **53건**, 열린 PR은 **#160(문서), #161(DB preflight, Draft), #167(코스메틱 UI), #171(PG17 통합, Draft)** 4건. 수치/SHA는 조회 시점 스냅샷이며 이후 최신 GitHub 상태가 우선합니다.
 >
 > **핵심 구분:** GitHub 병합 ≠ Supabase 운영 마이그레이션 적용 ≠ Vercel 최신 SHA 배포 ≠ 실제 두 계정·기기 E2E 성공. 아래 운영 항목은 관련 이슈에 기록된 **최종 확인 시점**을 인용합니다. 이 문서화 작업에서 운영 환경에 직접 변경을 가하지 않았습니다.
 
@@ -40,7 +40,7 @@
 ## 2-1. 메신저 UI 및 릴리스 정책 추가 (2026-10-30)
 
 - **메신저 UI PR [#143](https://github.com/SuperNova080710/Alkkagi/pull/143) 병합**: `/messages`, 친구 대화·읽음, Realtime 알림 후 HTTP 재조회, IME/동일 requestId/문자열 cursor 보호. GitHub Quality #40980767099 성공(47파일·239테스트). **운영 SQL 004~006 및 두 계정 브라우저/Realtime, 320·390·768·1366px/200% 확대 수동 E2E는 미확인**. [화면 계약](direct-messages-ui-v1.md).
-- **브랜치/릴리스 정책 PR [#148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합**: `main` Production, `develop` 개발 통합, `release/vX.Y.Z` RC 수동 CLI Preview. `vercel.json`에서 Git 자동 배포는 main만 허용. 조회 당시 두 브랜치 HEAD `8cf4dc0` 일치. **Vercel 실제 설정 적용·첫 RC Preview·공식 버전 태그 및 GitHub Release 미검증/미발행**으로 분리합니다.
+- **브랜치/릴리스 정책 PR [#148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합**: `main` Production, `develop` 개발 통합, `release/vX.Y.Z` RC 수동 CLI Preview. `vercel.json`에서 Git 자동 배포는 main만 허용. 릴리스 정책 최초 도입 시 두 브랜치 HEAD `8cf4dc0` 일치(이후 #159는 `develop`에만 병합). **Vercel 실제 설정 적용·첫 RC Preview·공식 버전 태그 및 GitHub Release 미검증/미발행**으로 분리합니다.
 - **문서 PR #138도 병합 완료.** 이전 44개 PR 집계는 그 당시 스냅샷입니다.
 - **XP 프로필 UI [#159](https://github.com/SuperNova080710/Alkkagi/pull/159)** develop 병합 완료(하위 #150/#151 구현). `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008 미확인. 코스메틱도 아직 장착/외형 UI·SQL 009 운영 인수 별도.
 
@@ -52,10 +52,11 @@
 | --- | --- | --- |
 | [#159 XP 프로필 UI](https://github.com/SuperNova080710/Alkkagi/pull/159) · #149/#150/#151 | **develop 병합 완료**, 최종 리뷰 보완 HEAD `79a3325`; 본인/공개 레벨·게이지·최근 보상(본인 한정), 비정상 JSON 방어, `EXPERIENCE_UI_ENABLED` 기본 OFF. Quality #40984428949 **49파일/249테스트 PASS** | SQL 008 운영 적용, 2계정 공개 범위 E2E, 모바일/200% 확대 수동 QA |
 | [#161 DB preflight](https://github.com/SuperNova080710/Alkkagi/pull/161) · #155~#158 | `develop` 대상 **Draft·미병합**, HEAD `547bd9e`; SELECT-only 68항목, 004 오탐으로 인한 자동 ready 판정 제거·inspect 유지, Push #40984558499·PR #40984564283 **49파일/245테스트 PASS** | 운영 SQL **적용하지 않음**, PG17 스테이징·백업·권한/동시성/E2E·RC STOP 게이트 수용 |
-| [#162 코스메틱 UI](https://github.com/SuperNova080710/Alkkagi/issues/162) · #163~#165 | 인벤토리·6종 미리보기·알 외형을 일반/랭크/AI 화면에 연결하는 디자인 이슈가 개설됨 | 화면 구현 PR 및 에셋·브라우저 수용/운영 SQL 009 전부 별도 |
+| [#162 코스메틱 UI](https://github.com/SuperNova080710/Alkkagi/issues/162) · #163~#165 | 인벤토리·6종 미리보기·알 외형을 일반/랭크/AI 화면에 연결하는 디자인 이슈가 개설됨 | [UI PR #167](https://github.com/SuperNova080710/Alkkagi/pull/167) 검토 중(미병합), 브라우저 수용/운영 SQL 009 별도 |
 
-**운영 확인 출처:** #155 및 PR #161은 **Supabase Production PostgreSQL 17.11**의 카탈로그/마이그레이션을 읽기 전용으로 조회해 **68항목 중 baseline 7 ready, 004 1 inspect, 005~009 60 pending**을 기록했습니다. 004의 방 생성 RPC는 있으나 5회/10분 제한의 소스 마커가 없고, 005~009 핵심 객체가 존재하지 않습니다. `main`과 `develop`의 SHA `8cf4dc0`과 Production Vercel 최신 READY 보고가 있지만, 이는 운영 DB 적용·실제 HTTP/로그인/Realtime E2E 성공이 아닙니다. **실제 배포 정책 적용/첫 수동 RC Preview도 별도 검증**입니다. 이 수치는 PR 기록에 근거하며 본 문서 작업에서 운영 DB를 새로 조회하거나 수정하지 않았습니다.
+**운영 확인 출처:** #155 및 PR #161은 **Supabase Production PostgreSQL 17.11**의 카탈로그/마이그레이션을 읽기 전용으로 조회해 **68항목 중 baseline 7 ready, 004 1 inspect, 005~009 60 pending**을 기록했습니다. 004의 방 생성 RPC는 있으나 5회/10분 제한의 소스 마커가 없고, 005~009 핵심 객체가 존재하지 않습니다. 전환 당시 `main`과 `develop`의 SHA `8cf4dc0` 일치 기록 및 Production Vercel 최신 READY 보고가 있지만, 이는 운영 DB 적용·실제 HTTP/로그인/Realtime E2E 성공이 아닙니다. **실제 배포 정책 적용/첫 수동 RC Preview도 별도 검증**입니다. 이 수치는 PR 기록에 근거하며 본 문서 작업에서 운영 DB를 새로 조회하거나 수정하지 않았습니다.
 
+- [PG17 일회용 환경 전체 마이그레이션 검증 Draft PR #171](https://github.com/SuperNova080710/Alkkagi/pull/171)은 운영 DB에 쓰지 않고 004~009 순차 적용을 disposable PG17에서 CI로 검증했으며, 관리형 Supabase PG17.11·실계정 E2E·운영 DDL은 별도입니다.
 - [DB 운영 사전점검 PR 브랜치 문서](https://github.com/SuperNova080710/Alkkagi/blob/feat/ops-db-preflight/docs/db-rollout-preflight.md) — main에는 아직 포함되지 않습니다.
 - [XP UI 인수 문서](https://github.com/SuperNova080710/Alkkagi/blob/develop/docs/experience-ui-v1.md) — develop에 병합됐지만 main Production 릴리스는 미완료입니다.
 
