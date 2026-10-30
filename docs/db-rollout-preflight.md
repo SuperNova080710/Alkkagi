@@ -42,7 +42,7 @@ object       009    public.cosmetic_items                    pending
 | `ready` | 해당 객체/보안 항목 존재 | migration history·실제 정의·데이터 제약 확인 후 다음으로 |
 | `pending` | 아직 객체 없음 또는 기대되는 등록 누락 | 적용 전이면 정상. 앞선 단계는 모두 ready인데 개별 pending이면 **STOP**, 부분 적용 조사 |
 | `blocked` | 기초 객체 누락, 존재하는 테이블의 RLS OFF/직접 쓰기 권한 열림, 익명 RPC 실행 허용 | **STOP**. 릴리스 및 기능 플래그 활성화 금지. 정책·권한 수정안 별도 PR |
-| `inspect` | 기존 004 RPC는 존재하나 새 제한 코드 확인 불가 | **STOP**. 함수 `pg_get_functiondef` 및 권한·migration history 대조 후 승인된 004 적용 여부 판정 |
+| `inspect` | 기존 004 RPC는 존재하나 새 제한 코드 확인 불가 | **STOP**. 함수 `pg_proc.prosrc`·실제 SQL 정의 및 권한·migration history 대조 후 승인된 004 적용 여부 판정 |
 
 **중요:** `ready`는 객체의 존재·일부 ACL만 확인합니다. 함수 본문의 정확성, 정책의 모든 조건, 시드 데이터, migration history를 증명하지 않습니다. `004` 판정은 **코드 문자열 마커 검사**라 직접 정의 검토/업무 재현을 대체하지 않습니다. 운영 DB에 SQL이 일부 수동 적용됐거나 적용 이력과 달라지면 무조건 중지합니다.
 
