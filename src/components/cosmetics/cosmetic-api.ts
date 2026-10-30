@@ -18,6 +18,31 @@ export type CosmeticInventory = {
   level: number;
 };
 
+// Supabase/API JSON may be malformed despite the TypeScript generic; avoid
+// calling .filter()/.map() on untrusted nested inventory data.
+export function isCosmeticInventory(value: unknown): value is CosmeticInventory {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const inventory = value as Partial<CosmeticInventory>;
+  const loadout = inventory.loadout;
+  if (!loadout || typeof loadout !== 'object' || Array.isArray(loadout) ||
+      typeof loadout.pieceCode !== 'string' || typeof loadout.avatarCode !== 'string' ||
+      !Number.isSafeInteger(inventory.rankedWins) || inventory.rankedWins! < 0 ||
+      !Number.isSafeInteger(inventory.level) || inventory.level! < 1 ||
+      !Array.isArray(inventory.items)) return false;
+  return inventory.items.every((value: unknown) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const item = value as Partial<CosmeticItem>;
+    return typeof item.code === 'string' && item.code.length > 0 &&
+      (item.slot === 'piece' || item.slot === 'avatar') &&
+      typeof item.name === 'string' && typeof item.description === 'string' &&
+      (item.unlockKind === 'starter' || item.unlockKind === 'ranked_wins' || item.unlockKind === 'xp_level') &&
+      Number.isSafeInteger(item.requiredValue) && item.requiredValue! >= 0 &&
+      typeof item.owned === 'boolean' && typeof item.equipped === 'boolean' &&
+      (!item.equipped || item.owned) &&
+      (item.unlockedAt === null || typeof item.unlockedAt === 'string');
+  });
+}
+
 export const COSMETIC_STYLES = {
   'piece-classic': { slot: 'piece', name: '기본 알' },
   'piece-forest': { slot: 'piece', name: '숲빛 알' },
