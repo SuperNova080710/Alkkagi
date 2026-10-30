@@ -30,6 +30,42 @@ export class RoomInviteError extends Error {
 export function isRoomUuid(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
+/** Untrusted HTTP 200 JSON: validate every nested record before rendering. */
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+function isInviteDate(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 &&
+    Number.isFinite(Date.parse(value));
+}
+export function isInviteFriend(value: unknown): value is InviteFriend {
+  return isObject(value) && isRoomUuid(value.id) && typeof value.nickname === 'string';
+}
+export function isReceivedRoomInvite(value: unknown): value is ReceivedRoomInvite {
+  return isObject(value) &&
+    isRoomUuid(value.id) && isRoomUuid(value.roomId) && isRoomUuid(value.inviterId) &&
+    typeof value.inviterNickname === 'string' &&
+    isInviteDate(value.createdAt) && isInviteDate(value.expiresAt);
+}
+export function isSentRoomInvite(value: unknown): value is SentRoomInvite {
+  return isObject(value) &&
+    isRoomUuid(value.id) && isRoomUuid(value.inviteeId) &&
+    (typeof value.inviteeNickname === 'string' || value.inviteeNickname === null) &&
+    (value.status === 'pending' || value.status === 'accepted' ||
+      value.status === 'declined' || value.status === 'expired') &&
+    isInviteDate(value.createdAt) && isInviteDate(value.expiresAt);
+}
+export function validInviteFriends(value: unknown): InviteFriend[] {
+  return isObject(value) && Array.isArray(value.friends)
+    ? value.friends.filter(isInviteFriend) : [];
+}
+export function validReceivedRoomInvites(value: unknown): ReceivedRoomInvite[] {
+  return Array.isArray(value) ? value.filter(isReceivedRoomInvite) : [];
+}
+export function validSentRoomInvites(value: unknown): SentRoomInvite[] {
+  return Array.isArray(value) ? value.filter(isSentRoomInvite) : [];
+}
+
 export function roomInviteError(error: unknown): string {
   if (!(error instanceof RoomInviteError)) return '연결 상태를 확인할 수 없습니다. 목록을 새로고침해 주세요.';
   const errors: Record<string, string> = {
