@@ -8,7 +8,7 @@ on:
       - 'supabase/migrations/202610290008_xp_levels_v1.sql'
       - '.github/workflows/xp-levels-concurrency.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release/**']
     paths:
       - 'tests/xp-levels-concurrency.sql'
       - 'supabase/migrations/202610290008_xp_levels_v1.sql'
