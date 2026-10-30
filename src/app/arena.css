@@ -619,6 +619,274 @@
 }
 
 
+/* Public how-to-play guide (#130): isolated styling; game and lobby geometry unchanged. */
+.arena-guide {
+  width: min(1180px, 100%);
+  margin: 20px auto 36px;
+}
+.arena-guide-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.16fr) minmax(0, .84fr);
+  gap: 22px;
+  align-items: stretch;
+  border: 1px solid #d7c8aa;
+  border-radius: 24px;
+  padding: 24px;
+  background: #fff9ec;
+  box-shadow: var(--arena-shadow);
+}
+.arena-guide-hero-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8px clamp(0px, 1vw, 14px);
+}
+.arena-guide-hero h1 {
+  margin: 12px 0 16px;
+  font-size: clamp(32px, 3.3vw, 49px);
+  line-height: 1.17;
+  letter-spacing: -.055em;
+  font-weight: 1000;
+  color: var(--arena-forest);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.arena-guide-hero-copy > p:not(.arena-section-kicker) {
+  max-width: 52ch;
+  color: var(--arena-muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.arena-guide-hero-visual {
+  display: grid;
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #143f30;
+}
+.arena-guide-hero-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  grid-area: 1 / 1;
+}
+.arena-guide-hero-visual > span {
+  grid-area: 1 / 1;
+  align-self: end;
+  justify-self: end;
+  margin: 0 12px 12px 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid #fff7df66;
+  background: #103d2fe6;
+  color: #ffdc75;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px #0004;
+}
+.arena-guide-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.arena-guide-jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid #b6c5a7;
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: var(--arena-forest);
+  background: #edf5e7;
+  font-size: 13px;
+  font-weight: 800;
+}
+.arena-guide-jump a:hover { background: #d8ebd3; }
+.arena-guide-cta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 22px;
+}
+.arena-guide-home-link,
+.arena-home-guide-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--arena-jade);
+  text-decoration: underline !important;
+  text-underline-offset: 4px;
+}
+.arena-home-guide-link { margin-left: 10px; }
+.arena-guide-section {
+  scroll-margin-top: 16px;
+  margin-top: 28px;
+}
+.arena-guide-section-heading { margin-bottom: 14px; }
+.arena-guide-section-heading h2 {
+  font-size: clamp(23px, 2.35vw, 31px);
+  font-weight: 1000;
+  line-height: 1.25;
+  letter-spacing: -.04em;
+  color: var(--arena-forest);
+  margin: 5px 0 8px;
+  text-wrap: balance;
+}
+.arena-guide-section-heading > p:last-child {
+  color: var(--arena-muted);
+  font-size: 14px;
+}
+.arena-guide-steps,
+.arena-guide-modes,
+.arena-guide-rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.arena-guide-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 19px;
+  border-radius: 18px;
+}
+.arena-guide-step-number {
+  color: var(--arena-jade);
+  font-size: 27px;
+  font-weight: 1000;
+  line-height: 1;
+}
+.arena-guide-step h3,
+.arena-guide-mode h3 {
+  color: var(--arena-forest);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.arena-guide-step p,
+.arena-guide-mode > p:last-child {
+  color: var(--arena-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.arena-guide-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 22px;
+  margin-top: 12px;
+  background: #e6f0df;
+  border: 1px solid #c6dabb;
+  border-radius: 18px;
+}
+.arena-guide-tip h3 { color: var(--arena-forest); font-size: 17px; font-weight: 900; }
+.arena-guide-tip p { margin-top: 4px; font-size: 14px; color: #415d46; }
+.arena-guide-tip > span { color: #26704c; font-size: 24px; font-weight: 900; white-space: nowrap; }
+.arena-guide-rules .arena-panel {
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 19px 10px;
+  border-radius: 18px;
+}
+.arena-guide-rules strong { font-weight: 1000; font-size: clamp(21px, 2.4vw, 29px); color: var(--arena-forest); }
+.arena-guide-rules span { color: var(--arena-muted); font-size: 13px; }
+.arena-guide-mode {
+  min-width: 0;
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff9ec;
+  border: 1px solid var(--arena-line);
+  border-top: 5px solid #208655;
+  box-shadow: var(--arena-shadow);
+}
+.arena-guide-mode--ranked { border-top-color: #daa42f; }
+.arena-guide-mode--ai { border-top-color: #168cb5; }
+.arena-guide-mode-label {
+  color: var(--arena-jade);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  margin-bottom: 9px;
+}
+.arena-guide-mode--ranked .arena-guide-mode-label { color: #8c631c; }
+.arena-guide-mode--ai .arena-guide-mode-label { color: #096a95; }
+.arena-guide-mode h3 { margin-bottom: 10px; }
+.arena-guide-faq { display: grid; gap: 9px; }
+.arena-guide-faq details {
+  background: #fff9ec;
+  border: 1px solid var(--arena-line);
+  border-radius: 15px;
+  padding: 0 20px;
+  box-shadow: var(--arena-shadow);
+}
+.arena-guide-faq summary {
+  min-height: 54px;
+  padding: 15px 2px;
+  font-weight: 900;
+  color: var(--arena-forest);
+}
+.arena-guide-faq details[open] summary { border-bottom: 1px solid #e9dfcb; }
+.arena-guide-faq details p {
+  padding: 14px 2px 18px;
+  color: var(--arena-muted);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.arena-guide-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 23px 27px;
+  margin-top: 28px;
+  border-radius: 20px;
+  background: #154b34;
+  color: #fff9ec;
+}
+.arena-guide-bottom .arena-section-kicker { color: #fbd781; }
+.arena-guide-bottom h2 { font-size: clamp(21px, 2.5vw, 29px); font-weight: 900; margin: 4px 0; }
+.arena-guide-bottom p:last-child { font-size: 13px; color: #d2e8d5; }
+.arena-guide-bottom .arena-button { flex-shrink: 0; background: #f7c65e; color: #35260d; border-color: #c68f27; box-shadow: 0 3px 0 #855616; }
+@media (max-width: 900px) {
+  .arena-guide-hero { grid-template-columns: minmax(0, 1fr) minmax(0, .65fr); padding: 16px; gap: 16px; }
+  .arena-guide-steps, .arena-guide-modes { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 639px) {
+  .arena-guide { margin: 12px auto 24px; }
+  .arena-guide-hero { grid-template-columns: 1fr; gap: 14px; padding: 13px; border-radius: 18px; }
+  .arena-guide-hero-copy { padding: 8px 5px; }
+  .arena-guide-hero h1 { font-size: clamp(28px, 7vw, 36px); }
+  .arena-guide-hero-copy > p:not(.arena-section-kicker) { font-size: 14px; }
+  .arena-guide-hero-visual { min-height: 200px; max-height: 260px; }
+  .arena-guide-steps, .arena-guide-modes, .arena-guide-rules { grid-template-columns: 1fr; gap: 10px; }
+  .arena-guide-rules { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .arena-guide-rules .arena-panel { padding: 12px 5px; }
+  .arena-guide-rules strong { font-size: 19px; }
+  .arena-guide-rules span { font-size: 11px; }
+  .arena-guide-step, .arena-guide-mode { padding: 16px; }
+  .arena-guide-tip { align-items: start; padding: 14px 16px; }
+  .arena-guide-tip > span { display: none; }
+  .arena-guide-faq details { padding-inline: 14px; }
+  .arena-guide-bottom { flex-direction: column; align-items: stretch; padding: 18px; }
+  .arena-guide-bottom .arena-button { width: 100%; }
+  .arena-home-guide-link { margin-left: 0; }
+}
+
 /* Friend-only direct messenger V1 (#139): local layout, no game geometry changes. */
 .arena-dm-page { max-width: 1280px; margin-inline: auto; }
 .arena-dm-page > .arena-panel { margin-top: 16px; }

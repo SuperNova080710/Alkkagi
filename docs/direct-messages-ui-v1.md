@@ -46,7 +46,7 @@ UI 담당: `src/app/messages/page.tsx`, `src/components/messages/**`, `src/compo
 
 수정하지 않은 시스템 영역: `supabase/**`, `src/app/api/messages/**`, `src/lib/messages/**`, 게임 채팅/매치·RP 로직.
 
-추후 SEO 기술 PR에서 `/messages` 및 경로 하위에 HTTP `X-Robots-Tag: noindex,nofollow` 보완 검토; 현재 UI 페이지 자체에는 noindex 메타데이터가 선언되어 있습니다.
+SEO 정책과 통합하여 `/messages/:path*`에 HTTP `X-Robots-Tag: noindex,nofollow`를 추가했습니다. UI 라우트의 noindex metadata도 유지합니다.
 
 ## 현 상태
 

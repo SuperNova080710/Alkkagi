@@ -2,7 +2,7 @@
 
 작업: [#82](https://github.com/SuperNova080710/Alkkagi/issues/82) · SQL [#83](https://github.com/SuperNova080710/Alkkagi/issues/83) · API [#84](https://github.com/SuperNova080710/Alkkagi/issues/84) · 검증 [#85](https://github.com/SuperNova080710/Alkkagi/issues/85).
 
-**작업 브랜치:** `feat/backend-room-invites-v1`. 새 SQL/API는 아직 `main`과 운영 Supabase에 적용되지 않았습니다. 메신저 [PR #81](https://github.com/SuperNova080710/Alkkagi/pull/81)과 의존 관계 없이 분리했습니다.
+**최신 상태(2026-10-30): PR #90 main 병합 완료**(`4b3008e`). 신규 초대 SQL/API는 저장소에 포함됐으나, **운영 Supabase SQL 007은 최종 조회 기준 미적용**이며 실계정 A/B E2E 및 사용자 초대 UI는 별도입니다. DM #81과 런타임 의존성은 없습니다.
 
 ## 의존성과 적용 순서
 
@@ -91,7 +91,7 @@
 - 수신자 UI에서 `GET /api/room-invites`로 목록 갱신 → `POST .../:inviteId/respond`로 수락/거절 → 성공 시 `/rooms/:roomId`로 이동.
 - 별도 Realtime publication은 이 V1에 추가하지 않았습니다. DB 트리거 기반 알림이 아닌 **화면 진입/복귀·수동 갱신 또는 적절한 저빈도 폴링**으로 목록 갱신을 구현합니다. 무료 플랜 DB 자원 고려해 과도한 주기 폴링은 지양합니다.
 - 시스템 담당 수정 범위: 신규 SQL, `src/app/api/room-invites/**`, `src/lib/room-invites/**`, `src/proxy.ts` 한 줄, 테스트·문서. 디자인의 JSX/CSS·모바일 인터랙션 파일은 수정하지 않습니다.
-- 본 PR 병합·운영 DB 적용 전까지 사용자에게 기능이 정상 작동한다고 표시하지 마세요.
+- GitHub 병합은 완료됐지만 **SQL 007 적용 및 실사용 E2E 확인 전까지** 운영 기능이 정상 작동한다고 표시하지 마세요.
 
 ## 검증의 한계
 
@@ -100,3 +100,10 @@
 - [ ] GitHub Actions lint/typecheck/Vitest/Next build, Vercel Preview
 - [ ] 격리 PostgreSQL 16 독립 연결 경합: `tests/room-friend-invites-concurrency.sql`과 `.github/workflows/room-friend-invites-concurrency.yml`에서 코드 입장↔초대 수락, 코드 입장↔초대 발송, 친구 차단과의 프로필 잠금 충돌 검증 (**CI 성공 확인 후 완료 처리**)
 - [ ] 실제 Supabase DB 적용 및 실사용자 2계정 브라우저 E2E (사용자 후속 승인 필요). CI와 운영 DB는 별개
+
+## 병합 및 검증 최신 기록 (2026-10-30)
+
+- PR [#90](https://github.com/SuperNova080710/Alkkagi/pull/90) → main **2026-10-29 병합**, merge `4b3008e9d02fc81405c1ff003f7bcc0e4a08a452`.
+- Quality Actions [#40826555677](https://github.com/SuperNova080710/Alkkagi/actions/runs/40826555677): 39파일 184테스트, lint/typecheck/빌드 성공. PostgreSQL 16 [#40826555674](https://github.com/SuperNova080710/Alkkagi/actions/runs/40826555674): 독립 연결에서 코드 참가↔초대 수락/발송/차단 경합 3종 성공. 위 본문의 체크박스는 테스트 작성 당시 계획으로 남았습니다.
+- **미확인:** 무료 Vercel 한도 때문에 최종 SHA Preview 미생성; SQL 005·007 실제 운영 적용, 실제 두 계정 발송→수락·좌석 선점 E2E 및 친구방 초대 발송/수신 UI 미완료.
+- [2026-10-30 최신 운영 인수](current-status-2026-10-30.md).

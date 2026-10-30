@@ -11,6 +11,7 @@ const privatePaths = [
   "/profile/:path*",
   "/players/:path*",
   "/friends/:path*",
+  "/messages/:path*",
   "/api/:path*",
   "/auth/:path*",
 ];
