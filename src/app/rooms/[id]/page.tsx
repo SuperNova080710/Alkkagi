@@ -51,7 +51,8 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
    {match&&validBoard(match.board_state)
     ? <GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
        roomId={room.id} players={room.players} rematchReadyCount={room.rematchReadyCount??0}
-       myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}/>
+       myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}
+       cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>
     : <div className="arena-room-wait-layout">
       <section className="arena-panel arena-room-stage" aria-labelledby="room-stage-heading">
        <div className="arena-room-stage-head">
