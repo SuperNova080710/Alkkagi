@@ -33,6 +33,7 @@ describe('Cosmetics V1: immutable unlocks, equip authorization and RLS',()=>{
     await db.exec('reset role;');
     await db.exec('truncate public.player_cosmetic_loadouts,public.player_cosmetic_inventory,public.player_profile_settings;');
     await db.exec('update public.profiles set ranked_wins=0');
+    await db.exec('update public.cosmetic_items set published=true');
     if((await db.query<{exists:boolean}>("select to_regclass('public.player_progress') is not null as exists")).rows[0].exists)
       await db.exec('drop table public.player_progress');
   },30000);
@@ -117,6 +118,45 @@ describe('Cosmetics V1: immutable unlocks, equip authorization and RLS',()=>{
     await db.exec('reset role;drop table public.player_progress;');
     await as(a);
     expect((await mine()).loadout).toEqual({pieceCode:'piece-starlight',avatarCode:'avatar-orbit'});
+  },30000);
+
+  it('hides unpublished equipped items from another player and from the owner response',async()=>{
+    await db.exec('reset role;');
+    await db.query('update public.profiles set ranked_wins=3 where id=$1',[a]);
+    await as(a);
+    await mine();
+    await equip('piece-forest');
+    await equip('avatar-bronze');
+    await as(b);
+    expect(await rpc('get_public_player_cosmetics',[a]))
+      .toMatchObject({pieceCode:'piece-forest',avatarCode:'avatar-bronze'});
+
+    // Simulate a moderator unpublishing both currently equipped items.
+    await db.exec('reset role;');
+    await db.exec("update public.cosmetic_items set published=false where code in ('piece-forest','avatar-bronze')");
+    await as(b);
+    expect(await rpc('get_public_player_cosmetics',[a]))
+      .toEqual({userId:a,pieceCode:'piece-classic',avatarCode:'avatar-classic'});
+    await as(a);
+    const own=await mine();
+    expect(own.loadout).toEqual({pieceCode:'piece-classic',avatarCode:'avatar-classic'});
+    expect(own.items.some(x=>['piece-forest','avatar-bronze'].includes(x.code))).toBe(false);
+    expect(own.items.filter(x=>x.equipped).map(x=>x.code))
+      .toEqual(['avatar-classic','piece-classic']);
+    await expect(equip('piece-forest')).rejects.toThrow('COSMETIC_NOT_AVAILABLE');
+    expect(await equip('avatar-classic'))
+      .toEqual({pieceCode:'piece-classic',avatarCode:'avatar-classic'});
+
+    // Stored choices can return when published again without exposing them meanwhile.
+    await db.exec('reset role;');
+    const stored=(await db.query<{piece_code:string}>(
+      'select piece_code from public.player_cosmetic_loadouts where user_id=$1',[a]
+    )).rows[0];
+    expect(stored.piece_code).toBe('piece-forest');
+    await db.exec("update public.cosmetic_items set published=true where code in ('piece-forest','avatar-bronze')");
+    await as(b);
+    expect(await rpc('get_public_player_cosmetics',[a]))
+      .toEqual({userId:a,pieceCode:'piece-forest',avatarCode:'avatar-classic'});
   },30000);
 
   it('restricts direct writes and cross-account inventories while allowing owner-only SELECT',async()=>{
