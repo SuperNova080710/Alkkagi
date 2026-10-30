@@ -29,12 +29,35 @@ export function experiencePercent(data: ExperienceData): number {
   return Math.max(0, Math.min(100, Math.round(data.currentLevelXp / data.nextLevelCost * 100)));
 }
 
-export function isExperienceData(data: ExperienceData | undefined): data is ExperienceData {
-  return !!data && Number.isSafeInteger(data.level) && data.level >= 1 &&
-    Number.isSafeInteger(data.totalXp) && data.totalXp >= 0 &&
-    Number.isSafeInteger(data.currentLevelXp) && data.currentLevelXp >= 0 &&
-    Number.isSafeInteger(data.nextLevelCost) && data.nextLevelCost > 0 &&
-    Number.isSafeInteger(data.nextLevelAt) && data.nextLevelAt > data.totalXp;
+// Network JSON is untrusted at runtime, regardless of the TypeScript generic
+// used by usePlayerResource. Validate nested reward records before rendering.
+function isExperienceReward(value: unknown): value is ExperienceReward {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const reward = value as Partial<ExperienceReward>;
+  return typeof reward.id === 'string' && reward.id.length > 0 &&
+    typeof reward.sourceKind === 'string' &&
+    typeof reward.sourceId === 'string' &&
+    typeof reward.outcome === 'string' &&
+    Number.isSafeInteger(reward.earnedXp) && reward.earnedXp! >= 0 &&
+    typeof reward.createdAt === 'string' &&
+    !Number.isNaN(Date.parse(reward.createdAt));
+}
+
+export function isExperienceData(data: unknown): data is ExperienceData {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const xp = data as Partial<ExperienceData>;
+  if (typeof xp.userId !== 'string' || xp.userId.length === 0 ||
+      !Number.isSafeInteger(xp.level) || xp.level! < 1 ||
+      !Number.isSafeInteger(xp.totalXp) || xp.totalXp! < 0 ||
+      !Number.isSafeInteger(xp.currentLevelXp) || xp.currentLevelXp! < 0 ||
+      !Number.isSafeInteger(xp.nextLevelCost) || xp.nextLevelCost! <= 0 ||
+      !Number.isSafeInteger(xp.nextLevelAt) || xp.nextLevelAt! <= xp.totalXp!) return false;
+  // Consistency of current interval and next cumulative goal matters too.
+  if (xp.currentLevelXp! >= xp.nextLevelCost! ||
+      xp.currentLevelXp! > xp.totalXp! ||
+      xp.nextLevelAt! - xp.totalXp! !== xp.nextLevelCost! - xp.currentLevelXp!) return false;
+  return xp.recentRewards === null ||
+    (Array.isArray(xp.recentRewards) && xp.recentRewards.every(isExperienceReward));
 }
 
 const number = (value: number) => value.toLocaleString('ko-KR');
@@ -96,7 +119,7 @@ export function ExperiencePanel({ playerId }: { playerId?: string }) {
         {error !== 404 && <button type="button" className="arena-xp-retry" onClick={retry}>다시 시도</button>}
       </>}
     </div>}
-    {data && !isExperienceData(data) && <p role="status" className="arena-xp-unavailable">레벨 데이터를 확인할 수 없습니다.</p>}
+    {data !== undefined && !isExperienceData(data) && <p role="status" className="arena-xp-unavailable">레벨 데이터를 확인할 수 없습니다.</p>}
     {isExperienceData(data) && <ExperienceSummary data={data} isSelf={!playerId}/>}
   </ArenaPanel>;
 }
