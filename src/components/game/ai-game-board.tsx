@@ -7,6 +7,7 @@ import {createBrowserClient} from '@supabase/ssr';
 import {HEIGHT,MAX_FORCE,MIN_FORCE,RADIUS,WIDTH,type Board,type Shot} from '@/lib/game/engine';
 import {viewportToBoard} from '@/lib/game/coordinates';
 import {GamePieces} from '@/components/game/game-pieces';
+import {useMatchCosmetics} from '@/components/game/use-match-cosmetics';
 import {GameFeedback} from '@/components/game/game-feedback';
 import {GameIdentityHeading} from '@/components/game/game-identity-heading';
 import {getPlayerIdentities} from '@/lib/game/player-identity';
@@ -23,11 +24,13 @@ export type AiTurn={
  turn_no:number;human_input:Shot;human_frames:Board[];
  ai_input:Shot|null;ai_frames:Board[]|null;
 };
-type Props={game:AiGame;nickname:string;turns:AiTurn[]};
+type Props={game:AiGame;nickname:string;turns:AiTurn[];cosmeticsEnabled?:boolean};
 type Drag={id:string;origin:{x:number;y:number};at:{x:number;y:number}};
 type Playback={frames:Board[];index:number;humanFrames:number};
-export function AiGameBoard({game,nickname,turns}:Props){
+export function AiGameBoard({game,nickname,turns,cosmeticsEnabled=false}:Props){
  const router=useRouter();
+ // The AI opponent is never an account with a public cosmetic loadout.
+ const cosmetics=useMatchCosmetics(game.owner_id,null,cosmeticsEnabled);
  const [drag,setDrag]=useState<Drag|null>(null);
  const [pending,setPending]=useState(false);
  const [error,setError]=useState('');
@@ -140,7 +143,8 @@ export function AiGameBoard({game,nickname,turns}:Props){
  const aiIsMoving=playback&&playback.index>=playback.humanFrames;
  return <section className="game-screen mt-8">
   <GameIdentityHeading match={matchInfo} viewerId={game.owner_id} players={identities}
-   mode="ai" animating={!!playback||justUpdated} pending={pending} remaining={null}/>
+   mode="ai" animating={!!playback||justUpdated} pending={pending} remaining={null}
+   cosmetics={cosmetics} cosmeticsEnabled={cosmeticsEnabled}/>
   <div className="game-screen-body">
    <aside className="game-chat-panel rounded-2xl border border-sky-700/70 bg-slate-900/95 p-4">
     <h3 className="border-b border-slate-700 pb-3 text-lg font-bold">AI 대전</h3>
@@ -165,7 +169,7 @@ export function AiGameBoard({game,nickname,turns}:Props){
       onPointerCancel={()=>setDrag(null)}
       style={{touchAction:'none',width:'100%',display:'block',cursor:playing?'crosshair':'default'}}>
       <CourtSurface/>
-      <GamePieces board={board} firstPlayerId={game.owner_id} viewerId={game.owner_id}/>
+      <GamePieces board={board} firstPlayerId={game.owner_id} viewerId={game.owner_id} cosmetics={cosmetics}/>
       {drag&&<g>
        <line x1={drag.origin.x} y1={drag.origin.y} x2={drag.origin.x+(drag.origin.x-drag.at.x)}
         y2={drag.origin.y+(drag.origin.y-drag.at.y)} stroke="#fef08a"
