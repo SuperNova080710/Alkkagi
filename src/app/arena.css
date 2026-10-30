@@ -1282,3 +1282,316 @@
   .arena-xp-level-mark { width: 55px; height: 55px; flex-basis: 55px; font-size: 20px; border-width: 4px; }
   .arena-xp-head strong { font-size: 27px; }
 }
+
+/* Cosmetics V1 wardrobe (#162): CSS-only item previews, game physics unaffected. */
+.arena-cosmetics-page {
+  width: min(1150px, 100%);
+  margin-inline: auto;
+}
+.arena-cosmetics-page > .arena-panel {
+  margin-top: 16px;
+}
+.arena-cosmetics-page .arena-service-heading {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.arena-cosmetics-page .arena-service-heading > .arena-button { flex: 0 0 auto; }
+.arena-cosmetics-wardrobe { margin-top: 14px; }
+.arena-cosmetics-current {
+  padding-block: 17px;
+  margin-bottom: 18px;
+}
+.arena-cosmetics-current h2 { margin-bottom: 11px; }
+.arena-cosmetics-loadout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.arena-cosmetics-loadout > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 15px;
+  padding: 12px;
+  border: 1px solid #ded0b5;
+  border-radius: 16px;
+  background: #f8f0df;
+}
+.arena-cosmetics-loadout > div > div:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.arena-cosmetics-loadout > div > div:last-child span {
+  font-size: 12px;
+  color: var(--arena-muted);
+}
+.arena-cosmetics-loadout strong {
+  color: var(--arena-forest);
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.arena-cosmetics-section { margin-top: 24px; }
+.arena-cosmetics-section > header { margin-bottom: 12px; }
+.arena-cosmetics-section h2 {
+  font-size: clamp(21px, 2.4vw, 27px);
+  font-weight: 1000;
+  color: var(--arena-forest);
+}
+.arena-cosmetics-section > header p { color: var(--arena-muted); font-size: 13px; }
+.arena-cosmetics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+}
+.arena-cosmetics-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 19px;
+  border: 1px solid #d5c7aa;
+  background: #fff9ed;
+  box-shadow: var(--arena-shadow);
+}
+.arena-cosmetics-item.is-equipped { border: 2px solid #278255; padding: 9px; }
+.arena-cosmetics-item.is-locked { background: #f5efe4; }
+.arena-cosmetics-item-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 145px;
+  padding: 12px 10px 14px;
+  border-radius: 13px;
+  background: radial-gradient(ellipse at center 65%, #fff2d7, #e7dec5);
+  overflow: hidden;
+}
+.arena-cosmetics-item.is-locked .arena-cosmetics-item-art { filter: saturate(.65); }
+.arena-cosmetics-state {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  background: #fff9eddc;
+  border: 1px solid #c9bda6;
+  color: var(--arena-forest);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+.arena-cosmetics-item.is-equipped .arena-cosmetics-state { background: #21774c; color: #fff; border-color: #21774c; }
+.arena-cosmetics-item.is-locked .arena-cosmetics-state { background: #e9e2d4; color: #665c4b; }
+.arena-cosmetics-item-content {
+  flex: 1 1 auto;
+  padding: 12px 4px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.arena-cosmetics-item h3 {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--arena-forest);
+}
+.arena-cosmetics-item-content > p {
+  color: var(--arena-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.arena-cosmetics-item-content > .arena-cosmetics-condition {
+  margin-top: auto;
+  padding-top: 6px;
+  font-weight: 800;
+  color: #3c684e;
+}
+.arena-cosmetics-item .arena-cosmetics-equip {
+  width: 100%;
+  min-height: 42px;
+  font-size: 13px;
+  padding: 9px 11px;
+}
+.arena-cosmetics-item .arena-cosmetics-equip:disabled {
+  opacity: 1;
+  background: #e7e2d6;
+  color: #665f51;
+  border-color: #c7bda9;
+  box-shadow: 0 2px 0 #cfc5b4;
+}
+.arena-cosmetics-item.is-equipped .arena-cosmetics-equip:disabled {
+  background: #cde8d1;
+  color: #195d3d;
+  border-color: #76ad86;
+}
+.arena-cosmetic-preview {
+  display: inline-grid;
+  flex: 0 0 116px;
+  place-items: center;
+  width: 116px;
+  height: 110px;
+  position: relative;
+  isolation: isolate;
+}
+.arena-cosmetic-preview::after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 12px;
+  background: #473c3440;
+  bottom: 7px;
+  border-radius: 50%;
+  filter: blur(5px);
+  z-index: -1;
+}
+.arena-cosmetic-preview--compact { width: 66px; height: 66px; flex-basis: 66px; }
+.arena-cosmetic-preview--compact::after { width: 50px; bottom: 2px; }
+.arena-cosmetic-art {
+  position: relative;
+  display: block;
+  width: 76px;
+  height: 76px;
+  border: 3px solid #ffffffaa;
+  border-radius: 50%;
+  box-shadow: inset -8px -9px 13px #082a2459, 2px 5px 0 #372d2166, 0 7px 14px #20190d30;
+  background: radial-gradient(circle at 31% 24%, #ffe6a0 0%, #e9a235 42%, #a96a22 100%);
+  transform: translateY(-1px);
+}
+.arena-cosmetic-art-sheen {
+  position: absolute;
+  width: 28px;
+  height: 14px;
+  left: 12px;
+  top: 11px;
+  border-radius: 50%;
+  background: #ffffff87;
+  transform: rotate(-35deg);
+  filter: blur(2px);
+}
+.arena-cosmetic-art--piece-forest {
+  background: radial-gradient(circle at 30% 24%, #b4f4ad, #3fba78 43%, #165a3f);
+}
+.arena-cosmetic-art--piece-forest::after {
+  content: '';
+  position: absolute;
+  inset: 14px 20px 18px;
+  border: 2px solid #d7ffc380;
+  border-radius: 50% 8% 50% 8%;
+  transform: rotate(-34deg);
+}
+.arena-cosmetic-art--piece-starlight {
+  background: radial-gradient(circle at 28% 23%, #fff7d6, #b8a0f5 44%, #4e438d 100%);
+}
+.arena-cosmetic-art--piece-starlight::after {
+  content: '✦';
+  position: absolute;
+  top: 24px;
+  left: 26px;
+  color: #fff8c6;
+  font-size: 23px;
+  text-shadow: 0 0 6px #ffe994;
+}
+.arena-cosmetic-art--avatar-classic {
+  background: radial-gradient(circle at 38% 24%, #ffe5b2, #df955d 65%, #98683c);
+  border-color: #5da67c;
+}
+.arena-cosmetic-art--avatar-bronze {
+  background: radial-gradient(circle at 38% 23%, #ffdba5, #b87d39 50%, #5e4326);
+  border-color: #f6c264;
+}
+.arena-cosmetic-art--avatar-orbit {
+  background: radial-gradient(circle at 35% 24%, #dcfaff, #8a9df3 58%, #374b9a);
+  border-color: #a4d7ff;
+}
+.arena-cosmetic-art--avatar-orbit::before {
+  content: '';
+  position: absolute;
+  width: 92px;
+  height: 31px;
+  border: 5px solid #c7e6f2c0;
+  border-radius: 50%;
+  top: 19px;
+  left: -10px;
+  transform: rotate(-30deg);
+  pointer-events: none;
+}
+.arena-cosmetic-face {
+  position: absolute;
+  top: 32px;
+  left: 18px;
+  display: flex;
+  justify-content: space-between;
+  width: 32px;
+  height: 14px;
+  pointer-events: none;
+}
+.arena-cosmetic-eye {
+  width: 7px;
+  height: 9px;
+  border-radius: 50%;
+  background: #3b302c;
+  box-shadow: 1px 1px 0 #ffffff66;
+}
+.arena-cosmetic-art--avatar-orbit .arena-cosmetic-eye { background: #293f7b; }
+.arena-cosmetic-preview--compact .arena-cosmetic-art {
+  width: 48px;
+  height: 48px;
+  transform: scale(.72);
+}
+.arena-cosmetics-alert { min-height: 18px; font-size: 13px; margin-top: 10px; color: #14613e; }
+.arena-cosmetics-warning {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #fff0e8;
+  color: #853435;
+  border: 1px solid #d6aa9e;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.arena-cosmetics-warning button {
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #c6827b;
+  border-radius: 9px;
+  background: #fff8f0;
+  font-weight: 800;
+}
+@media (max-width: 950px) {
+  .arena-cosmetics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  .arena-cosmetics-grid { grid-template-columns: 1fr; gap: 10px; }
+  .arena-cosmetics-loadout { grid-template-columns: 1fr; gap: 8px; }
+  .arena-cosmetics-loadout > div { padding: 8px 12px; }
+  .arena-cosmetics-item { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .arena-cosmetics-item-art { min-height: 120px; width: 120px; flex: 0 0 120px; }
+  .arena-cosmetics-item-content { flex: 1 1 160px; padding: 5px 2px; }
+  .arena-cosmetics-item .arena-cosmetics-equip { width: 100%; }
+  .arena-cosmetics-current { padding: 13px; }
+}
+@media (max-width: 360px) {
+  .arena-cosmetics-item-art { flex-basis: 105px; width: 105px; }
+  .arena-cosmetic-preview { width: 95px; flex-basis: 95px; }
+  .arena-cosmetics-item-content { flex-basis: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-cosmetic-art { transform: none; }
+}
+
+/* Only the opt-in six-item nav needs wrapping at narrow widths / 200% zoom. */
+@media (max-width: 639px) {
+  .arena-nav:has(a[href="/cosmetics"]) {
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    justify-content: center;
+    min-width: 0;
+  }
+  .arena-nav:has(a[href="/cosmetics"]) a {
+    min-height: 42px;
+    padding: 5px 8px;
+  }
+}
