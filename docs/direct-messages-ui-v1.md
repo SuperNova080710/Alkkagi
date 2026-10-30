@@ -50,4 +50,4 @@ SEO 정책과 통합하여 `/messages/:path*`에 HTTP `X-Robots-Tag: noindex,nof
 
 ## 현 상태
 
-GitHub 브랜치에 구현 및 테스트 추가 완료, PR 생성·검토·CI 결과는 별도 확인. 운영 활성화/실제 Realtime 검증을 완료했다고 주장하지 않습니다.
+**PR #143 main 병합 완료** (2026-10-30, merge `dd1a171`). Quality Actions #40980767099 **47개 파일·239개 테스트 PASS**, lint/typecheck/Next build 통과. 다만 실제 운영 SQL 004→005→006 적용, 두 계정 메시지/읽음/Realtime·반응형 수동 브라우저 검증 및 `FRIENDS_UI_ENABLED`/`MESSAGES_UI_ENABLED` 운영 활성화는 확인되지 않았습니다. 위 체크리스트는 실제 운영 수용 항목으로 계속 유지합니다.
