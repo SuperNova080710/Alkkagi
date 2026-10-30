@@ -51,7 +51,7 @@
 | PR / 이슈 | 최신 확인 내용 | 아직 완료되지 않은 일 |
 | --- | --- | --- |
 | [#159 XP 프로필 UI](https://github.com/SuperNova080710/Alkkagi/pull/159) · #149/#150/#151 | `develop` 대상 **open**, HEAD `a897dd6`; 본인/공개 레벨·게이지·최근 보상(본인 한정), `EXPERIENCE_UI_ENABLED` 기본 OFF. Quality #40982884363 **49파일/248테스트 PASS** | develop 병합 검토, SQL 008 운영 적용, 2계정 공개 범위 E2E, 모바일/200% 확대 수동 QA |
-| [#161 DB preflight](https://github.com/SuperNova080710/Alkkagi/pull/161) · #155~#158 | `develop` 대상 **Draft·미병합**, HEAD `7419ecad`; SELECT-only 68항목, Push #40982978730·PR #40983087335 **49파일/245테스트 PASS** | 운영 SQL **실제 적용 불가/미실행**, PG17 스테이징·백업·권한/동시성/E2E·RC STOP 게이트 수용 |
+| [#161 DB preflight](https://github.com/SuperNova080710/Alkkagi/pull/161) · #155~#158 | `develop` 대상 **Draft·미병합**, HEAD `7419ecad`; SELECT-only 68항목, Push #40982978730·PR #40983087335 **49파일/245테스트 PASS** | 운영 SQL **적용하지 않음**, PG17 스테이징·백업·권한/동시성/E2E·RC STOP 게이트 수용 |
 | [#162 코스메틱 UI](https://github.com/SuperNova080710/Alkkagi/issues/162) · #163~#165 | 인벤토리·6종 미리보기·알 외형을 일반/랭크/AI 화면에 연결하는 디자인 이슈가 개설됨 | 화면 구현 PR 및 에셋·브라우저 수용/운영 SQL 009 전부 별도 |
 
 **운영 확인 출처:** #155 및 PR #161은 **Supabase Production PostgreSQL 17.11**의 카탈로그/마이그레이션을 읽기 전용으로 조회해 **68항목 중 baseline 7 ready, 004 1 inspect, 005~009 60 pending**을 기록했습니다. 004의 방 생성 RPC는 있으나 5회/10분 제한의 소스 마커가 없고, 005~009 핵심 객체가 존재하지 않습니다. `main`과 `develop`의 SHA `8cf4dc0`과 Production Vercel 최신 READY 보고가 있지만, 이는 운영 DB 적용·실제 HTTP/로그인/Realtime E2E 성공이 아닙니다. **실제 배포 정책 적용/첫 수동 RC Preview도 별도 검증**입니다. 이 수치는 PR 기록에 근거하며 본 문서 작업에서 운영 DB를 새로 조회하거나 수정하지 않았습니다.
@@ -66,14 +66,14 @@
 | P1~P3 초기 SQL, AI 002, 플레이어 검색 003 | 병합 | 이전 제출/운영 확인 기록 존재 |
 | `202610290004_security_room_create_limits.sql` | #69 병합 | **2026-10-30 PG17.11 점검에서 미적용/제한 마커 없음** |
 | `202610290005_friends_v1.sql` | #76 병합 | **2026-10-30 PG17.11 점검에서 미적용** |
-| `202610290006_direct_messages_v1.sql` | #81 병합 | **당시 미적용** |
-| `202610290007_room_friend_invites_v1.sql` | #90 **병합** | **당시 미적용** |
+| `202610290006_direct_messages_v1.sql` | #81 병합 | **2026-10-30 PG17.11 점검에서 미적용** |
+| `202610290007_room_friend_invites_v1.sql` | #90 **병합** | **2026-10-30 PG17.11 점검에서 미적용** |
 | `202610290008_xp_levels_v1.sql` | #110 **병합** | main 소스 포함, **2026-10-30 운영 PG17.11 사전점검에서 적용 이력·객체 없음** |
 | `202610290009_cosmetics_v1.sql` | #115 **병합** | main 소스 포함, **2026-10-30 PG17.11 사전점검에서 미적용** |
 
 **운영 재점검 우선:** 실제 `schema_migrations` 적용 이력과 테이블/RPC/RLS/GRANT를 직접 다시 확인하세요. 004→005→006→007은 파일 번호 순서와 함수 의존성을 검증하고 적용해야 하며, 초대 007은 친구 005가 선행되어야 합니다. XP 008은 기존 경기/AI 테이블에 의존하고, 코스메틱 009는 레벨에 따라 008과 연동됩니다. 번호만으로 무조건 SQL을 재실행하지 마세요.
 
-- **Vercel Free:** 2026-10-29 일일 배포 한도 소진/Preview 미생성이 보고됐습니다. GitHub Quality CI·로컬 `next build` 성공은 Vercel 최신 Deployment READY를 뜻하지 않습니다.
+- **Vercel Free:** 2026-10-29 일일 배포 한도 소진/Preview 미생성이 보고됐습니다. PR #161 조사상 Production 최신 SHA `8cf4dc0`은 READY이지만, 이것만으로 실제 HTTP 응답/사용자 E2E 검증을 주장하지 않습니다. GitHub Quality CI도 별개입니다.
 - 친구 UI는 main에 있지만 **`FRIENDS_UI_ENABLED=true` 운영 확인 전에는 준비 중 화면**입니다. 플래그는 UX 게이트일 뿐 서버 인증/RLS를 대체하지 않습니다.
 - 경기 채팅(`match_messages`)과 친구끼리의 DM(`dm_messages`)은 다른 기능입니다. DM 서버 API(#81)와 메신저 UI(#143)는 모두 코드 병합됐지만 `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED`가 동시에 `true`여야 노출되고 SQL 006·실사용자 E2E/운영 활성화는 별도입니다.
 - **ALEPH P3 실제 폼 접수/승인**은 [#3](https://github.com/SuperNova080710/Alkkagi/issues/3)에서 확인되지 않았습니다. [P2](p2-submission-2026-10-28.md)·[P3](p3-final-submission-2026-10-29.md) 과거 제출 문서는 당시 상태 그대로 유지합니다.
