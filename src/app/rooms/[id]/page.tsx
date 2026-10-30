@@ -7,6 +7,7 @@ import {validBoard} from '@/lib/game/engine';
 import {GameBoard} from '@/components/game/game-board';
 import {RoomRefresh} from '@/components/rooms/room-refresh';
 import {AddAiOpponent} from '@/components/rooms/add-ai-opponent';
+import {SendFriendRoomInvite} from '@/components/rooms/send-friend-room-invite';
 import {leaveRoom} from '../actions';
 import {startGame} from '../start';
 import {type TurnShot} from '@/lib/game/turn-history';
@@ -34,30 +35,62 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
  const shots=((history??[]) as TurnShot[]).reverse();
  const messages=((chatHistory??[]) as import('@/components/game/match-chat').MatchMessage[]).reverse();
  const hasMatch=Boolean(match&&validBoard(match.board_state));
- return <div className={hasMatch ? 'arena arena-match' : 'arena'}><main className={hasMatch ? "game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6" : "arena-waiting mx-auto max-w-5xl px-6 py-12"}>
- <Link href="/lobby" className="game-page-back text-sm font-semibold text-emerald-300">← 로비</Link>
- <div className="game-page-header mt-8 flex flex-wrap items-center justify-between gap-4">
- <div><p className="text-sm font-bold tracking-widest text-emerald-300">일반전 · ALKKAGI ARENA</p>
- <h1 className="mt-3 text-4xl font-black">친구와 한 판</h1></div>
- {hasMatch ? <div className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 text-center"><p className="text-xs text-slate-400">초대 코드</p><p className="text-xl font-extrabold tracking-widest">{room.code}</p></div> : <CopyInvite code={room.code}/>}</div>
- {match&&validBoard(match.board_state)?<GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
- roomId={room.id} players={room.players} rematchReadyCount={room.rematchReadyCount??0}
- myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}/>:
- <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
-  <h2 className="text-xl font-bold">참가자 {room.players.length}/2</h2>
-  <ol className="mt-4 grid gap-3 sm:grid-cols-2">{[1,2].map(seat=><li key={seat} className="rounded-xl border border-slate-600 p-4">
-  {seat===1?'선공':'후공'} · {room.players.find(p=>p.seat===seat)?.nickname??'친구 기다리는 중'} {room.yourSeat===seat?'(나)':''}</li>)}</ol>
-  <RoomRefresh roomId={id}/>
-  {room.status==='waiting'&&room.players.length===2&&room.yourSeat===1&&
-    <form action={startGame} className="mt-6"><input type="hidden" name="id" value={id}/>
-     <button className="rounded-xl bg-emerald-300 px-6 py-3 font-bold text-slate-950">경기 시작</button></form>}
-  {room.status==='waiting'&&room.players.length<2&&<>
-    <p className="mt-5 text-slate-300">친구에게 초대 코드를 보내면 자동으로 입장 상태가 갱신됩니다.</p>
-    {room.yourSeat===1&&<AddAiOpponent roomId={room.id}/>}
-   </>}
-  {room.status==='waiting'&&<form action={leaveRoom} className="mt-5"><input type="hidden" name="id" value={id}/>
-   <button className="rounded-xl border border-slate-500 px-5 py-3 text-sm">{room.yourSeat===1?'방 닫기':'방 나가기'}</button></form>}
-  {query.error&&<p role="alert" className="mt-5 text-rose-300">경기를 시작할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>}
- </section>}
- </main></div>;
+ return <div className={hasMatch ? 'arena arena-match' : 'arena'}>
+  <main className={hasMatch
+   ? 'game-page game-page--playing mx-auto max-w-6xl px-4 py-4 sm:px-6'
+   : 'arena-waiting arena-waiting--v2 mx-auto max-w-5xl px-4 py-5 sm:px-6'}>
+   <Link href="/lobby" className="game-page-back arena-room-back">← 로비로 돌아가기</Link>
+   <header className="game-page-header arena-room-heading">
+    <div><p className="arena-section-kicker">CASUAL MATCH · ALKKAGI ARENA</p>
+     <h1>친구와 한 판</h1>
+     {!hasMatch && <p className="arena-room-lead">친구를 초대하거나 AI를 추가해 승부를 시작하세요.</p>}
+    </div>
+    {hasMatch ? <div className="arena-room-playing-code"><p>초대 코드</p><strong>{room.code}</strong></div>
+      : <CopyInvite code={room.code}/>}
+   </header>
+   {match&&validBoard(match.board_state)
+    ? <GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
+       roomId={room.id} players={room.players} rematchReadyCount={room.rematchReadyCount??0}
+       myRematchVote={room.myRematchVote??false} shots={shots} messages={messages}/>
+    : <div className="arena-room-wait-layout">
+      <section className="arena-panel arena-room-stage" aria-labelledby="room-stage-heading">
+       <div className="arena-room-stage-head">
+        <h2 id="room-stage-heading">참가자 <span>{room.players.length}/2</span></h2>
+        <span className="arena-room-status">{room.status==='waiting'?'대기 중':'방 상태 확인'}</span>
+       </div>
+       <ol className="arena-room-seats">
+        {[1,2].map(seat=><li key={seat} className={room.yourSeat===seat?'is-mine':''}>
+         <span className="arena-room-seat-number">{seat===1?'01':'02'}</span>
+         <div><span className="arena-room-seat-role">{seat===1?'선공':'후공'}</span>
+          <strong>{room.players.find(p=>p.seat===seat)?.nickname??'친구 기다리는 중'}</strong>
+          {room.yourSeat===seat&&<span className="arena-room-self">나</span>}
+         </div>
+        </li>)}
+       </ol>
+       <RoomRefresh roomId={id}/>
+       {room.status==='waiting'&&room.players.length===2&&room.yourSeat===1&&
+        <form action={startGame} className="arena-room-main-action">
+         <input type="hidden" name="id" value={id}/>
+         <button type="submit" className="arena-button arena-button--gold">경기 시작</button>
+        </form>}
+       {room.status==='waiting'&&room.players.length<2&&
+        <p className="arena-room-wait-note">초대 코드 또는 친구 초대를 전달하면 상대가 참가할 수 있습니다.</p>}
+       {room.status==='waiting'&&<form action={leaveRoom} className="arena-room-leave">
+        <input type="hidden" name="id" value={id}/>
+        <button type="submit" className="arena-button arena-button--outline">
+         {room.yourSeat===1?'방 닫기':'방 나가기'}
+        </button>
+       </form>}
+       {query.error&&<p role="alert" className="arena-invite-error">
+        경기를 시작할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>}
+      </section>
+      {room.status==='waiting'&&room.players.length<2&&room.yourSeat===1&&
+       <aside className="arena-room-side" aria-label="상대 추가">
+        {process.env.ROOM_INVITES_UI_ENABLED==='true'&&process.env.FRIENDS_UI_ENABLED==='true'&&
+         <SendFriendRoomInvite roomId={room.id}/>}
+        <AddAiOpponent roomId={room.id}/>
+       </aside>}
+     </div>}
+  </main>
+ </div>;
 }
