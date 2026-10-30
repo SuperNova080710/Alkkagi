@@ -6,7 +6,7 @@ import { ArenaPanel } from '@/components/ui/arena';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import { CosmeticPreview } from './cosmetic-preview';
 import {
-  COSMETIC_STYLES, cosmeticErrorText, cosmeticUnlockLabel, equipCosmetic,
+  COSMETIC_STYLES, safeCosmeticCode, cosmeticErrorText, cosmeticUnlockLabel, equipCosmetic,
   type CosmeticInventory, type CosmeticItem,
 } from './cosmetic-api';
 
@@ -32,15 +32,9 @@ export function CosmeticCollection({
     <ArenaPanel title="현재 장착" className="arena-cosmetics-current">
       <div className="arena-cosmetics-loadout">
         <div><CosmeticPreview code={loadout.pieceCode} slot="piece"/>
-          <div><span>나의 알</span><strong>{COSMETIC_STYLES[
-            (Object.prototype.hasOwnProperty.call(COSMETIC_STYLES, loadout.pieceCode) &&
-              COSMETIC_STYLES[loadout.pieceCode as keyof typeof COSMETIC_STYLES].slot === 'piece'
-              ? loadout.pieceCode : 'piece-classic') as keyof typeof COSMETIC_STYLES].name}</strong></div></div>
+          <div><span>나의 알</span><strong>{COSMETIC_STYLES[safeCosmeticCode(loadout.pieceCode, 'piece')].name}</strong></div></div>
         <div><CosmeticPreview code={loadout.avatarCode} slot="avatar"/>
-          <div><span>나의 캐릭터</span><strong>{COSMETIC_STYLES[
-            (Object.prototype.hasOwnProperty.call(COSMETIC_STYLES, loadout.avatarCode) &&
-              COSMETIC_STYLES[loadout.avatarCode as keyof typeof COSMETIC_STYLES].slot === 'avatar'
-              ? loadout.avatarCode : 'avatar-classic') as keyof typeof COSMETIC_STYLES].name}</strong></div></div>
+          <div><span>나의 캐릭터</span><strong>{COSMETIC_STYLES[safeCosmeticCode(loadout.avatarCode, 'avatar')].name}</strong></div></div>
       </div>
     </ArenaPanel>
     {groups.map(({ slot, heading, description }) => {
