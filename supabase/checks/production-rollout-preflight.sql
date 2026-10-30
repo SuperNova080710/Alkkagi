@@ -7,7 +7,7 @@
 --  ready    = existing prerequisite or expected object/permission is correct
 --  pending  = object expected in future migration is not installed
 --  blocked  = existing object violates expected RLS/ACL/trigger/publication
---  inspect  = existing 004 RPC signature present, but limiter marker absent
+--  inspect  = existing 004 RPC; runtime limiter behavior NOT independently certified
 -- A "ready" report is NOT proof of migration-history integrity.
 
 with expected_objects(stage,kind,identifier) as (
@@ -60,13 +60,11 @@ with expected_objects(stage,kind,identifier) as (
   from expected_objects o
 )
 select 'object'::text as category,e.stage,e.identifier as check_key,
-  case when e.stage='004' and e.exists_now then
-    case when exists(
-      select 1 from pg_catalog.pg_proc p
-      where p.oid=to_regprocedure(e.identifier)
-        and p.prosrc like '%ROOM_ACTIVE_LIMIT%'
-        and p.prosrc like '%ROOM_RATE_LIMIT%'
-    ) then 'ready' else 'inspect' end
+  -- Never mark room-create throttling "ready" by matching exception
+  -- strings in pg_proc.prosrc: dead code/comments can spoof those markers.
+  -- Inspection of the actual 004 definition and independently reproduced
+  -- rate/active-room limits is a mandatory release gate.
+  case when e.stage='004' and e.exists_now then 'inspect'
   when e.exists_now then 'ready'
   when e.stage='base' then 'blocked' else 'pending' end as status
 from evaluated e
