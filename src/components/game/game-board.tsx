@@ -13,6 +13,7 @@ import { keyboardVector, DIRECTIONS, type Direction } from '@/lib/game/keyboard-
 import { getPlayerIdentities } from '@/lib/game/player-identity';
 import { GameIdentityHeading } from '@/components/game/game-identity-heading';
 import { GamePieces } from '@/components/game/game-pieces';
+import { useMatchCosmetics } from '@/components/game/use-match-cosmetics';
 import {MatchChat,type MatchMessage} from '@/components/game/match-chat';
 import {GameResult,type RatingChange} from '@/components/game/game-result';
 
@@ -43,12 +44,15 @@ type Props = {
  messages: MatchMessage[];
  rating?: RatingChange|null;
  mode?: 'casual' | 'ranked';
+ cosmeticsEnabled?: boolean;
 };
 
 export function GameBoard({
- match, userId, roomId, players, rematchReadyCount, myRematchVote, shots, messages, rating=null, mode='casual',
+ match, userId, roomId, players, rematchReadyCount, myRematchVote, shots, messages, rating=null, mode='casual', cosmeticsEnabled=false,
 }: Props) {
  const router = useRouter();
+ const opponentId = match.player1_id === userId ? match.player2_id : match.player1_id;
+ const cosmetics = useMatchCosmetics(userId, opponentId, cosmeticsEnabled);
  const [drag, setDrag] = useState<Drag | null>(null);
  const [pending, setPending] = useState(false);
  const [error, setError] = useState('');
@@ -198,7 +202,8 @@ export function GameBoard({
   .filter((item): item is NonNullable<typeof item> => item !== null);
  return <section className="game-screen mt-8">
   <GameIdentityHeading match={match} viewerId={userId} players={identities}
-   mode={mode} animating={animating} pending={pending} remaining={remaining}/>
+   mode={mode} animating={animating} pending={pending} remaining={remaining}
+   cosmetics={cosmetics} cosmeticsEnabled={cosmeticsEnabled}/>
   <div className="game-screen-body">
    <MatchChat matchId={match.id} userId={userId} firstPlayerId={match.player1_id}
     secondPlayerId={match.player2_id} players={players} messages={messages}
@@ -212,7 +217,7 @@ export function GameBoard({
       style={{ touchAction: 'none', width: '100%', display: 'block',
        cursor: myTurn && !pending ? 'crosshair' : 'default' }}>
       <CourtSurface/>
-      <GamePieces board={board} firstPlayerId={match.player1_id} viewerId={userId}/>
+      <GamePieces board={board} firstPlayerId={match.player1_id} viewerId={userId} cosmetics={cosmetics}/>
       {drag && <g>
        <line x1={drag.origin.x} y1={drag.origin.y}
         x2={drag.origin.x + (drag.origin.x - drag.at.x)}

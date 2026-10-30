@@ -30,6 +30,7 @@ export default async function AiRoomPage({params}:{params:Promise<{id:string}>})
     난이도 {DIFFICULTY_LABELS[game.difficulty]}</span>
   </div>
   <AiGameBoard key={game.room_id} game={game} nickname={profile?.nickname??'나'}
-   turns={((history??[]) as AiTurn[]).reverse()}/>
+   turns={((history??[]) as AiTurn[]).reverse()}
+   cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>
  </main></div>;
 }
