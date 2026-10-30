@@ -7,7 +7,7 @@ import { usePlayerResource } from '@/components/players/use-player-resource';
 import { CosmeticPreview } from './cosmetic-preview';
 import {
   COSMETIC_STYLES, safeCosmeticCode, isCosmeticInventory, cosmeticErrorText, cosmeticUnlockLabel, equipCosmetic,
-  type CosmeticItem,
+  type CosmeticInventory, type CosmeticItem,
 } from './cosmetic-api';
 
 const groups = [
