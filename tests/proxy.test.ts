@@ -17,6 +17,7 @@ describe('merged route protection scope', () => {
       '/api/messages/:path*',
       '/api/room-invites/:path*',
       '/api/experience/:path*',
+      '/api/cosmetics/:path*',
     ]));
   });
 });
