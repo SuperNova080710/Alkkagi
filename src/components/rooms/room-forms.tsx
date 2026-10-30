@@ -1,21 +1,31 @@
 'use client';
-import {useActionState} from 'react';
-import {createRoom,joinRoom} from '@/app/rooms/actions';
-export function RoomForms(){
- const [c,ca,cp]=useActionState(createRoom,{error:''});
- const [j,ja,jp]=useActionState(joinRoom,{error:''});
- return <div className="mt-8 grid gap-5 sm:grid-cols-2">
- <form action={ca} className="rounded-xl border border-slate-600 p-6">
- <h2 className="text-xl font-bold">방 만들기</h2>
- <p className="mt-3 text-slate-300">친구에게 전달할 8자리 초대 코드를 생성합니다.</p>
- <button disabled={cp} className="mt-5 rounded-lg bg-emerald-300 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{cp?'생성 중…':'방 생성'}</button>
- {c.error&&<p role="alert" className="mt-3 text-rose-300">{c.error}</p>}
- </form>
- <form action={ja} className="rounded-xl border border-slate-600 p-6">
- <h2 className="text-xl font-bold">방 참가하기</h2>
- <label htmlFor="invite" className="mt-3 block text-slate-300">초대 코드</label>
- <input id="invite" name="code" required maxLength={20} placeholder="ABCDEFGH" className="mt-2 block w-full rounded-lg border border-slate-500 bg-slate-900 p-3 uppercase" />
- <button disabled={jp} className="mt-4 rounded-lg border border-emerald-300 px-5 py-3 font-bold text-emerald-300 disabled:opacity-50">{jp?'참가 중…':'방 참가'}</button>
- {j.error&&<p role="alert" className="mt-3 text-rose-300">{j.error}</p>}
- </form></div>;
+import { useActionState } from 'react';
+import { createRoom, joinRoom } from '@/app/rooms/actions';
+
+export function RoomForms() {
+  const [create, createAction, creating] = useActionState(createRoom, { error: '' });
+  const [join, joinAction, joining] = useActionState(joinRoom, { error: '' });
+  return <div className="arena-room-form-grid">
+    <form action={createAction} className="arena-room-entry-card">
+      <span className="arena-room-card-mark" aria-hidden="true">01</span>
+      <h2>새로운 방 만들기</h2>
+      <p>초대 코드 또는 친구 초대로 함께 플레이할 방을 만듭니다.</p>
+      <button type="submit" disabled={creating} className="arena-button arena-button--gold">
+        {creating ? '방 생성 중…' : '방 만들기'}
+      </button>
+      {create.error && <p role="alert" className="arena-invite-error">{create.error}</p>}
+    </form>
+    <form action={joinAction} className="arena-room-entry-card arena-room-entry-card--join">
+      <span className="arena-room-card-mark" aria-hidden="true">02</span>
+      <h2>초대 코드로 참가</h2>
+      <p>친구에게 받은 8자리 코드를 입력해 방으로 이동합니다.</p>
+      <label htmlFor="invite">초대 코드</label>
+      <input id="invite" name="code" type="text" required maxLength={20}
+        autoComplete="off" spellCheck={false} placeholder="ABCDEFGH" className="arena-room-code-input"/>
+      <button type="submit" disabled={joining} className="arena-button arena-button--blue">
+        {joining ? '방 참가 중…' : '방 참가하기'}
+      </button>
+      {join.error && <p role="alert" className="arena-invite-error">{join.error}</p>}
+    </form>
+  </div>;
 }
