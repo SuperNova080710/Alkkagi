@@ -11,7 +11,7 @@
 - 메시지 전송은 `POST /api/messages/:peerId` + `{body,requestId}`. 양 끝 공백을 제거한 Unicode 1~500 코드포인트. 보내기 실패 시 본문을 바꾸지 않는 한 동일 UUID를 재사용해 멱등성 유지.
 - 상대의 최신 메시지는 `PUT /api/messages/:peerId/read`로 읽음 커서 동기화. 대화 상대에게 내 메시지를 읽었는지 보여주지 않음.
 - 한글 IME가 조합 중인 Enter는 전송하지 않으며 Shift+Enter로 줄바꿈.
-- 새 스레드/현재 스레드의 메시지는 Supabase Postgres Changes INSERT로 새로고침 트리거. **Realtime payload가 아닌 HTTP 응답**으로 데이터 재검증. WebSocket 유실 시 탭 포커스 복귀·가시성 복귀·수동 새로고침에서도 동기화.
+- 새 스레드/친구와의 메시지는 Supabase Postgres Changes INSERT로 새로고침 트리거(수락 친구 RLS에 따라 전달되는 이벤트만 접근). **Realtime payload가 아닌 HTTP 응답**으로 데이터 재검증. WebSocket 유실 시 탭 포커스 복귀·가시성 복귀·수동 새로고침에서도 동기화.
 - 401은 재로그인, 404는 친구 관계/차단 확인 + 로컬 대화 기록 비움, 429는 전송 속도 제한, 503은 이용 불가. 서버 SQL 원문 노출하지 않음.
 
 ## 기능 활성화 조건
