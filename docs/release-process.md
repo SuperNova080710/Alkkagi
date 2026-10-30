@@ -84,3 +84,11 @@ Preview 배포에서 동일 코드가 통과해도 Production에는 환경변수
 - 전환 전 PR #115/#138/#143은 이미 main에 병합된 상태였으므로 base 변경 대상이 아닙니다. **후속 신규 기능 및 문서 PR은 `develop`을 base**로 사용합니다.
 - `package.json`의 `0.1.0`은 소스 문자열일 뿐, 실제 확인된 정식 `v0.1.0` 태그나 GitHub Release는 없습니다. `CHANGELOG.md`의 Unreleased 항목도 공식 출시를 뜻하지 않습니다.
 - [상위 릴리스 이슈 #144](https://github.com/SuperNova080710/Alkkagi/issues/144)는 운영 정책 실제 동작·첫 RC 검증이 끝날 때까지 열어 둡니다.
+
+## PG17.11 운영 DB 사전 점검·릴리스 STOP 게이트 (2026-10-30)
+
+- [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161) / [운영 사전점검 문서(아직 PR 브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/ops-db-preflight/docs/db-rollout-preflight.md): 운영 Supabase PostgreSQL **17.11**에서 읽기 전용 68항목 검사. baseline 7 ready, 004 1 inspect(방 생성 제한 미반영), 005~009 60 pending. 실제 객체/이력 기준 004~009 미적용. 작업은 **조회만**, 운영 DDL·데이터 변경 없음.
+- 위 점검은 기능을 **배포할 수 있다는 승인**이 아닙니다. 출시에 앞서 004→009 순차 적용 설계와 선행·후행 API 호환성, 백업/복구, 테이블/RLS/GRANT/Realtime, PG17 실제 스테이징 및 2계정 E2E를 확인해야 합니다. PG16 기반 과거 동시성 CI와 PG17 운영 실증을 구분합니다.
+- [XP UI PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)는 `develop` 대상 검토 중, `EXPERIENCE_UI_ENABLED` 기본 OFF. 코스메틱 UI는 #162~#165 작업 중. 운영 SQL 008/009 적용·실사용 확인 전 일반 기능으로 노출하지 않습니다.
+- 기존 Production SHA `8cf4dc0`의 READY 상태는 #161 조사 기록에 있으나 **실 HTTP/사용자 E2E·Vercel 배포 제한 정책 검증을 대신하지 않습니다**. 첫 `release/vX.Y.Z` 수동 CLI Preview와 공식 버전 태그도 별도입니다.
+- #161은 Draft·미병합이므로 검사 SQL·STOP 문서를 `main`에 이미 있다고 간주하지 마세요. 운영 환경에서 임의 DDL을 실행하지 않습니다.
