@@ -22,42 +22,61 @@ describe('Public search indexing policy',()=>{
     expect(sitemap()).toEqual([]);
   });
 
-  it('allows a production crawler to find the home, but excludes private paths',()=>{
+  it('allows Googlebot to read noindex on private HTML pages in production',()=>{
     vi.stubEnv('VERCEL_ENV','production');
     const rule=robots();
-    expect(rule).toHaveProperty('sitemap',SITE_ORIGIN+'/sitemap.xml');
-    expect(rule).toMatchObject({rules:{
-      userAgent:'*',allow:'/',
-      disallow:expect.arrayContaining(['/auth/','/api/','/players','/rooms','/ranked','/lobby']),
-    }});
-    expect(JSON.stringify(rule)).not.toContain('/login');
-    expect(JSON.stringify(rule)).not.toContain('/signup');
+    expect(rule).toEqual({
+      rules:{userAgent:'*',allow:'/',disallow:['/api/','/auth/']},
+      sitemap:SITE_ORIGIN+'/sitemap.xml',
+    });
+    // A Disallow for HTML routes would hide their X-Robots-Tag from Googlebot.
+    const serialized=JSON.stringify(rule);
+    for(const path of ['/login','/signup','/lobby','/ranked','/rooms',
+      '/profile','/players','/friends']){
+      expect(serialized).not.toContain('"' + path + '"');
+    }
   });
 
-  it('denies all crawler paths in non-production deployments',()=>{
-    vi.stubEnv('VERCEL_ENV','preview');
-    expect(robots()).toEqual({rules:{userAgent:'*',disallow:'/'}});
-    vi.stubEnv('VERCEL_ENV','development');
-    expect(robots()).toEqual({rules:{userAgent:'*',disallow:'/'}});
+  it('allows crawler access to preview noindex, without advertising a sitemap',()=>{
+    for(const env of ['preview','development']){
+      vi.stubEnv('VERCEL_ENV',env);
+      expect(robots()).toEqual({
+        rules:{userAgent:'*',allow:'/',disallow:['/api/','/auth/']},
+      });
+      expect(sitemap()).toEqual([]);
+    }
   });
 
-  it('sets X-Robots-Tag noindex on authenticated production routes only',async()=>{
+  it('sets noindex on all protected HTML paths, leaving production home indexable',async()=>{
     vi.stubEnv('VERCEL_ENV','production');
     const h=await nextConfig.headers?.();
-    expect(h).toBeDefined();
-    expect(h?.some(x=>x.source==='/login')).toBe(true);
-    expect(h?.some(x=>x.source==='/rooms/:path*')).toBe(true);
-    expect(h?.some(x=>x.source==='/:path*')).toBe(false);
-    expect(h?.every(x=>x.headers.some(v=>v.key==='X-Robots-Tag'&&v.value==='noindex, nofollow'))).toBe(true);
+    const expected=[
+      '/login','/signup','/lobby/:path*','/ranked/:path*',
+      '/rooms/:path*','/profile/:path*','/players/:path*',
+      '/friends/:path*','/api/:path*','/auth/:path*',
+    ];
+    expect(h?.map(x=>x.source)).toEqual(expected);
+    expect(h?.some(x=>x.source==='/'||x.source==='/:path*')).toBe(false);
+    expect(h?.every(x=>x.headers.some(v=>v.key==='X-Robots-Tag'
+      &&v.value==='noindex, nofollow'))).toBe(true);
+
+    // HTML routes must NOT be blocked in robots.txt, so crawlers can read noindex.
+    const blocked=JSON.stringify(robots());
+    for(const source of expected.slice(0,8)){
+      expect(blocked).not.toContain(source.split('/')[1]);
+    }
   });
 
-  it('sets X-Robots-Tag noindex on every preview URL',async()=>{
-    vi.stubEnv('VERCEL_ENV','preview');
-    const h=await nextConfig.headers?.();
-    expect(h).toEqual([{
-      source:'/:path*',
-      headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}],
-    }]);
+  it('sets global noindex on preview HTML including home and private routes',async()=>{
+    for(const env of ['preview','development']){
+      vi.stubEnv('VERCEL_ENV',env);
+      expect(await nextConfig.headers?.()).toEqual([{
+        source:'/:path*',
+        headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'}],
+      }]);
+      // A blanket Disallow '/' would prevent bots from seeing this header.
+      expect(JSON.stringify(robots())).not.toContain('"disallow":"/"');
+    }
   });
 
   it('uses real game content rather than irrelevant keyword stuffing',()=>{
