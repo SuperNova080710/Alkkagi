@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { usePlayerResource } from '@/components/players/use-player-resource';
-import { inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
+import { inviteTime, isRoomUuid, roomInviteError, roomInviteMutation,
   type InviteFriends, type RoomInviteSent, type SentRoomInvite,
 } from './room-invite-api';
 
