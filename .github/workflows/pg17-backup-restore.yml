@@ -1,8 +1,14 @@
 name: PostgreSQL 17 backup and restore drill
 
 on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Optional full 40-character SHA from develop or release/v* (empty = selected ref HEAD)'
+        type: string
+        required: false
   push:
-    branches: ['feat/ops-pg17-restore-drill']
+    branches: ['feat/ops-pg17-restore-drill', 'chore/ci-release-gates']
     paths:
       - '.github/workflows/pg17-backup-restore.yml'
       - 'tests/pg17-migration-rollout.sql'
@@ -10,19 +16,23 @@ on:
       - 'tests/pg17-backup-restore-assertions.sql'
       - 'supabase/migrations/**'
   pull_request:
-    branches: [develop, 'release/**']
-    paths:
-      - '.github/workflows/pg17-backup-restore.yml'
-      - 'tests/pg17-migration-rollout.sql'
-      - 'tests/pg17-backup-source.sql'
-      - 'tests/pg17-backup-restore-assertions.sql'
-      - 'supabase/migrations/**'
+    branches: [develop, main]
+    # No paths filter: an app-only release/v* -> main PR MUST run all gates.
+    # The job if-condition below skips unrelated PRs without starting Docker.
 
 permissions:
   contents: read
 
 jobs:
   disposable-pg17-restore:
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+          ((github.base_ref == 'main' && startsWith(github.head_ref, 'release/v')) ||
+           (github.base_ref == 'develop' && startsWith(github.head_ref, 'chore/ci-'))))
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -40,7 +50,37 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
-      - uses: actions/checkout@v4
+      # Manual dispatch: obtain policy from the trusted default branch first.
+      # The user-provided target_sha is NEVER checked out or executed here.
+      - name: Checkout trusted policy from main
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: .release-policy
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate manual SHA using trusted policy before target checkout
+        if: github.event_name == 'workflow_dispatch'
+        id: validate
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          RELEASE_REF: ${{ github.ref_name }}
+          RELEASE_EVENT_SHA: ${{ github.sha }}
+          RELEASE_TARGET_SHA: ${{ inputs.target_sha }}
+        working-directory: .release-policy
+        run: bash scripts/ci/validate-release-target.sh
+      - name: Remove trusted policy staging checkout
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: rm -rf -- .release-policy
+      - name: Checkout verified target or PR merge commit
+        uses: actions/checkout@v4
+        with:
+          # Never derive a checkout ref directly from unverified user input.
+          ref: ${{ steps.validate.outputs.target_sha || github.sha }}
+          fetch-depth: 0
       - name: Verify isolated PostgreSQL 17 and restore a custom-format archive
         shell: bash
         env:
