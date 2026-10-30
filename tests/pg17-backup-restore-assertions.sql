@@ -107,19 +107,21 @@ begin;
 set local role authenticated;
 set local request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 do $take_invite$
-declare v_result jsonb;
+declare v_result jsonb; v_inbox jsonb; v_room jsonb;
 begin
+  -- Invitation table has NO authenticated SELECT grant by design.
+  -- Use the authorized inbox RPC to discover the invitation ID.
+  v_inbox:=public.list_received_room_invites();
+  if jsonb_array_length(v_inbox)<>1 then
+    raise exception 'RESTORE_INVITE_INBOX_MISSING'; end if;
   v_result:=public.respond_room_friend_invite(
-    (select id from public.room_friend_invites
-      where status='pending' limit 1),true
+    (v_inbox->0->>'id')::uuid,true
   );
+  v_room:=public.get_casual_room((v_result->>'roomId')::uuid);
   if v_result->>'status'<>'accepted'
-    or (select count(*) from public.room_players rp
-      join public.rooms r on r.id=rp.room_id
-      where r.code='RBCDEFGH' and rp.seat=2
-        and rp.user_id=auth.uid())<>1 then
+     or (v_room->>'yourSeat')::integer<>2 then
     raise exception 'RESTORE_INVITE_OR_ROOM_FK_FAILED'; end if;
-  raise notice 'PASS R5: invitation can be accepted after restore, FK seat assignment intact';
+  raise notice 'PASS R5: authorized inbox restored, invite accepted and seat2 assigned';
 end;
 $take_invite$;
 commit;
