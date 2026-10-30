@@ -1129,7 +1129,8 @@
 
 
 /* Experience V1 profile panels (#149): no board, lobby or API layout changes. */
-.arena-xp-panel {
+.arena-xp-panel,
+.arena-profile-grid .arena-xp-panel {
   margin-top: 14px;
   min-width: 0;
 }
