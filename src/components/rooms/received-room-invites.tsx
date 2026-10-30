@@ -6,13 +6,13 @@ import { useEffect, useRef, useState } from 'react';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import {
   inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
-  type ReceivedRoomInvite, type RoomInviteResponded,
+  validReceivedRoomInvites, type RoomInviteResponded,
 } from './room-invite-api';
 
 export function ReceivedRoomInvites() {
   const router = useRouter();
   const { data, error, loading, retry } =
-    usePlayerResource<ReceivedRoomInvite[]>('/api/room-invites');
+    usePlayerResource<unknown>('/api/room-invites');
   const [processing, setProcessing] = useState<string | null>(null);
   const inFlight = useRef(false);
   const [failure, setFailure] = useState<unknown>(null);
@@ -52,7 +52,7 @@ export function ReceivedRoomInvites() {
     }
   }
 
-  const received = Array.isArray(data) ? data : [];
+  const received = validReceivedRoomInvites(data);
   return <section className="arena-panel arena-received-invites" aria-labelledby="received-invites-title">
     <div className="arena-received-heading">
       <h2 id="received-invites-title">받은 대전 초대 ({received.length})</h2>
@@ -71,7 +71,7 @@ export function ReceivedRoomInvites() {
     {!loading && error == null && !received.length &&
       <p className="arena-received-empty">지금 받은 대전 초대가 없습니다.</p>}
     <ul className="arena-received-list">
-      {received.filter(invite => invite && isRoomUuid(invite.id) && isRoomUuid(invite.roomId)).map(invite =>
+      {received.map(invite =>
         <li key={invite.id}>
           <div><strong>{invite.inviterNickname || '친구'}</strong>
             <span>함께 일반전 한 판!</span>
