@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArenaHero, ArenaModeCard, ArenaShell } from '@/components/ui/arena';
+
+// Home is the only indexable page; never inherit a home canonical into private routes.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default function Home() {
   return <ArenaShell account={<Link href="/login" className="arena-login-link">로그인</Link>}>
