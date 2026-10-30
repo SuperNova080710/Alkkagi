@@ -7,7 +7,7 @@ import { shouldSubmitChatOnEnter } from '@/lib/chat/keyboard';
 import {
   DmApiError, canSendDm, dmBodyLength, dmConversationPath, dmErrorMessage, dmMutation,
   dmRequest, isDmPeerId, normalizedDmBody,
-  type DmFriends, type DmHistory, type DmInboxItem, type DmMessage, type DmPeer, type DmSent,
+  type DmFriends, type DmHistory, type DmInboxItem, type DmPeer, type DmSent,
 } from './message-api';
 
 type Props = { userId: string; initialPeer: string | null };
@@ -68,12 +68,8 @@ export function MessengerView({ userId, initialPeer }: Props) {
   }, [listRefresh]);
 
   useEffect(() => {
-    if (!selected || !isDmPeerId(selected)) {
-      setHistory(null); setLoadingHistory(false); setThreadError(null);
-      return;
-    }
+    if (!selected || !isDmPeerId(selected)) return;
     let current = true;
-    setLoadingHistory(true);
     dmRequest<DmHistory>(endpoint(selected) + '?limit=30').then(data => {
       if (!current) return;
       setHistory(data); setLoadingHistory(false); setThreadError(null);
@@ -144,7 +140,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
 
   function selectPeer(peerId: string) {
     if (!isDmPeerId(peerId) || selected === peerId) return;
-    setSelected(peerId); setHistory(null); setThreadError(null);
+    setSelected(peerId); setHistory(null); setThreadError(null); setLoadingHistory(true);
     setDraft(''); setSendError(null); setActivity(''); pendingRequest.current = null;
     readCursor.current = null; scrollRestore.current = null;
     window.history.replaceState(null, '', dmConversationPath(peerId));
