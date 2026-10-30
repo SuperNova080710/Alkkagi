@@ -135,10 +135,11 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 
 ## 최신 개발 중인 프론트 및 운영 사전점검 (2026-10-30)
 
-- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (develop 병합 완료): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현. 최종 Quality 49파일·249테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
-- **코스메틱 UI** [#162](https://github.com/SuperNova080710/Alkkagi/issues/162), 하위 #163~#165: 내 인벤토리·6종 미리보기·일반/랭크/AI 경기 알 외형 구현 예정. 아직 개발 PR/운영 SQL 009 결과 없음.
+- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (develop Squash 병합 `f6cb2e9`, main 미반영): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현. 최종 Quality 49파일·249테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
+- **코스메틱 UI** [#162](https://github.com/SuperNova080710/Alkkagi/issues/162), 하위 #163~#165: 내 인벤토리·6종 미리보기·일반/랭크/AI 경기 알 외형 구현 예정. UI PR #167이 develop 대상 검토 중이며 운영 SQL 009 적용은 별도.
 - **Production DB 사전점검** [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161): 실제 **PostgreSQL 17.11**, SELECT-only 68항목(기초 7 ready, 004 inspect 1, 005~009 pending 60). 이력/객체 미적용 확인, 실제 SQL DDL/운영 릴리스/PG17 쓰기 E2E는 하지 않음. PG16 경합 CI를 운영 PG17 검증으로 혼동 금지.
 - **릴리스 준비** #144: 전환 시점 `main`과 `develop` SHA `8cf4dc0` 일치(현시점은 #159 병합으로 분기), Vercel Production 마지막 확인 READY(#161 기록), 첫 RC Preview·실제 Git 자동 Preview 제한 효과·버전 태그/릴리스는 미확인. 운영 DB 적용 전 `docs/db-rollout-preflight.md`(PR #161 브랜치)에 정의된 STOP 조건 검토 필수.
+- **PG17 일회용 통합** [Draft PR #171](https://github.com/SuperNova080710/Alkkagi/pull/171): disposable PostgreSQL 17에서 SQL 004~009 순차 적용·XP/코스메틱/권한 CI 통과(운영 Supabase·실계정 E2E는 수행하지 않음).
 - 작성 범위: 이번 문서 PR [#160](https://github.com/SuperNova080710/Alkkagi/pull/160)에서 문서/이슈만 업데이트하며 기능 코드·운영 DB·Vercel 설정은 수정하지 않음.
 
 ## 계획 변경 이력
