@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import { inviteTime, isRoomUuid, roomInviteError, roomInviteMutation,
-  type InviteFriends, type RoomInviteSent, type SentRoomInvite,
+  validInviteFriends, validSentRoomInvites, type RoomInviteSent,
 } from './room-invite-api';
 
 /** Only mounted by a server-verified host of a waiting, unfilled casual room. */
@@ -15,9 +15,9 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
   const [feedback, setFeedback] = useState('');
   const [failure, setFailure] = useState<unknown>(null);
   const { data: friends, error: friendsError, loading: friendsLoading, retry: retryFriends } =
-    usePlayerResource<InviteFriends>('/api/friends');
+    usePlayerResource<unknown>('/api/friends');
   const { data: sent, error: sentError, loading: sentLoading, retry: retrySent } =
-    usePlayerResource<SentRoomInvite[]>(isRoomUuid(roomId)
+    usePlayerResource<unknown>(isRoomUuid(roomId)
       ? '/api/room-invites/sent?roomId=' + encodeURIComponent(roomId) : null);
 
   useEffect(() => {
@@ -28,9 +28,12 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
     return () => { window.removeEventListener('focus', focus); document.removeEventListener('visibilitychange', refresh); };
   }, [retrySent]);
 
+  const invitees = validInviteFriends(friends);
+  const sentList = validSentRoomInvites(sent);
+
   async function send() {
     if (busy.current || !isRoomUuid(roomId) || !isRoomUuid(selected) ||
-        !Array.isArray(friends?.friends) || !friends.friends.some(friend => friend.id === selected)) return;
+        !invitees.some(friend => friend.id === selected)) return;
     busy.current = true; setPending(true); setFeedback(''); setFailure(null);
     try {
       const result = await roomInviteMutation<RoomInviteSent>('/api/room-invites', {
@@ -44,8 +47,6 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
       busy.current = false; setPending(false);
     }
   }
-  const invitees = Array.isArray(friends?.friends) ? friends.friends : [];
-  const sentList = Array.isArray(sent) ? sent.filter(invite => invite && isRoomUuid(invite.id) && typeof invite.status === 'string') : [];
   return <section className="arena-wait-invites" aria-label="친구 초대">
     <div className="arena-wait-invites-head">
       <div><h3>친구에게 대전 초대</h3><p>친구가 수락하면 이 방의 두 번째 자리에 입장합니다.</p></div>
