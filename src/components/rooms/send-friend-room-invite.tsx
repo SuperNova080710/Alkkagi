@@ -30,7 +30,7 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
 
   async function send() {
     if (busy.current || !isRoomUuid(roomId) || !isRoomUuid(selected) ||
-        !friends?.friends.some(friend => friend.id === selected)) return;
+        !Array.isArray(friends?.friends) || !friends.friends.some(friend => friend.id === selected)) return;
     busy.current = true; setPending(true); setFeedback(''); setFailure(null);
     try {
       const result = await roomInviteMutation<RoomInviteSent>('/api/room-invites', {
@@ -45,7 +45,7 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
     }
   }
   const invitees = Array.isArray(friends?.friends) ? friends.friends : [];
-  const sentList = Array.isArray(sent) ? sent : [];
+  const sentList = Array.isArray(sent) ? sent.filter(invite => invite && isRoomUuid(invite.id) && typeof invite.status === 'string') : [];
   return <section className="arena-wait-invites" aria-label="친구 초대">
     <div className="arena-wait-invites-head">
       <div><h3>친구에게 대전 초대</h3><p>친구가 수락하면 이 방의 두 번째 자리에 입장합니다.</p></div>
