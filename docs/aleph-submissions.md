@@ -49,7 +49,7 @@ P2/P3 시점 제출·증빙 원본은 변경하지 않습니다.
 
 ## 2026-10-30 추가 개발·운영 인수
 
-- [XP 프로필 UI PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159): `develop` 검토 중. [UI 인수 문서(PR 브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/ui-experience-levels-v1/docs/experience-ui-v1.md), 운영 SQL 008 미적용·기능 플래그 기본 OFF
+- [XP 프로필 UI PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159): **`develop` 병합 완료** (`f6cb2e9`), `main`/Production 미반영. [UI 인수 문서(develop)](https://github.com/SuperNova080710/Alkkagi/blob/develop/docs/experience-ui-v1.md), 운영 SQL 008 미적용·기능 플래그 기본 OFF
 - [코스메틱 UI #162](https://github.com/SuperNova080710/Alkkagi/issues/162): 하위 #163~#165, 실제 인벤토리/에셋/게임판 외형 화면 진행 중, 운영 SQL 009 미적용
 - [PG17 사전점검 Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161): 운영 PostgreSQL 17.11 SELECT-only 68항목 검사(기초 7 ready, 004 inspect 1, 005~009 pending 60), [STOP/운영 인수 문서(PR 브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/ops-db-preflight/docs/db-rollout-preflight.md)
 - GitHub 코드의 main/develop 병합은 운영 마이그레이션·첫 Release Candidate·실사용/Google Search Console 인수를 대신하지 않습니다.
