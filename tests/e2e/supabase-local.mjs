@@ -25,7 +25,12 @@ function assertLocalDatabase(urlValue) {
   assert.equal(url.pathname, '/postgres', 'Refusing non-test database');
 }
 function requireData(response,step) {
-  if (response.error) throw Error(step+' returned '+response.error.code+' '+response.error.message);
+  // An upstream error message may include request details. Never print it in
+  // GitHub Actions logs; only emit a bounded, non-secret error code.
+  if (response.error) {
+    const code=String(response.error.code || 'UNKNOWN').replace(/[^A-Za-z0-9_]/g,'').slice(0,40);
+    throw Error(step+' failed ('+(code || 'UNKNOWN')+')');
+  }
   assert.notEqual(response.data,null,step+' returned empty data');
   return response.data;
 }
@@ -64,7 +69,7 @@ async function run() {
         email:'alkkagi-e2e-'+label+'-'+suffix+'@example.com',
         password,
       }),10000,'GoTrue signup '+label);
-      assert.ifError(result.error);
+      if (result.error) throw Error('GoTrue signup '+label+' failed');
       assert.ok(result.data.user?.id,'Missing registered identity');
       assert.ok(result.data.session?.access_token,'Local Auth must return a JWT session');
       return result.data.user.id;
@@ -97,10 +102,12 @@ async function run() {
     const sessionB=await b.auth.getSession();
     assert.ok(sessionB.data.session?.access_token);
     b.realtime.setAuth(sessionB.data.session.access_token);
-    const message='E2E-DM-'+suffix;
-    let delivered;
+    // SUBSCRIBED confirms channel join, not that the logical replication
+    // stream is ready. Observe real JWT/RLS-filtered database events instead
+    // of depending on a fixed delay after SUBSCRIBED.
+    const seenBodies=new Map();
+    const waitingForBody=new Map();
     let eventsSeen=0;
-    const received=new Promise((resolve)=>{delivered=resolve;});
     let readyResolve,readyReject;
     const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
     channel=b.channel('alkkagi-e2e-'+suffix)
@@ -108,8 +115,9 @@ async function run() {
         event:'INSERT',schema:'public',table:'dm_messages',
       },(event)=>{
         eventsSeen++;
-        if(event.new?.body===message && event.new?.sender_id===userA)
-          delivered(event.new);
+        if(event.new?.sender_id!==userA || typeof event.new?.body!=='string') return;
+        seenBodies.set(event.new.body,event.new);
+        waitingForBody.get(event.new.body)?.(event.new);
       })
       .subscribe((status)=>{
         if(status==='SUBSCRIBED')readyResolve();
@@ -117,19 +125,47 @@ async function run() {
           readyReject(Error('Realtime channel '+status));
       });
     await bounded(ready,25000,'Realtime subscription');
-    // SUBSCRIBED acknowledges channel join; the logical replication stream
-    // can still need a short initialisation window on a fresh local stack.
-    await new Promise((resolve)=>setTimeout(resolve,1500));
-    const msg=requireData(await a.rpc('send_direct_message',{
-      p_peer:userB,p_body:message,p_request_id:randomUUID(),
-    }),'DM send');
-    assert.equal(msg.body,message);
+
+    async function waitForBody(body,timeoutMs){
+      if(seenBodies.has(body)) return seenBodies.get(body);
+      let resolveBody;
+      const notification=new Promise((resolve)=>{resolveBody=resolve;});
+      waitingForBody.set(body,resolveBody);
+      try {
+        return await bounded(notification,timeoutMs,'Realtime RLS-filtered DM INSERT');
+      } finally {
+        waitingForBody.delete(body);
+      }
+    }
+
+    // Each attempt is a real, unique, local-only DM sent through the public
+    // RPC. A retry cannot invent an event or bypass B's JWT/SELECT RLS.
+    // Waiting 3s between writes also respects the 1s server DM rate limit.
+    let message, msg, delivered;
+    for(let attempt=0;attempt<5;attempt++){
+      message='E2E-DM-'+suffix+'-'+attempt;
+      msg=requireData(await a.rpc('send_direct_message',{
+        p_peer:userB,p_body:message,p_request_id:randomUUID(),
+      }),'DM send');
+      assert.equal(msg.body,message);
+      try {
+        delivered=await waitForBody(message,3000);
+        break;
+      } catch (error) {
+        if(attempt===4) {
+          throw Error('Realtime INSERT not observed after 5 messages; events seen='+eventsSeen);
+        }
+        // Only a bounded missing-event timeout is retried. Other checks,
+        // including the RPC, must succeed independently.
+        if(!String(error.message).includes('timed out')) throw error;
+      }
+    }
+    assert.ok(delivered,'Expected JWT-authorized Realtime INSERT');
+    assert.equal(String(delivered.id),String(msg.id),'WebSocket row must match the RPC response');
     const history=requireData(await b.rpc('get_direct_messages',{
       p_peer:userA,p_before_id:null,p_limit:20,
     }),'DM read');
-    assert.ok(history.messages.some((m)=>m.body===message));
-    await bounded(received,20000,'Realtime RLS-filtered DM INSERT')
-      .catch((err)=>{throw Error(err.message+'; received DB events='+eventsSeen);});
+    assert.ok(history.messages.some((m)=>m.id===String(msg.id) && m.body===message));
     console.log('PASS DM + Realtime: friend-only message delivered over B authenticated WebSocket');
 
     const room=requireData(await a.rpc('create_casual_room',{
