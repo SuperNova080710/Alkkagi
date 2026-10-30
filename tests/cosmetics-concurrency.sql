@@ -97,7 +97,11 @@ begin
  perform result from dblink('equip_first',
    'select public.equip_my_cosmetic(''piece-forest'')::text') as t(result text);
  perform dblink_exec('equip_first','commit');
- update public.cosmetic_items set published=false where code='piece-forest';
+ -- Commit the moderator's change in an independent admin session before
+ -- another connection reads it; the enclosing verification function is a
+ -- single transaction and its own uncommitted UPDATE would be invisible.
+ perform dblink_exec('equip_first',
+   'update public.cosmetic_items set published=false where code=''piece-forest''');
  perform dblink_exec('equip_other','begin');
  perform dblink_exec('equip_other','set local role authenticated');
  perform dblink_exec('equip_other',format('set local request.jwt.claim.sub = %L',v_b));
@@ -112,7 +116,8 @@ begin
      where user_id=v_a::uuid)<>'piece-forest' then
    raise exception 'Unpublish unexpectedly altered stored equipment';
  end if;
- update public.cosmetic_items set published=true where code='piece-forest';
+ perform dblink_exec('equip_first',
+   'update public.cosmetic_items set published=true where code=''piece-forest''');
  perform dblink_disconnect('equip_other');
  perform dblink_disconnect('equip_second');
  perform dblink_disconnect('equip_first');
