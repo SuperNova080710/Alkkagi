@@ -180,7 +180,7 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | 로비 카드·사이드바 높이/간격 | **PR #117/#119/#121 병합** | #119에서 #117의 원치 않은 패딩 변경 원복; 실제 브라우저 QA 별도 |
 | 와이드 히어로 이미지/텍스트 | **PR #123/#125 병합** | Chromium 재구성 fixture 확인, 실제 앱 E2E는 별도 |
 | 친구 요청·차단 백엔드 + UI | **PR #76/#96 병합** | SQL 005 운영 적용 미확인; `FRIENDS_UI_ENABLED` 기본 OFF, 실제 A/B E2E 미검증 |
-| 친구 1:1 DM·읽음 | **PR #81 병합** | SQL 006 적용 미확인, **메신저 전용 화면 미구현** |
+| 친구 1:1 DM·읽음·메신저 UI | **PR #81/#143 병합** | SQL 006 적용 미확인. `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED` 둘 다 명시적으로 true일 때만 화면 표시, 기본 OFF. 실제 A/B·Realtime E2E 미확인 |
 | 친구 대전방 초대 백엔드 | **PR #90 병합** | SQL 007 적용 미확인, 초대 발신·수신 UI 미구현 |
 | 방 생성 남용 제한 | PR #69 병합 | SQL 004 운영 적용 미확인 |
 | XP·레벨 시스템 | **PR #110 main 병합** | SQL 008 운영 적용 및 사용자 UI 미완료; PG16 독립 연결 경합·Quality CI 통과(44파일/216테스트) |
@@ -189,5 +189,9 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | 공개 알까기 규칙·조작법·FAQ | **PR #137 main 병합** | `/how-to-play` 공개 페이지·홈 링크·SEO 사이트맵 2건 통합 CI 통과; 실제 Production HTTP/E2E 별도 |
 
 Vercel Free 배포 한도 이후 최신 SHA의 Preview/Production이 READY인지 확인되지 않은 작업은 배포 성공으로 표시하지 않았습니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 008/009도 main에 SQL 소스가 포함됐지만 **운영 적용은 별도 확인·승인**이 필요합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
+
+**브랜치·릴리스 정책(2026-10-30):** [PR #148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합으로 `main`은 승인 후 Production 릴리스 전용, `develop`은 기능 통합, `release/vX.Y.Z`는 RC 검증 브랜치로 구분합니다. 기능·수정 PR은 `develop`으로 작성하고, 릴리스 후보에서만 수동 Vercel CLI Preview를 수행합니다. `vercel.json`은 Git 자동 배포를 `main`으로 제한합니다. **실제 Vercel 정책 적용·첫 RC CLI Preview·공식 릴리스 태그는 아직 확인되지 않았습니다.** [릴리스 운영 매뉴얼](docs/release-process.md) · [CHANGELOG](CHANGELOG.md).
+
+새로운 XP 프로필 UI는 [#149](https://github.com/SuperNova080710/Alkkagi/issues/149)에서 설계·진행 중이며, `EXPERIENCE_UI_ENABLED` 기본 OFF를 유지합니다. 게임판/랭크 RP에 영향을 주는 기능으로 오해하면 안 됩니다.
 
 자세한 담당/파일 경계와 검증 근거: **[2026-10-30 최신 인수 현황](docs/current-status-2026-10-30.md)**. [2026-10-29 문서](docs/current-status-2026-10-29.md)는 당시 스냅샷으로 보존합니다.
