@@ -8,7 +8,7 @@
 
 - 시스템은 아이템 코드, 슬롯, **보유·해금·장착 데이터**만 관리합니다.
 - 디자인 채팅은 각 코드에 맞는 알/캐릭터 이미지·아이콘·애니메이션 및 프로필/대기실 UI를 담당합니다. **새 이미지·에셋의 실체가 이미 구현됐다는 뜻이 아닙니다.**
-- 이번 `202610290009_cosmetics_v1.sql`은 기존 프로필 공개 설정 `003`과 랭크 `006`을 선행 요구하지만, 경험치 [Draft PR #110](https://github.com/SuperNova080710/Alkkagi/pull/110) / `008`을 반드시 먼저 적용해야 하는 것은 아닙니다.
+- 이번 `202610290009_cosmetics_v1.sql`은 기존 프로필 공개 설정 `003`과 랭크 `006`을 선행 요구하지만, 경험치 [병합된 PR #110](https://github.com/SuperNova080710/Alkkagi/pull/110) / `008`은 GitHub main에 포함됐지만 **운영 Supabase에 자동 적용되지는 않습니다**. 코스메틱은 008 적용 전에도 동작하도록 개발됐습니다.
 - 경험치 테이블 `public.player_progress`가 **없으면 Lv.1로 처리해 레벨 아이템을 잠급니다**. XP 마이그레이션이 적용되면 서버에서 최신 누적 XP로 레벨을 계산해 자동 해금합니다. 클라이언트가 XP/랭크 승수를 제출하는 API는 없습니다.
 
 ## 코스메틱 기본 카탈로그
@@ -100,6 +100,6 @@ PUT 요청은 `Origin` 동일 출처, `Content-Type: application/json`, **2KiB**
 - [ ] GitHub CI lint/typecheck/PGlite·HTTP/Build 최종 통과
 - [ ] Vercel Preview 최신 SHA READY(Free 배포 횟수 제한 시 상태 구분)
 - [ ] 운영 Supabase `009` 적용·2계정 브라우저 E2E 및 XP `008` 연동/랭크 승리 재현
-- [ ] 동시 장착 경합(실제 서로 다른 PostgreSQL 연결)은 단일 PGlite 테스트와 별도 확인
+- [ ] 독립 PostgreSQL 16 다중 연결 장착 경합과 게시 상태 변경 공개 범위 테스트 (`tests/cosmetics-concurrency.sql`, CI 결과 성공 후 완료 표시). PGlite 단일 연결과 구분
 
 **사용자 지시: PR 작성까지만 진행하고 main 병합 및 운영 Supabase DDL을 적용하지 않습니다.**
