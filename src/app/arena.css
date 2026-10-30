@@ -1597,6 +1597,25 @@
 }
 
 
+/* In-match avatar cosmetics: decorative only, within the existing compact HUD. */
+.game-avatar-cosmetic {
+  display: inline-block;
+  position: relative;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.game-avatar-cosmetic .arena-cosmetic-preview--compact {
+  position: absolute;
+  left: -16px;
+  top: -16px;
+  transform: scale(.52);
+  transform-origin: center;
+}
+
 /* UI V6 (#179): shared playful 3D look for the waiting room, invites, and entry forms. */
 .arena-waiting--v2 {
   min-height: 100dvh;
