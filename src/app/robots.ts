@@ -2,25 +2,21 @@ import type {MetadataRoute} from 'next';
 import {isSearchProduction,SITE_ORIGIN} from '@/lib/seo/site';
 
 export default function robots():MetadataRoute.Robots {
-  // Preview URLs should not compete with the production canonical domain.
-  if (!isSearchProduction()) {
-    return {rules:{userAgent:'*',disallow:'/'}};
-  }
+  // noindex must be crawlable: robots Disallow would prevent Googlebot from
+  // reading the X-Robots-Tag on private HTML pages and preview deployments.
+  // Authentication and RLS, not robots.txt, protect private application data.
+  const rules:MetadataRoute.Robots['rules'] = {
+    userAgent:'*',
+    allow:'/',
+    // These are non-HTML endpoints, not the indexable page surface.
+    disallow:['/api/','/auth/'],
+  };
+
+  // Do not advertise a sitemap for Preview; every Preview response is noindex.
+  if (!isSearchProduction()) return {rules};
+
   return {
-    rules:{
-      userAgent:'*',
-      allow:'/',
-      disallow:[
-        '/api/',
-        '/auth/',
-        '/lobby',
-        '/ranked',
-        '/rooms',
-        '/profile',
-        '/players',
-        '/friends',
-      ],
-    },
+    rules,
     sitemap:`${SITE_ORIGIN}/sitemap.xml`,
   };
 }
