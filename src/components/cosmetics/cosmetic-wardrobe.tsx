@@ -7,7 +7,7 @@ import { usePlayerResource } from '@/components/players/use-player-resource';
 import { CosmeticPreview } from './cosmetic-preview';
 import {
   COSMETIC_STYLES, cosmeticErrorText, cosmeticUnlockLabel, equipCosmetic,
-  type CosmeticInventory, type CosmeticItem, type CosmeticLoadout, type CosmeticSlot,
+  type CosmeticInventory, type CosmeticItem,
 } from './cosmetic-api';
 
 const groups = [
@@ -82,7 +82,6 @@ export function CosmeticWardrobe() {
   const [busyCode, setBusyCode] = useState<string | null>(null);
   const [errorText, setErrorText] = useState('');
   const [notice, setNotice] = useState('');
-  const [confirmedLoadout, setConfirmedLoadout] = useState<CosmeticLoadout | null>(null);
 
   async function onEquip(code: string) {
     if (busyCode || !data?.items.some(item => item.code === code && canEquip(item))) return;
@@ -91,8 +90,7 @@ export function CosmeticWardrobe() {
     setNotice('');
     try {
       // The server determines ownership/unlock status; client never writes inventory rows.
-      const next = await equipCosmetic(code);
-      setConfirmedLoadout(next);
+      await equipCosmetic(code);
       setNotice('장착이 변경되었습니다. 최신 인벤토리를 확인합니다.');
       retry();
     } catch (cause) {
@@ -108,8 +106,6 @@ export function CosmeticWardrobe() {
 
   const validData = data && data.loadout && Array.isArray(data.items) &&
     Number.isFinite(data.level) && Number.isFinite(data.rankedWins) ? data : null;
-  const shown = validData && confirmedLoadout
-    ? { ...validData, loadout: confirmedLoadout } : validData;
   return <div className="arena-cosmetics-wardrobe">
     {loading && <p role="status" className="arena-muted">보유 아이템을 불러오고 있습니다…</p>}
     {error != null && <ArenaPanel title="꾸미기 정보를 확인할 수 없습니다">
@@ -121,10 +117,10 @@ export function CosmeticWardrobe() {
     </ArenaPanel>}
     {data && !validData && <p role="alert" className="arena-cosmetics-warning">
       아이템 정보 형식이 올바르지 않습니다. 새로고침 후 다시 확인해 주세요.</p>}
-    {shown && <CosmeticCollection inventory={shown} busyCode={busyCode} onEquip={code => { void onEquip(code); }}/>}
+    {validData && <CosmeticCollection inventory={validData} busyCode={busyCode} onEquip={code => { void onEquip(code); }}/> }
     <p className="arena-cosmetics-alert" role="status" aria-live="polite">{notice}</p>
     {errorText && <div className="arena-cosmetics-warning" role="alert">{errorText}
-      <button type="button" onClick={() => { setErrorText(''); setConfirmedLoadout(null); retry(); }}>다시 조회</button>
+      <button type="button" onClick={() => { setErrorText(''); retry(); }}>다시 조회</button>
     </div>}
   </div>;
 }
