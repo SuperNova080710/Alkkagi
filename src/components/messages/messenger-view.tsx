@@ -41,7 +41,6 @@ export function MessengerView({ userId, initialPeer }: Props) {
   const listRef = useRef<HTMLOListElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
   const scrollRestore = useRef<{ height: number; top: number } | null>(null);
-  const activeThread = history?.threadId;
 
   const refreshAll = useCallback(() => {
     setListRefresh(count => count + 1);
@@ -125,21 +124,22 @@ export function MessengerView({ userId, initialPeer }: Props) {
     const threads = db.channel('dm-inbox-' + userId)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dm_threads' },
         () => setListRefresh(n => n + 1)).subscribe();
-    const messages = activeThread ? db.channel('dm-messages-' + activeThread)
+    // Subscribe across authorized friend threads so unopened conversations also
+    // refresh their unread badges. RLS limits event access; REST remains authority.
+    const messages = db.channel('dm-messages-inbox-' + userId)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'dm_messages',
-        filter: 'thread_id=eq.' + activeThread,
-      }, () => refreshAll()).subscribe() : null;
+      }, () => refreshAll()).subscribe();
     return () => {
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibility);
       void db.removeChannel(threads);
-      if (messages) void db.removeChannel(messages);
+      void db.removeChannel(messages);
     };
-  }, [activeThread, userId, refreshAll]);
+  }, [userId, refreshAll]);
 
   function selectPeer(peerId: string) {
-    if (!isDmPeerId(peerId) || selected === peerId) return;
+    if (!isDmPeerId(peerId) || selected === peerId || sending || olderLoading) return;
     setSelected(peerId); setHistory(null); setThreadError(null); setLoadingHistory(true);
     setDraft(''); setSendError(null); setActivity(''); pendingRequest.current = null;
     readCursor.current = null; scrollRestore.current = null;
@@ -232,14 +232,14 @@ export function MessengerView({ userId, initialPeer }: Props) {
         <button type="button" className="arena-dm-reload" onClick={refreshAll} disabled={loadingList}>새로고침</button>
       </div>
       {loadingList && <p role="status" className="arena-muted">친구와 대화를 불러오고 있습니다…</p>}
-      {listError && <p role="alert" className="arena-dm-error">{dmErrorMessage(listError)}</p>}
+      {listError != null && <p role="alert" className="arena-dm-error">{dmErrorMessage(listError)}</p>}
       {!loadingList && !listError && !choices.length && <div className="arena-dm-empty">
         <p>아직 대화할 친구가 없습니다.</p>
         <Link href="/friends" className="arena-text-link">친구 목록에서 요청하기 ›</Link>
       </div>}
       <ul className="arena-dm-peers">
         {choices.map(item => <li key={item.id}>
-          <button type="button" aria-current={selected === item.id ? 'true' : undefined}
+          <button type="button" aria-current={selected === item.id ? 'true' : undefined} disabled={sending || olderLoading}
             className={'arena-dm-peer' + (selected === item.id ? ' is-selected' : '')}
             onClick={() => selectPeer(item.id)}>
             <span className="arena-dm-avatar" aria-hidden="true">●</span>
@@ -264,7 +264,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
           {person && <Link href={'/players/' + person.id} className="arena-text-link">프로필 ›</Link>}
         </header>
         {loadingHistory && !history && <p role="status" className="arena-muted">대화를 불러오고 있습니다…</p>}
-        {threadError && <div className="arena-dm-error" role="alert">
+        {threadError != null && <div className="arena-dm-error" role="alert">
           <p>{dmErrorMessage(threadError)}</p>
           <button type="button" onClick={refreshAll}>다시 시도</button>
         </div>}
@@ -294,7 +294,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
                 {sending ? '전송 중…' : '전송'}
               </button>
             </div>
-            {sendError && <p role="alert" className="arena-dm-error">{dmErrorMessage(sendError)}</p>}
+            {sendError != null && <p role="alert" className="arena-dm-error">{dmErrorMessage(sendError)}</p>}
             <p role="status" className="arena-dm-feedback">{activity}</p>
           </form>
         </>}
