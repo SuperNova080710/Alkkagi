@@ -1893,3 +1893,25 @@
   .arena-waiting--v2 .arena-invite { grid-template-columns: 1fr; }
   .arena-waiting--v2 .arena-invite > button { grid-column: 1; grid-row: auto; }
 }
+
+/* Specificity bridge from the legacy waiting-room rules to the V6 theme. */
+.arena-waiting--v2 .game-page-header h1 { font-size: clamp(25px, 3vw, 35px); }
+.arena-waiting--v2 .arena-room-stage {
+  border-radius: 22px;
+  border-color: var(--arena-line);
+  background: var(--arena-cream);
+}
+.arena-waiting--v2 .arena-room-seats li {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 106px;
+  background: #f8e9c7;
+  border-color: #e2b75d;
+  border-radius: 16px;
+  text-align: left;
+}
+.arena-waiting--v2 .arena-room-seats li:nth-child(2) { background: #e5f1f5; border-color: #8bbdcf; }
+@media (max-width: 639px) {
+  .arena-waiting--v2 .arena-room-seats li { min-height: 82px; }
+}
