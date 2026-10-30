@@ -1,4 +1,4 @@
-# Alkkagi Arena — ALEPH 프로젝트 계획 v8
+# Alkkagi Arena — ALEPH 프로젝트 계획 v10
 
 > 갱신일: 2026-10-30. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
 > 이 문서는 작업 시작용 GitHub 버전입니다. ALEPH 제출용 상세 계획서 원본과 함께 관리하고, 변경 시 사유와 버전을 기록합니다.
@@ -124,6 +124,24 @@
 
 P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합니다. ALEPH 최종 접수/승인 여부는 별도 확인이 필요합니다.
 
+## 릴리스 브랜치 및 기능 활성화 계획 v9 (2026-10-30)
+
+- [PR #148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합으로 `develop` 통합 → `release/vX.Y.Z` QA·수동 Preview → `main` 승인 병합·Production → 배포 확인 후 `vX.Y.Z` 태그·GitHub Release 순서로 전환합니다. 기존 열린 PR을 임의로 재대상화하지 않습니다.
+- `vercel.json`에는 Git 자동 배포를 `main`으로 제한하는 설정이 병합됐지만, **정책 실제 적용 및 첫 RC CLI Preview는 아직 확인 전**입니다. 현재 공식 릴리스 버전과 태그는 미확정이고, `package.json 0.1.0`을 이미 배포된 릴리스로 간주하지 않습니다.
+- [PR #143](https://github.com/SuperNova080710/Alkkagi/pull/143) 친구 1:1 메신저 UI 코드 병합. `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED` 기본 OFF이며, SQL 004→005→006·두 계정 E2E/Realtime 검증·운영 플래그 활성화는 별도입니다.
+- XP UI [#149](https://github.com/SuperNova080710/Alkkagi/issues/149): 본인/공개 프로필 진행률과 최근 보상 UI가 **PR #159로 develop 병합 완료**됐습니다. `EXPERIENCE_UI_ENABLED` 기본 OFF, SQL 008 미확인. 코스메틱 SQL 009·외형 UI 및 운영 활성화도 미완료입니다.
+- SEO #131/#137 코드는 병합됐지만 실제 Production HTTP·Search Console 소유권/색인 요청은 별도입니다.
+- [릴리스 프로세스](docs/release-process.md) · [통합 현황](docs/current-status-2026-10-30.md).
+
+## 최신 개발 중인 프론트 및 운영 사전점검 (2026-10-30)
+
+- **XP 프로필 UI** [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (develop Squash 병합 `f6cb2e9`, main 미반영): 본인/공개 XP·레벨 카드와 보상 이력(본인만)을 구현. 최종 Quality 49파일·249테스트 PASS. `EXPERIENCE_UI_ENABLED` 기본 OFF, 운영 SQL 008·실계정/모바일 E2E 미완료.
+- **코스메틱 UI** [#162](https://github.com/SuperNova080710/Alkkagi/issues/162), 하위 #163~#165: 내 인벤토리·6종 미리보기·일반/랭크/AI 경기 알 외형 구현 예정. UI PR #167이 develop 대상 검토 중이며 운영 SQL 009 적용은 별도.
+- **Production DB 사전점검** [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161): 실제 **PostgreSQL 17.11**, SELECT-only 68항목(기초 7 ready, 004 inspect 1, 005~009 pending 60). 이력/객체 미적용 확인, 실제 SQL DDL/운영 릴리스/PG17 쓰기 E2E는 하지 않음. PG16 경합 CI를 운영 PG17 검증으로 혼동 금지.
+- **릴리스 준비** #144: 전환 시점 `main`과 `develop` SHA `8cf4dc0` 일치(현시점은 #159 병합으로 분기), Vercel Production 마지막 확인 READY(#161 기록), 첫 RC Preview·실제 Git 자동 Preview 제한 효과·버전 태그/릴리스는 미확인. 운영 DB 적용 전 `docs/db-rollout-preflight.md`(PR #161 브랜치)에 정의된 STOP 조건 검토 필수.
+- **PG17 일회용 통합** [Draft PR #171](https://github.com/SuperNova080710/Alkkagi/pull/171): disposable PostgreSQL 17에서 SQL 004~009 순차 적용·XP/코스메틱/권한 CI 통과(운영 Supabase·실계정 E2E는 수행하지 않음).
+- 작성 범위: 이번 문서 PR [#160](https://github.com/SuperNova080710/Alkkagi/pull/160)에서 문서/이슈만 업데이트하며 기능 코드·운영 DB·Vercel 설정은 수정하지 않음.
+
 ## 계획 변경 이력
 
 | 버전 | 날짜 | 내용 |
@@ -136,5 +154,7 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 | v6 | 2026-10-29 | UI·보안·친구·DM 초기 코드 병합 상태와 운영 미확인 구분 |
 | v7 | 2026-10-30 | #90/#96 및 PC·로비·히어로 개선 병합 반영. XP/코스메틱/SEO Draft와 운영 DB·배포·E2E 검증 경계 |
 | v8 | 2026-10-30 | #110 XP, #115 코스메틱, #131 SEO, #137 공개 가이드 병합; PG16 경합 검사·운영 DDL/실사용 E2E 경계 명시 |
+| v9 | 2026-10-30 | 메신저 UI 병합, develop/RC/main 릴리스 체계 및 기능별 플래그·운영 검증 미완료 경계 반영 |
+| v10 | 2026-10-30 | XP UI #159, 코스메틱 UI #162, PG17.11 사전점검 #161 및 STOP/릴리스 인수 현황 반영 |
 
 ALEPH는 반 추가 과제가 아닌 프리미엄 앱 프로젝트 P1→P2→P3만 진행합니다.
