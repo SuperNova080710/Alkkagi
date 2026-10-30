@@ -1,0 +1,58 @@
+name: PostgreSQL 17 full migration rollout
+
+on:
+  push:
+    branches: ['feat/ops-pg17-rollout']
+    paths:
+      - 'tests/pg17-migration-rollout.sql'
+      - 'supabase/migrations/**'
+      - '.github/workflows/pg17-migration-rollout.yml'
+  pull_request:
+    branches: [develop, 'release/**']
+    paths:
+      - 'tests/pg17-migration-rollout.sql'
+      - 'supabase/migrations/**'
+      - '.github/workflows/pg17-migration-rollout.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pg17-disposable-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client (disposable DB only)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Enforce isolated test connection
+        shell: bash
+        env:
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGDATABASE" = postgres
+          actual=$(psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')
+          echo "Disposable PostgreSQL version: $actual"
+          test "$actual" -ge 170000
+          test "$actual" -lt 180000
+          psql -X -v ON_ERROR_STOP=1 -f tests/pg17-migration-rollout.sql

@@ -51,7 +51,7 @@ Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, 
 **PR이 검토·병합되고 Vercel production 배포가 완료된 후** 아래를 순서대로 실행합니다. PR 또는 Preview가 존재하는 것만으로 Google 검색에 자동 등록되는 것은 아닙니다.
 
 1. 브라우저의 시크릿 창에서 [정식 사이트](https://alkkagi-alpha.vercel.app/) 열기: 로그인 없이 홈페이지가 열려야 합니다. 응답은 HTTP 200이어야 하고, 홈에는 `X-Robots-Tag: noindex`가 없어야 합니다. Vercel Deployment Protection이 production 페이지를 가로막는 경우 해당 도메인을 공개하도록 설정해야 합니다.
-2. [robots.txt](https://alkkagi-alpha.vercel.app/robots.txt)에서 `Allow: /`, `Disallow: /api/`, `Disallow: /auth/`와 `Sitemap: https://alkkagi-alpha.vercel.app/sitemap.xml` 확인. **HTML 경로 `/lobby`, `/rooms`, `/players` 등은 Disallow에 포함하지 않습니다.** [sitemap.xml](https://alkkagi-alpha.vercel.app/sitemap.xml)에서 홈 주소 한 건 확인.
+2. [robots.txt](https://alkkagi-alpha.vercel.app/robots.txt)에서 `Allow: /`, `Disallow: /api/`, `Disallow: /auth/`와 `Sitemap: https://alkkagi-alpha.vercel.app/sitemap.xml` 확인. **HTML 경로 `/lobby`, `/rooms`, `/players` 등은 Disallow에 포함하지 않습니다.** [sitemap.xml](https://alkkagi-alpha.vercel.app/sitemap.xml)에서 공개 홈 `/`과 가이드 `/how-to-play` **두 건** 확인.
 3. [Google Search Console](https://search.google.com/search-console/welcome)에서 **URL 접두어(URL prefix)** → `https://alkkagi-alpha.vercel.app/` 속성을 추가합니다. `vercel.app`의 DNS 전체에 대한 권한을 요구하는 도메인 속성이 아니라 URL 접두어 방식으로 설정합니다.
 4. 소유권 확인에서 **HTML 태그** 방식을 선택합니다. 예: `<meta name="google-site-verification" content="YOUR_TOKEN" />`. `YOUR_TOKEN` **값만** Vercel 해당 프로젝트의 환경 변수 `GOOGLE_SITE_VERIFICATION`에 production 범위로 넣습니다. 검증 토큰은 GitHub 소스에 직접 커밋하지 않습니다.
 5. production을 다시 배포하고 페이지 소스에서 `google-site-verification` meta가 실제로 출력되는지 확인한 다음 Search Console의 **확인** 버튼을 누릅니다. HTML 확인 토큰을 제거하면 확인이 해제될 수 있으므로 보존합니다. Vercel Free 배포 한도에 걸리면 제한이 해제된 후 진행합니다.
@@ -84,3 +84,9 @@ Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, 
 - [ ] **사용자 소유 Google Search Console**: HTML 태그 인증, 사이트맵 제출, URL 색인 요청 및 보고서 모니터링
 
 **이 브랜치 작업은 PR 작성까지만이며 production 배포와 Google 검색 색인 완료를 주장하지 않습니다.**
+
+## GitHub 병합 이후 현황 (2026-10-30)
+
+- 기술 SEO [PR #131](https://github.com/SuperNova080710/Alkkagi/pull/131) 및 공개 가이드 [PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137)는 모두 **main 병합**됐습니다. 위 '병합 후 진행' 항목은 작성 당시 단계입니다.
+- 코드상 production 사이트맵은 홈/가이드 2건이며, Google Search Console 속성 인증, Production 실제 URL/robots/noindex HTTP 검사, 사이트맵 제출·색인 생성 요청 및 실제 검색 순위 확인은 **별도로 미확인**입니다.
+- URL 접두어 검색 콘솔 인증은 사용자 Google 계정 작업이 필요하며, 검색 상단 노출은 보장되지 않습니다. 최신 릴리스는 [운영 매뉴얼](release-process.md) 기준 RC 승인 뒤 main Production 검증을 수행합니다.

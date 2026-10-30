@@ -103,3 +103,10 @@ PUT 요청은 `Origin` 동일 출처, `Content-Type: application/json`, **2KiB**
 - [ ] 독립 PostgreSQL 16 다중 연결 장착 경합과 게시 상태 변경 공개 범위 테스트 (`tests/cosmetics-concurrency.sql`, CI 결과 성공 후 완료 표시). PGlite 단일 연결과 구분
 
 **사용자 지시: PR 작성까지만 진행하고 main 병합 및 운영 Supabase DDL을 적용하지 않습니다.**
+
+## 병합 및 운영 인수 상태 (2026-10-30)
+
+- 코스메틱 API/SQL [PR #115](https://github.com/SuperNova080710/Alkkagi/pull/115)는 **main 병합 완료**. 통합 Quality 46개 테스트 파일·231개 테스트 및 PG16 독립 연결 장착 경합/게시 비공개 외형 마스킹 검사 통과(병합 PR 기록).
+- `202610290009_cosmetics_v1.sql` 운영 적용, 실제 로그인 사용자 아이템 해금·장착, 안전한 외형 에셋/UI 및 Production/Realtime E2E는 **확인되지 않았습니다**. 본문 과거 'PR 작성까지만/미병합' 문구는 해당 작업 브랜치 기준 기록입니다.
+- XP 레벨 조건 아이템은 **선행 SQL 008** 및 실제 XP 보상을 필요로 합니다. 백엔드 병합만으로 사용자에게 코스메틱 기능이 제공된다고 표시하지 마세요.
+- 신규 UI 작업과 설정·에셋 구현은 디자인 담당 이슈에서 별도로 분리하고, 릴리스 정책상 `develop` 대상 PR로 진행합니다.

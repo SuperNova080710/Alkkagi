@@ -107,3 +107,15 @@ GitHub: 상위 [#105](https://github.com/SuperNova080710/Alkkagi/issues/105) · 
 - [ ] 운영 DB 004~008 선행 migration 기록/테이블 확인, 실제 적용은 사용자 별도 승인 후
 
 **PR 작성까지만 진행합니다. 병합하거나 운영 Supabase 데이터베이스에 SQL을 적용하지 않습니다.**
+
+## 병합 및 후속 UI 계약 현황 (2026-10-30)
+
+- XP/레벨 백엔드 [PR #110](https://github.com/SuperNova080710/Alkkagi/pull/110)은 **main 병합 완료**. CI 44개 테스트 파일/216개 테스트 및 PostgreSQL 16 독립 연결에서 XP/RP 원자성·경합 검증 성공(병합 PR 기록).
+- `202610290008_xp_levels_v1.sql` 운영 적용, 실계정 지급/E2E는 **마지막 조회 기준 확인되지 않았습니다**. 본 문서의 이전 'PR까지만/미병합' 안내는 작업 당시 이력입니다.
+- 프로필 XP 진행률/최근 보상/타인 공개 레벨 화면은 **디자인 상위 #149(하위 #150·#151)에서 진행 중**. `EXPERIENCE_UI_ENABLED`는 기본 OFF로 설계되어 있으며 운영 DDL·수용 E2E 없이 활성화하면 안 됩니다.
+- 신규 UI/문서 기능 PR의 기본 base는 릴리스 정책 [#148](https://github.com/SuperNova080710/Alkkagi/pull/148)에 따라 `develop`입니다.
+
+## XP UI develop 병합 후속 정정 (2026-10-30)
+
+- [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)는 **`develop`에 Squash 병합 완료**(`f6cb2e9`). 본인/공개 플레이어 레벨·진행률 UI와 본인만 보상 이력을 표시하며, 관련 화면 계약은 [develop의 UI 인수 문서](https://github.com/SuperNova080710/Alkkagi/blob/develop/docs/experience-ui-v1.md)를 참조합니다.
+- `main` 릴리스, `EXPERIENCE_UI_ENABLED` 운영 활성화, SQL 008 적용, 실제 두 사용자·반응형 E2E는 **완료되지 않았습니다**.
