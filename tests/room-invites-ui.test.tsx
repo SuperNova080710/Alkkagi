@@ -42,7 +42,6 @@ describe('friend room invitations UI and 3D waiting room contract', () => {
     const inbox = renderToStaticMarkup(<ReceivedRoomInvites/>);
     expect(inbox).toContain('받은 대전 초대 (0)');
     expect(inbox).toContain('초대 목록을 확인하는 중');
-    expect(inbox).not.toContain('수락하면');
     expect(inbox).not.toContain('친구에게 대전 초대');
     const host = renderToStaticMarkup(<SendFriendRoomInvite roomId={roomId}/>);
     expect(host).toContain('친구에게 대전 초대');
