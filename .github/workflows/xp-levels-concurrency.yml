@@ -1,0 +1,49 @@
+name: XP PostgreSQL settlement concurrency
+
+on:
+  push:
+    branches: ['feat/backend-xp-levels-v1']
+    paths:
+      - 'tests/xp-levels-concurrency.sql'
+      - 'supabase/migrations/202610290008_xp_levels_v1.sql'
+      - '.github/workflows/xp-levels-concurrency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/xp-levels-concurrency.sql'
+      - 'supabase/migrations/202610290008_xp_levels_v1.sql'
+      - '.github/workflows/xp-levels-concurrency.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  independent-postgres-connections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify concurrent XP award caps, rating settlement, rollback
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/xp-levels-concurrency.sql
