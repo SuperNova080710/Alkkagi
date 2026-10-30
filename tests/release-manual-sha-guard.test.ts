@@ -40,7 +40,7 @@ function runValidate(options:{
       RELEASE_EVENT_SHA:options.eventSha??sourceRelease,
     },
   });
-  return {exit:r.status,output:readFileSync(output,'utf8'),stderr:r.stderr};
+  return {exit:r.status,output:readFileSync(output,'utf8'),stdout:r.stdout};
 }
 
 describe('trusted-policy manual SHA admission negative tests (#190)',()=>{
@@ -95,7 +95,7 @@ describe('trusted-policy manual SHA admission negative tests (#190)',()=>{
     const result=runValidate({targetSha:attacker});
     expect(result.exit).not.toBe(0);
     expect(result.output).toBe('');
-    expect(result.stderr).toContain('not reachable');
+    expect(result.stdout).toContain('not reachable');
   });
 
   it('accepts an authorized release commit and binds exactly that SHA as step output',()=>{
