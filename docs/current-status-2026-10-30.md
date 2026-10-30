@@ -1,6 +1,6 @@
 # Alkkagi Arena — 현재 개발·운영 상태 및 인수인계 (2026-10-30)
 
-> **기준 시점:** 2026-10-30 KST, GitHub `main` HEAD `8cf4dc06b5069f917a1604b53c50a73b1d8242fc` (후속 확인 기준). 2026-10-30 문서 작업 착수 전 재조회에서 기존 일반 이슈 **101건**, PR **48건**(당시 열린 PR 0건). 이후 문서 작업 이슈 #152~#154와 **문서 PR #160(open, develop 대상)**이 추가됐습니다(문서화 이슈 #134 이후 신규 생성분은 집계 제외). 이후 같은 날 공개 가이드 PR #137 및 문서 PR #138이 생성됐습니다. 현황은 계속 변할 수 있으며 최신 이슈/PR 상태가 우선합니다.
+> **기준 시점:** 2026-10-30 KST, `main`과 `develop` 모두 `8cf4dc06b5069f917a1604b53c50a73b1d8242fc`. 이번 최신화 조회에서 기존 PR **51건** 중 열린 PR은 **#159(XP UI), #160(본 문서 PR), #161(DB 사전점검)**입니다. 이슈·PR 수량은 조회 시점의 스냅샷이며 이후 변경될 수 있습니다.
 >
 > **핵심 구분:** GitHub 병합 ≠ Supabase 운영 마이그레이션 적용 ≠ Vercel 최신 SHA 배포 ≠ 실제 두 계정·기기 E2E 성공. 아래 운영 항목은 관련 이슈에 기록된 **최종 확인 시점**을 인용합니다. 이 문서화 작업에서 운영 환경에 직접 변경을 가하지 않았습니다.
 
@@ -46,17 +46,30 @@
 
 [릴리스 운영 매뉴얼](release-process.md) · [CHANGELOG](../CHANGELOG.md)
 
+## 2-2. 진행 중인 기능 UI 및 운영 사전점검 PR (2026-10-30)
+
+| PR / 이슈 | 최신 확인 내용 | 아직 완료되지 않은 일 |
+| --- | --- | --- |
+| [#159 XP 프로필 UI](https://github.com/SuperNova080710/Alkkagi/pull/159) · #149/#150/#151 | `develop` 대상 **open**, HEAD `a897dd6`; 본인/공개 레벨·게이지·최근 보상(본인 한정), `EXPERIENCE_UI_ENABLED` 기본 OFF. Quality #40982884363 **49파일/248테스트 PASS** | develop 병합 검토, SQL 008 운영 적용, 2계정 공개 범위 E2E, 모바일/200% 확대 수동 QA |
+| [#161 DB preflight](https://github.com/SuperNova080710/Alkkagi/pull/161) · #155~#158 | `develop` 대상 **Draft·미병합**, HEAD `7419ecad`; SELECT-only 68항목, Push #40982978730·PR #40983087335 **49파일/245테스트 PASS** | 운영 SQL **실제 적용 불가/미실행**, PG17 스테이징·백업·권한/동시성/E2E·RC STOP 게이트 수용 |
+| [#162 코스메틱 UI](https://github.com/SuperNova080710/Alkkagi/issues/162) · #163~#165 | 인벤토리·6종 미리보기·알 외형을 일반/랭크/AI 화면에 연결하는 디자인 이슈가 개설됨 | 화면 구현 PR 및 에셋·브라우저 수용/운영 SQL 009 전부 별도 |
+
+**운영 확인 출처:** #155 및 PR #161은 **Supabase Production PostgreSQL 17.11**의 카탈로그/마이그레이션을 읽기 전용으로 조회해 **68항목 중 baseline 7 ready, 004 1 inspect, 005~009 60 pending**을 기록했습니다. 004의 방 생성 RPC는 있으나 5회/10분 제한의 소스 마커가 없고, 005~009 핵심 객체가 존재하지 않습니다. `main`과 `develop`의 SHA `8cf4dc0`과 Production Vercel 최신 READY 보고가 있지만, 이는 운영 DB 적용·실제 HTTP/로그인/Realtime E2E 성공이 아닙니다. **실제 배포 정책 적용/첫 수동 RC Preview도 별도 검증**입니다. 이 수치는 PR 기록에 근거하며 본 문서 작업에서 운영 DB를 새로 조회하거나 수정하지 않았습니다.
+
+- [DB 운영 사전점검 PR 브랜치 문서](https://github.com/SuperNova080710/Alkkagi/blob/feat/ops-db-preflight/docs/db-rollout-preflight.md) — main에는 아직 포함되지 않습니다.
+- [XP UI PR 브랜치 문서](https://github.com/SuperNova080710/Alkkagi/blob/feat/ui-experience-levels-v1/docs/experience-ui-v1.md) — main에는 아직 포함되지 않습니다.
+
 ## 3. Supabase 운영 DB 및 배포의 정확한 경계
 
 | SQL | GitHub 상태 | 마지막 확인된 운영 적용 상태 |
 | --- | --- | --- |
 | P1~P3 초기 SQL, AI 002, 플레이어 검색 003 | 병합 | 이전 제출/운영 확인 기록 존재 |
-| `202610290004_security_room_create_limits.sql` | #69 병합 | **2026-10-29 조회에서 적용 이력 없음** |
-| `202610290005_friends_v1.sql` | #76 병합 | **당시 미적용** |
+| `202610290004_security_room_create_limits.sql` | #69 병합 | **2026-10-30 PG17.11 점검에서 미적용/제한 마커 없음** |
+| `202610290005_friends_v1.sql` | #76 병합 | **2026-10-30 PG17.11 점검에서 미적용** |
 | `202610290006_direct_messages_v1.sql` | #81 병합 | **당시 미적용** |
 | `202610290007_room_friend_invites_v1.sql` | #90 **병합** | **당시 미적용** |
-| `202610290008_xp_levels_v1.sql` | #110 **병합** | main 소스 포함, 운영 적용 미진행(마지막 확인 기준) |
-| `202610290009_cosmetics_v1.sql` | #115 **병합** | main 소스 포함, 운영 적용 미진행(마지막 확인 기준) |
+| `202610290008_xp_levels_v1.sql` | #110 **병합** | main 소스 포함, **2026-10-30 운영 PG17.11 사전점검에서 적용 이력·객체 없음** |
+| `202610290009_cosmetics_v1.sql` | #115 **병합** | main 소스 포함, **2026-10-30 PG17.11 사전점검에서 미적용** |
 
 **운영 재점검 우선:** 실제 `schema_migrations` 적용 이력과 테이블/RPC/RLS/GRANT를 직접 다시 확인하세요. 004→005→006→007은 파일 번호 순서와 함수 의존성을 검증하고 적용해야 하며, 초대 007은 친구 005가 선행되어야 합니다. XP 008은 기존 경기/AI 테이블에 의존하고, 코스메틱 009는 레벨에 따라 008과 연동됩니다. 번호만으로 무조건 SQL을 재실행하지 마세요.
 
@@ -78,7 +91,7 @@
 1. **DB/보안 담당** [#16](https://github.com/SuperNova080710/Alkkagi/issues/16), [#62](https://github.com/SuperNova080710/Alkkagi/issues/62), [#65](https://github.com/SuperNova080710/Alkkagi/issues/65): 004~007 실제 적용/권한/누출 비밀번호 제한 및 실계정 악용·경쟁 검증.
 2. **친구·초대/DM 통합** [#72](https://github.com/SuperNova080710/Alkkagi/issues/72), [#77](https://github.com/SuperNova080710/Alkkagi/issues/77), [#82](https://github.com/SuperNova080710/Alkkagi/issues/82), [#92](https://github.com/SuperNova080710/Alkkagi/issues/92): 005~007 실제 DB·두 계정 E2E·UI 활성화·친구 초대 UI. DM 화면 코드는 PR #143으로 병합됐으나 기본 OFF.
 3. **UI 수용** [#102](https://github.com/SuperNova080710/Alkkagi/issues/102), [#118](https://github.com/SuperNova080710/Alkkagi/issues/118), [#122](https://github.com/SuperNova080710/Alkkagi/issues/122), [#124](https://github.com/SuperNova080710/Alkkagi/issues/124): 병합된 CSS/반응형 조정의 실제 앱 크기별·200% zoom·긴 데이터 접근 및 미세 스크롤 확인.
-4. **XP·코스메틱 인수** [#110](https://github.com/SuperNova080710/Alkkagi/pull/110), [#115](https://github.com/SuperNova080710/Alkkagi/pull/115): 두 PR은 병합됐으나 DB 008/009는 별도 운영 검증과 승인 필요. 코스메틱 외형·XP UI는 후속 디자인 이슈에서 구현.
+4. **XP·코스메틱 인수** [#110](https://github.com/SuperNova080710/Alkkagi/pull/110), [#115](https://github.com/SuperNova080710/Alkkagi/pull/115): 두 PR은 병합됐으나 DB 008/009는 별도 운영 검증과 승인 필요. XP UI #159는 코드 PR 검토 중, 코스메틱 외형 UI는 #162~#165에서 진행. SQL 008/009 운영 적용은 둘 다 미완료.
 5. **SEO·공개 가이드** [#131](https://github.com/SuperNova080710/Alkkagi/pull/131), [#137](https://github.com/SuperNova080710/Alkkagi/pull/137): 코드 통합 완료. 남은 작업은 Production HTTP/robots/sitemap 2건 검증과 Search Console 등록·색인 요청, 공개 UI 접근성 확인.
 6. **ALEPH** [#3](https://github.com/SuperNova080710/Alkkagi/issues/3): 최종 제출 접수 여부 확인 후 상태 정리.
 
