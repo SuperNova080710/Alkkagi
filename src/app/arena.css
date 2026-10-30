@@ -1934,3 +1934,96 @@
 @media (max-width: 639px) {
   .arena-waiting--v2 .arena-room-seats li { min-height: 82px; }
 }
+
+
+/* Issue #104: responsive viewport and zoom safety, preserving content scroll. */
+/* The header may contain six destinations and an account control. At 200% zoom
+   the CSS viewport often lands here; wrap instead of creating page-wide overflow. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .arena-header {
+    flex-wrap: wrap;
+    column-gap: 14px;
+    row-gap: 6px;
+  }
+  .arena-nav {
+    flex: 1 1 420px;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: clamp(6px, 1.5vw, 18px);
+    row-gap: 2px;
+  }
+  .arena-nav a {
+    white-space: nowrap;
+  }
+  .arena-account {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}
+
+/* Short widescreens must leave space for the lobby's *actual* sidebar and
+   recovery content. Tall screens still use the larger banner and lettering.
+   Natural document scroll remains available if data is longer than the viewport. */
+@media (min-width: 1600px) and (min-height: 900px) and (max-height: 999px) {
+  .arena-wrap:has(> main > .arena-home-modes) > main > .arena-hero {
+    min-height: 244px;
+  }
+  .arena-wrap:has(> main > .arena-lobby-grid) > main > .arena-hero--compact {
+    min-height: 220px;
+  }
+  .arena-hero h1,
+  .arena-hero--compact h1 {
+    font-size: clamp(62px, 7.1dvh, 74px);
+    margin: 5px 0 7px;
+  }
+  .arena-hero-copy,
+  .arena-hero--compact .arena-hero-copy {
+    padding-block: 10px;
+  }
+  .arena-eyebrow { font-size: 13px; }
+  .arena-hero-tagline {
+    font-size: 14px;
+    margin-top: 4px;
+    padding-block: 4px;
+  }
+}
+
+/* At narrow CSS widths (mobile, text enlargement, or high browser zoom),
+   flexible labels and cards must never force horizontal document scroll. */
+@media (max-width: 639px) {
+  .arena-hero h1,
+  .arena-hero--compact h1 {
+    font-size: clamp(31px, 12.5vw, 49px);
+  }
+  .arena-nav {
+    min-width: 0;
+    justify-content: center;
+    row-gap: 2px;
+  }
+  .arena-nav a {
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 360px) {
+  .arena-home-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .arena-mode {
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 8px;
+  }
+  .arena-mode-art {
+    min-width: 0;
+  }
+  .arena-mode-heading,
+  .arena-mode-actions {
+    min-width: 0;
+  }
+  .arena-mode-heading h2 {
+    font-size: clamp(19px, 6.5vw, 24px);
+  }
+}
