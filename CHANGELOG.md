@@ -20,13 +20,15 @@
 
 **검증 경계:** 위 내용은 병합된 코드의 **미출시 변경 기록**입니다. 운영 SQL 004~009·실제 기능 플래그/Production 배포·사용자 E2E는 완료했다고 주장하지 않습니다.
 
-### In progress — 아직 미병합
+### develop 통합 완료 — 아직 Production 릴리스 아님
 
-- XP 프로필 레벨·최근 보상 카드 [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (`develop` 대상, 기능 플래그 기본 OFF)
+- XP 프로필 레벨·최근 보상 카드 [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159) (`develop`에 Squash 병합 `f6cb2e9`, `main` 미반영, 기능 플래그 기본 OFF, 운영 SQL 008 미적용 및 E2E 미완료)
+
+### 진행 중 — 미병합
 - PostgreSQL 17.11 운영 DB read-only preflight [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161) (운영 SQL 변경 없음)
 - 코스메틱 인벤토리·외형 UI [이슈 #162](https://github.com/SuperNova080710/Alkkagi/issues/162) (개발 진행 중)
 
-위 항목은 **미병합 작업**으로, 위쪽 `Unreleased`에 기록된 이미 병합된 코드와 구분됩니다.
+위 **진행 중** 항목은 아직 미병합이며, **develop 통합 완료** 항목도 `main` 릴리스/실운영 활성화와 다릅니다. 위쪽 `Unreleased` 기록 역시 공식 릴리스 버전 발행을 의미하지 않습니다.
 
 ## Release policy
 - 최초 릴리스 기준 버전은 배포와 Production 확인 후 확정합니다. 기존 `package.json`의 `0.1.0`을 이미 배포·태깅된 공식 릴리스로 소급 주장하지 않습니다.
