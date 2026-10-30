@@ -7,11 +7,12 @@ import nextConfig from '../next.config';
 afterEach(()=>{vi.unstubAllEnvs();});
 
 describe('Public search indexing policy',()=>{
-  it('publishes a sitemap with only the indexable production home',()=>{
+  it('publishes a sitemap with only the indexable public homepage and guide',()=>{
     vi.stubEnv('VERCEL_ENV','production');
-    expect(sitemap()).toEqual([{
-      url:SITE_ORIGIN,changeFrequency:'weekly',priority:1,
-    }]);
+    expect(sitemap()).toEqual([
+      {url:SITE_ORIGIN,changeFrequency:'weekly',priority:1},
+      {url:SITE_ORIGIN+'/how-to-play',changeFrequency:'monthly',priority:0.7},
+    ]);
     expect(SITE_ORIGIN).toBe('https://alkkagi-alpha.vercel.app');
   });
 

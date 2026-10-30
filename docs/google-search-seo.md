@@ -21,12 +21,12 @@
 | 링크 공유/검색 메타 | `metadataBase`, Open Graph, Twitter summary, description | `src/app/layout.tsx` |
 | Google 소유권 확인 | 선택적 `GOOGLE_SITE_VERIFICATION` 메타 태그 | `src/app/layout.tsx` |
 | robots.txt | production·preview의 HTML 크롤링 허용(비색인 헤더 확인용), `/api/`·`/auth/` 크롤링 제한 | `src/app/robots.ts` |
-| sitemap.xml | production 공개 홈페이지 1건만 | `src/app/sitemap.ts` |
+| sitemap.xml | production 공개 홈페이지와 `/how-to-play` 가이드 2건만 | `src/app/sitemap.ts` |
 | 검색 비색인 | private 페이지/로그인/가입: `X-Robots-Tag: noindex,nofollow` | `next.config.ts` |
 | 중복 Preview 방지 | Vercel Preview/개발 환경 전체 noindex(응답 헤더·메타). robots는 HTML을 허용해 이를 읽게 함 | 위 metadata/robots/next.config |
 | QA | production/preview 분기, sitemap 내용, 사적 경로 헤더 테스트 | `tests/seo.test.ts` |
 
-검색 대상은 **공개 홈페이지 1개**입니다. 로그인 후 플레이어 프로필, 방 번호, 경기, 개인 정보, API URL은 사이트맵에 절대 넣지 않습니다. 로그인/가입, 로비·랭크·방·프로필·플레이어 검색·친구 목록 등의 **HTML 경로는 robots.txt에서 크롤링을 허용**하되, HTTP `X-Robots-Tag: noindex, nofollow`로 색인을 금지합니다. 크롤러가 해당 헤더를 읽어야 검색 결과 제외가 유효하기 때문입니다. 기존 페이지/컴포넌트의 화면 배치나 텍스트·스타일은 건드리지 않았습니다.
+검색 대상은 **공개 홈페이지와 규칙 가이드 2개**입니다. 로그인 후 플레이어 프로필, 방 번호, 경기, 개인 정보, API URL은 사이트맵에 절대 넣지 않습니다. 로그인/가입, 로비·랭크·방·프로필·플레이어 검색·친구 목록 등의 **HTML 경로는 robots.txt에서 크롤링을 허용**하되, HTTP `X-Robots-Tag: noindex, nofollow`로 색인을 금지합니다. 크롤러가 해당 헤더를 읽어야 검색 결과 제외가 유효하기 때문입니다. 기존 페이지/컴포넌트의 화면 배치나 텍스트·스타일은 건드리지 않았습니다.
 
 ## 크롤링과 색인 정책 — PR #131 리뷰 보완
 
@@ -36,11 +36,11 @@ Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, 
 
 | URL 종류 | Production robots | Production 비색인 | Preview/개발 |
 | --- | --- | --- | --- |
-| 공개 홈 `/` | Allow | noindex 없음, sitemap에 1건 | robots Allow + 전역 noindex |
+| 공개 홈 `/`·가이드 `/how-to-play` | Allow | noindex 없음, sitemap에 2건 | robots Allow + 전역 noindex |
 | `/login`, `/signup` | Allow | X-Robots-Tag noindex,nofollow | robots Allow + 전역 noindex |
 | `/lobby`, `/ranked`, `/rooms/*`, `/profile/*`, `/players/*`, `/friends/*` | Allow | X-Robots-Tag noindex,nofollow | robots Allow + 전역 noindex |
 | `/api/*`, `/auth/*` | Disallow (트래픽 관리) | X-Robots-Tag도 지정하지만 robots로 차단되어 검색엔진이 확인한다고 보장할 수 없음 | Disallow + 전역 noindex, 같은 제약 |
-| `/sitemap.xml` | Allow | 공개 홈만 안내 | 빈 사이트맵 |
+| `/sitemap.xml` | Allow | 공개 홈과 공개 가이드만 안내 | 빈 사이트맵 |
 
 **보안 경계:** robots.txt의 Allow/Disallow는 접근 권한 설정이 아닙니다. 로그인 필수 페이지와 API에 대한 실제 데이터 보호는 Auth, 서버 측 권한 검사, Supabase RLS가 수행합니다. Preview URL이 공개로 접근되는 경우에도 `noindex`는 검색 색인 설정일 뿐 비밀 유지 수단이 아닙니다. Preview 환경의 전체 응답은 별도 `X-Robots-Tag` 및 메타 태그로 noindex 처리합니다.
 
@@ -68,7 +68,7 @@ Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, 
 
 ## 상단 노출을 위한 후속 콘텐츠 과제 (디자인/콘텐츠 담당)
 
-현재 홈페이지에는 게임 소개와 대전 진입 버튼이 있습니다. 기술 SEO 이후에는 **검색 사용자가 궁금해할 실제 설명**을 공개 페이지에 추가하는 쪽이 효과를 볼 가능성이 있습니다.
+공개 가이드 `/how-to-play`가 추가되어 게임 규칙·조작법·FAQ에 대한 탐색 경로가 제공됩니다. 콘텐츠의 검색 성과는 Search Console에서 별도로 확인해야 합니다.
 
 - **알까기 규칙과 조작법**: 승리 조건, 알 5개, 드래그 세기/방향, 친구 코드 참가, 랭크전·AI 난이도 차이를 실제 게임 상태에 맞게 설명. 반복 키워드 나열 대신 신규 이용자가 게임을 쉽게 이해할 수 있게 작성.
 - **접근 가능한 공개 소개 콘텐츠**: 로그인 없이 볼 수 있는 게임 플레이 설명과 FAQ, 내부 링크를 가진 경량 `/how-to-play` 페이지 또는 홈페이지 소개 섹션. 페이지/이미지는 디자인 담당 이슈로 분리.
