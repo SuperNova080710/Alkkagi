@@ -34,6 +34,24 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Assert remote API and DB endpoints fail before any client is created
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The script validates both endpoints BEFORE reading credentials.
+          if API_URL=http://e2e.invalid:54321 DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+             node tests/e2e/supabase-local.mjs > /tmp/e2e-guard.log 2>&1; then
+            echo "::error::Remote API was not rejected."
+            exit 1
+          fi
+          grep -q 'Refusing any non-loopback Supabase host' /tmp/e2e-guard.log
+          if API_URL=http://127.0.0.1:54321 DB_URL=postgresql://postgres:postgres@e2e.invalid:54322/postgres \
+             node tests/e2e/supabase-local.mjs > /tmp/e2e-guard.log 2>&1; then
+            echo "::error::Remote DB was not rejected."
+            exit 1
+          fi
+          grep -q 'Refusing remote PostgreSQL' /tmp/e2e-guard.log
+          rm -f /tmp/e2e-guard.log
       - uses: supabase/setup-cli@v3
         with:
           version: 2.122.0
@@ -73,4 +91,4 @@ jobs:
         shell: bash
         run: |
           supabase stop --no-backup > /dev/null 2>&1 || true
-          rm -f /tmp/alkkagi-local-test.env /tmp/supabase-e2e-start.log
+          rm -f /tmp/alkkagi-local-test.env /tmp/supabase-e2e-start.log /tmp/e2e-guard.log
