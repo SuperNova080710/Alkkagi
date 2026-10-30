@@ -183,15 +183,15 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | 친구 1:1 DM·읽음·메신저 UI | **PR #81/#143 병합** | SQL 006 적용 미확인. `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED` 둘 다 명시적으로 true일 때만 화면 표시, 기본 OFF. 실제 A/B·Realtime E2E 미확인 |
 | 친구 대전방 초대 백엔드 | **PR #90 병합** | SQL 007 적용 미확인, 초대 발신·수신 UI 미구현 |
 | 방 생성 남용 제한 | PR #69 병합 | SQL 004 운영 적용 미확인 |
-| XP·레벨 시스템 | **PR #110 main 병합, UI PR #159 develop 검토 중** | 운영 SQL 008 미적용(운영 조회 근거), XP UI 기본 OFF·미배포; UI #159 Quality 49파일/248테스트 통과, 실제 사용자 E2E 별도 |
+| XP·레벨 시스템 | **PR #110 main 병합, UI PR #159 develop 병합** | 운영 SQL 008 미적용(운영 조회 근거), XP UI 기본 OFF·미배포; UI #159 최종 Quality 49파일/249테스트 통과, 실제 사용자 E2E 별도 |
 | 알·캐릭터 보유·해금·장착 | **PR #115 main 병합, 디자인 #162 진행 중** | 운영 SQL 009 미적용(운영 조회 근거). 인벤토리/에셋·경기 외형 UI는 #162~#165 별도 구현 작업 |
 | 기술 SEO: canonical·sitemap·robots | **PR #131 main 병합** | robots/noindex 충돌 수정·CI 통과; 최신 Production 응답·Search Console 색인 별도 |
 | 공개 알까기 규칙·조작법·FAQ | **PR #137 main 병합** | `/how-to-play` 공개 페이지·홈 링크·SEO 사이트맵 2건 통합 CI 통과; 실제 Production HTTP/E2E 별도 |
 
-운영 사전점검 [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161)의 조사 기록에 따르면 **현재 Production DB는 PostgreSQL 17.11**, 운영 migration 004~009는 미적용이며, Production 최신 배포 SHA `8cf4dc0`은 **READY**입니다. 이는 실제 앱 HTTP·두 계정 E2E와 별개이고, 사전점검 쿼리는 읽기 전용으로 실행됐습니다. PR #161은 develop 미병합이며 사전점검 도구는 아직 main에 없습니다. Vercel Free Preview 한도로 인해 새 기능 PR #159/#161의 Preview는 별도 확인이 필요합니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 008/009도 main에 SQL 소스가 포함됐지만 **운영 적용은 별도 확인·승인**이 필요합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
+운영 사전점검 [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161)의 조사 기록에 따르면 **현재 Production DB는 PostgreSQL 17.11**, 운영 migration 004~009는 미적용이며, Production 최신 배포 SHA `8cf4dc0`은 **READY**입니다. 이는 실제 앱 HTTP·두 계정 E2E와 별개이고, 사전점검 쿼리는 읽기 전용으로 실행됐습니다. PR #161은 develop 미병합이며 사전점검 도구는 아직 main에 없습니다. Vercel Free Preview 한도로 인해 기능 PR #159는 develop에 병합됐으나 Production 미출시이며 #161은 Draft입니다. Preview는 별도 확인이 필요합니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 008/009도 main에 SQL 소스가 포함됐지만 **운영 적용은 별도 확인·승인**이 필요합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
 
 **브랜치·릴리스 정책(2026-10-30):** [PR #148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합으로 `main`은 승인 후 Production 릴리스 전용, `develop`은 기능 통합, `release/vX.Y.Z`는 RC 검증 브랜치로 구분합니다. 기능·수정 PR은 `develop`으로 작성하고, 릴리스 후보에서만 수동 Vercel CLI Preview를 수행합니다. `vercel.json`은 Git 자동 배포를 `main`으로 제한합니다. **실제 Vercel 정책 적용·첫 RC CLI Preview·공식 릴리스 태그는 아직 확인되지 않았습니다.** [릴리스 운영 매뉴얼](docs/release-process.md) · [CHANGELOG](CHANGELOG.md).
 
-XP 프로필 UI는 [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)에서 구현 제안되어 **develop 병합 검토 중**입니다. `EXPERIENCE_UI_ENABLED`는 기본 OFF이며 운영 SQL 008·실계정 E2E 전에는 활성 기능으로 표시하지 않습니다. 코스메틱 디자인 이슈 [#162](https://github.com/SuperNova080710/Alkkagi/issues/162)도 진행 중입니다. 게임판/랭크 RP에 영향을 주는 기능으로 오해하면 안 됩니다.
+XP 프로필 UI는 [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)에서 구현되어 **develop 병합 완료**됐습니다. `EXPERIENCE_UI_ENABLED`는 기본 OFF이며 운영 SQL 008·실계정 E2E 전에는 활성 기능으로 표시하지 않습니다. 코스메틱 디자인 이슈 [#162](https://github.com/SuperNova080710/Alkkagi/issues/162)도 진행 중입니다. 게임판/랭크 RP에 영향을 주는 기능으로 오해하면 안 됩니다.
 
 자세한 담당/파일 경계와 검증 근거: **[2026-10-30 최신 인수 현황](docs/current-status-2026-10-30.md)**. [2026-10-29 문서](docs/current-status-2026-10-29.md)는 당시 스냅샷으로 보존합니다.
