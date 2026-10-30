@@ -64,8 +64,8 @@ select 'object'::text as category,e.stage,e.identifier as check_key,
     case when exists(
       select 1 from pg_catalog.pg_proc p
       where p.oid=to_regprocedure(e.identifier)
-        and pg_catalog.pg_get_functiondef(p.oid) like '%ROOM_ACTIVE_LIMIT%'
-        and pg_catalog.pg_get_functiondef(p.oid) like '%ROOM_RATE_LIMIT%'
+        and p.prosrc like '%ROOM_ACTIVE_LIMIT%'
+        and p.prosrc like '%ROOM_RATE_LIMIT%'
     ) then 'ready' else 'inspect' end
   when e.exists_now then 'ready'
   when e.stage='base' then 'blocked' else 'pending' end as status
