@@ -111,11 +111,11 @@ revoke all on function private.sync_player_cosmetics(uuid)
 -- If the item is republished, the user's prior selection becomes visible again.
 create function private.visible_cosmetic_code(p_code text,p_fallback text)
 returns text language sql stable security definer set search_path=''
-as $
+as $visible_cosmetic$
   select case when exists(
     select 1 from public.cosmetic_items where code=p_code and published
   ) then p_code else p_fallback end;
-$;
+$visible_cosmetic$;
 revoke all on function private.visible_cosmetic_code(text,text)
   from public,anon,authenticated,service_role;
 
