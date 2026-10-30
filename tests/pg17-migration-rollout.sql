@@ -35,14 +35,65 @@ insert into auth.users(id) values
 
 \echo 'R3 PG17: apply 004 - room creation anti-abuse'
 \i supabase/migrations/202610290004_security_room_create_limits.sql
+-- Assert observable enforcement, not just a function-body marker.
+-- Run against synthetic users; create_casual_room authenticates via auth.uid().
+-- All fixture rooms are closed after the checks, so subsequent migrations are
+-- exercised without active-room side effects.
+begin;
+set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 do $check004$
+declare
+  i integer;
+  error_seen boolean;
+  candidate text;
 begin
-  if position('ROOM_ACTIVE_LIMIT' in (
-    select p.prosrc from pg_catalog.pg_proc p
-    where p.oid=to_regprocedure('public.create_casual_room(text)')
-  ))=0 then raise exception '004 limiter missing'; end if;
+  for i in 1..5 loop
+    candidate := 'ABCDEFG' || substr('HJKLMNPQRSTUVXYZ',i,1);
+    perform public.create_casual_room(candidate);
+  end loop;
+
+  error_seen:=false;
+  begin
+    perform public.create_casual_room('ABCDEFGN');
+  exception when others then
+    if SQLERRM<>'ROOM_ACTIVE_LIMIT' then raise; end if;
+    error_seen:=true;
+  end;
+  if not error_seen then
+    raise exception '004 failed: sixth unexpired waiting room was allowed';
+  end if;
+
+  update public.rooms set status='closed'
+  where owner_id=auth.uid() and status='waiting';
+
+  -- Closed rooms still count for the rolling 10-minute limit.
+  for i in 6..10 loop
+    candidate := 'ABCDEFG' || substr('HJKLMNPQRSTUVXYZ',i,1);
+    perform public.create_casual_room(candidate);
+    update public.rooms set status='closed' where code=candidate;
+  end loop;
+
+  error_seen:=false;
+  begin
+    perform public.create_casual_room('ABCDEFGT');
+  exception when others then
+    if SQLERRM<>'ROOM_RATE_LIMIT' then raise; end if;
+    error_seen:=true;
+  end;
+  if not error_seen then
+    raise exception '004 failed: eleventh room within 10 minutes was allowed';
+  end if;
+  if (select count(*) from public.rooms where owner_id=auth.uid())<>10
+    or (select count(*) from public.room_players rp
+      join public.rooms r on r.id=rp.room_id where r.owner_id=auth.uid())<>10
+    or exists(select 1 from public.rooms
+      where owner_id=auth.uid() and status='waiting') then
+    raise exception '004 failed: rejected request left a partial room or seat';
+  end if;
+  raise notice 'PASS PG17: 004 active-room and 10-minute limits enforced, no partial writes';
 end;
 $check004$;
+commit;
 
 \echo 'R3 PG17: apply 005 - friends and blocks'
 \i supabase/migrations/202610290005_friends_v1.sql
@@ -56,6 +107,33 @@ $check004$;
 \i supabase/migrations/202610290009_cosmetics_v1.sql
 
 \echo 'R3 PG17: assert all 004-009 objects, table grants, RLS and publication'
+-- Shared permission assertion is also used by the negative regression cases,
+-- so a future accidental GRANT must make the same production-facing check fail.
+create function pg_temp.assert_no_client_table_writes() returns void
+language plpgsql as $permission_guard$
+declare
+  v_table text;
+  v_role text;
+  v_privilege text;
+begin
+  foreach v_table in array ARRAY[
+    'public.friend_links','public.player_blocks',
+    'public.dm_threads','public.dm_messages','public.dm_read_state',
+    'public.room_friend_invites','public.xp_events','public.player_progress',
+    'public.cosmetic_items','public.player_cosmetic_inventory',
+    'public.player_cosmetic_loadouts'
+  ] loop
+    foreach v_role in array ARRAY['anon','authenticated'] loop
+      foreach v_privilege in array ARRAY['INSERT','UPDATE','DELETE'] loop
+        if pg_catalog.has_table_privilege(v_role,v_table,v_privilege) then
+          raise exception 'CLIENT_WRITE_PRIVILEGE: % on % to %',
+            v_privilege,v_table,v_role;
+        end if;
+      end loop;
+    end loop;
+  end loop;
+end;
+$permission_guard$;
 do $security$
 declare
   v_table text;
@@ -75,12 +153,10 @@ begin
       where c.oid=to_regclass(v_table) and c.relrowsecurity) then
       raise exception 'RLS OFF: %',v_table;
     end if;
-    if pg_catalog.has_table_privilege('anon',v_table,'INSERT')
-       or pg_catalog.has_table_privilege('authenticated',v_table,'UPDATE')
-       or pg_catalog.has_table_privilege('authenticated',v_table,'DELETE') then
-      raise exception 'Client mutation privilege exposed: %',v_table;
-    end if;
+    -- The helper checks all six role x write-privilege combinations.
+    -- Table-level privileges are not a substitute for RLS policy inspection.
   end loop;
+  perform pg_temp.assert_no_client_table_writes();
   foreach v_function in array ARRAY[
     'public.send_friend_request(uuid)',
     'public.send_direct_message(uuid,text,uuid)',
@@ -114,6 +190,40 @@ begin
   raise notice 'PASS PG17: 004-009 objects, RLS/ACL, DM realtime, XP triggers, starter catalog';
 end;
 $security$;
+
+\echo 'R3 PG17: negative security fixture for all six write-permission combinations'
+do $negative_permissions$
+declare
+  v_role text;
+  v_privilege text;
+  failure_detected boolean;
+begin
+  -- Explicitly grant exactly one forbidden permission, ensure that the same
+  -- production-facing guard fails, and revoke it before trying the next case.
+  foreach v_role in array ARRAY['anon','authenticated'] loop
+    foreach v_privilege in array ARRAY['INSERT','UPDATE','DELETE'] loop
+      execute format('grant %s on public.xp_events to %I',v_privilege,v_role);
+      failure_detected:=false;
+      begin
+        perform pg_temp.assert_no_client_table_writes();
+      exception when others then
+        if SQLERRM<>format(
+          'CLIENT_WRITE_PRIVILEGE: %s on public.xp_events to %s',
+          v_privilege,v_role
+        ) then raise; end if;
+        failure_detected:=true;
+      end;
+      if not failure_detected then
+        raise exception 'ACL negative fixture did not reject % privilege for %',
+          v_privilege,v_role;
+      end if;
+      execute format('revoke %s on public.xp_events from %I',v_privilege,v_role);
+    end loop;
+  end loop;
+  perform pg_temp.assert_no_client_table_writes();
+  raise notice 'PASS PG17: all six forbidden grants fail ACL guard, then restored';
+end;
+$negative_permissions$;
 
 \echo 'R3 PG17: verify XP settlement (one transition only) and level unlock'
 insert into public.matches(mode,player1_id,player2_id,turn_user_id,board_state)
