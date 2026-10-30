@@ -99,6 +99,7 @@ async function run() {
     b.realtime.setAuth(sessionB.data.session.access_token);
     const message='E2E-DM-'+suffix;
     let delivered;
+    let eventsSeen=0;
     const received=new Promise((resolve)=>{delivered=resolve;});
     let readyResolve,readyReject;
     const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});
@@ -106,6 +107,7 @@ async function run() {
       .on('postgres_changes',{
         event:'INSERT',schema:'public',table:'dm_messages',
       },(event)=>{
+        eventsSeen++;
         if(event.new?.body===message && event.new?.sender_id===userA)
           delivered(event.new);
       })
@@ -115,6 +117,9 @@ async function run() {
           readyReject(Error('Realtime channel '+status));
       });
     await bounded(ready,25000,'Realtime subscription');
+    // SUBSCRIBED acknowledges channel join; the logical replication stream
+    // can still need a short initialisation window on a fresh local stack.
+    await new Promise((resolve)=>setTimeout(resolve,1500));
     const msg=requireData(await a.rpc('send_direct_message',{
       p_peer:userB,p_body:message,p_request_id:randomUUID(),
     }),'DM send');
@@ -123,7 +128,8 @@ async function run() {
       p_peer:userA,p_before_id:null,p_limit:20,
     }),'DM read');
     assert.ok(history.messages.some((m)=>m.body===message));
-    await bounded(received,20000,'Realtime RLS-filtered DM INSERT');
+    await bounded(received,20000,'Realtime RLS-filtered DM INSERT')
+      .catch((err)=>{throw Error(err.message+'; received DB events='+eventsSeen);});
     console.log('PASS DM + Realtime: friend-only message delivered over B authenticated WebSocket');
 
     const room=requireData(await a.rpc('create_casual_room',{
