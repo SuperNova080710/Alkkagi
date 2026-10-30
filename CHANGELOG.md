@@ -12,7 +12,7 @@
 
 ### Changed
 - Git 자동 배포는 `main`만 허용하도록 정책 설정.
-- `develop` / `release/**` PR에서도 기존 CI 및 PostgreSQL 경합 테스트 실행.
+- `develop` / `release/**` PR에서도 기존 Quality 및 5종 PostgreSQL 경합 테스트(방 생성·초대·DM·XP·코스메틱) 실행.
 
 ## Release policy
 - 최초 릴리스 기준 버전은 배포와 Production 확인 후 확정합니다. 기존 `package.json`의 `0.1.0`을 이미 배포·태깅된 공식 릴리스로 소급 주장하지 않습니다.

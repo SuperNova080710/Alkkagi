@@ -8,7 +8,7 @@ on:
       - 'supabase/migrations/202610290009_cosmetics_v1.sql'
       - '.github/workflows/cosmetics-concurrency.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release/**']
     paths:
       - 'tests/cosmetics-concurrency.sql'
       - 'supabase/migrations/202610290009_cosmetics_v1.sql'

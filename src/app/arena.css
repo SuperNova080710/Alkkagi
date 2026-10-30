@@ -886,3 +886,243 @@
   .arena-guide-bottom .arena-button { width: 100%; }
   .arena-home-guide-link { margin-left: 0; }
 }
+
+/* Friend-only direct messenger V1 (#139): local layout, no game geometry changes. */
+.arena-dm-page { max-width: 1280px; margin-inline: auto; }
+.arena-dm-page > .arena-panel { margin-top: 16px; }
+.arena-dm-page .arena-service-heading { gap: 18px; }
+.arena-dm-page .arena-service-heading .arena-button { flex: 0 0 auto; }
+.arena-dm-shell {
+  display: grid;
+  grid-template-columns: minmax(260px, .85fr) minmax(0, 1.7fr);
+  gap: 14px;
+  align-items: stretch;
+  height: clamp(420px, 62dvh, 700px);
+  min-height: 0;
+  margin-top: 14px;
+}
+.arena-dm-shell .arena-panel {
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  border-radius: 18px;
+}
+.arena-dm-inbox, .arena-dm-thread {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.arena-dm-heading, .arena-dm-thread-heading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ded1bc;
+}
+.arena-dm-heading > div, .arena-dm-thread-heading > div { min-width: 0; }
+.arena-dm-heading h2, .arena-dm-thread-heading h2 {
+  font-size: 19px;
+  margin: 0 0 4px;
+  color: var(--arena-forest);
+}
+.arena-dm-heading p, .arena-dm-thread-heading p {
+  color: var(--arena-muted);
+  font-size: 12px;
+}
+.arena-dm-reload, .arena-dm-older, .arena-dm-error button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  border: 1px solid #91a58c;
+  background: #e6f1e1;
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--arena-forest);
+}
+.arena-dm-reload:disabled, .arena-dm-older:disabled { opacity: .55; cursor: not-allowed; }
+.arena-dm-peers {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 8px;
+}
+.arena-dm-peers li + li { margin-top: 6px; }
+.arena-dm-peer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  min-height: 64px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: #f3ebdc;
+  color: var(--arena-forest);
+  text-align: left;
+}
+.arena-dm-peer:hover, .arena-dm-peer.is-selected { background: #e2efda; border-color: #8fbf91; }
+.arena-dm-peer:disabled { opacity: .55; cursor: not-allowed; }
+.arena-dm-avatar {
+  display: grid;
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #95e5ab, #20744b);
+  color: #dfffea;
+  border: 2px solid #e1ba72;
+}
+.arena-dm-peer-copy { display: flex; flex: 1 1 auto; min-width: 0; flex-direction: column; gap: 3px; }
+.arena-dm-peer-copy strong { font-size: 14px; overflow-wrap: anywhere; }
+.arena-dm-peer-copy > span {
+  display: block;
+  max-width: 100%;
+  color: #73644f;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arena-dm-unread {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 2px 6px;
+  color: #fff;
+  background: #176d48;
+  font-size: 12px;
+  font-weight: 800;
+}
+.arena-dm-inbox > .arena-text-link { flex: 0 0 auto; margin-top: 8px; }
+.arena-dm-messages {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 12px 7px;
+  margin: 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+.arena-dm-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0 0 14px;
+}
+.arena-dm-message.is-mine { align-items: flex-end; }
+.arena-dm-message-author, .arena-dm-message time { font-size: 11px; color: #786b57; }
+.arena-dm-message > p {
+  max-width: min(80%, 50ch);
+  border-radius: 16px 16px 16px 4px;
+  background: #e8e3d6;
+  color: #23382c;
+  padding: 9px 13px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.arena-dm-message.is-mine > p {
+  background: #21714b;
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+}
+.arena-dm-older {
+  align-self: center;
+  margin: 10px 0 3px;
+  min-height: 36px;
+}
+.arena-dm-compose {
+  flex: 0 0 auto;
+  border-top: 1px solid #ded1bc;
+  padding-top: 10px;
+}
+.arena-dm-compose > label { display: block; font-size: 12px; color: var(--arena-forest); font-weight: 800; margin-bottom: 5px; }
+.arena-dm-compose textarea {
+  display: block;
+  width: 100%;
+  min-height: 65px;
+  max-height: 160px;
+  resize: vertical;
+  border: 1px solid #a9a08e;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: var(--arena-ink);
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.arena-dm-compose-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.arena-dm-compose-bottom p { color: var(--arena-muted); font-size: 11px; line-height: 1.6; }
+.arena-dm-compose-bottom .arena-button { flex-shrink: 0; }
+.arena-dm-compose-bottom .arena-button:disabled { opacity: .55; cursor: not-allowed; }
+.arena-dm-error {
+  margin: 10px 0;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: #fff0e7;
+  border: 1px solid #d49e94;
+  color: #902f37;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.arena-dm-error button { margin-top: 8px; }
+.arena-dm-feedback { min-height: 14px; margin-top: 3px; color: var(--arena-jade); font-size: 11px; }
+.arena-dm-empty, .arena-dm-welcome { padding: 20px 8px; color: var(--arena-muted); text-align: center; font-size: 14px; }
+.arena-dm-welcome {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.arena-dm-welcome h2 { font-size: 22px; margin: 0; color: var(--arena-forest); }
+.arena-dm-welcome-mark { letter-spacing: 6px; color: #409c6b; font-size: 44px; }
+.arena-dm-empty .arena-text-link { justify-content: center; }
+.arena-friend-actions a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #dcecdc;
+  color: #1a6242;
+  border-radius: 9px;
+}
+@media (max-width: 767px) {
+  .arena-dm-page .arena-service-heading { flex-wrap: wrap; }
+  .arena-dm-shell { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .arena-dm-inbox { min-height: 150px; max-height: min(32dvh, 300px); }
+  .arena-dm-peers { min-height: 0; }
+  .arena-dm-thread { min-height: 300px; overflow: visible; }
+  .arena-dm-messages { flex: 0 0 auto; height: clamp(180px, 36dvh, 380px); }
+  .arena-dm-older { margin-block: 10px; }
+}
+@media (max-width: 400px) {
+  .arena-dm-shell { gap: 10px; }
+  .arena-dm-shell .arena-panel { padding: 12px; }
+  .arena-dm-message > p { max-width: 90%; }
+  .arena-dm-compose-bottom { align-items: flex-end; }
+}
