@@ -2,6 +2,7 @@ import {notFound} from 'next/navigation';
 import {requireUser} from '@/lib/auth/user';
 import {ArenaShell} from '@/components/ui/arena';
 import {TwoAccountQa} from '@/components/qa/two-account-qa';
+import {resolveQaPair} from '@/lib/qa/two-account-guards';
 
 export const dynamic='force-dynamic';
 export const metadata={title:'운영 2계정 QA',robots:{index:false,follow:false}};
@@ -14,17 +15,15 @@ export default async function TwoAccountQaPage(){
     process.env.NEXT_PUBLIC_SUPABASE_URL!=='https://igjvccohxthmgbfilzxi.supabase.co')
     notFound();
   const user=await requireUser();
-  const allowed=(process.env.OPS_TWO_ACCOUNT_QA_USER_IDS??'').split(',')
-    .map(id=>id.trim().toLowerCase()).filter(Boolean);
-  if(allowed.length!==2||new Set(allowed).size!==2||!allowed.includes(user.id.toLowerCase()))
-    notFound();
+  const pair=resolveQaPair(process.env.OPS_TWO_ACCOUNT_QA_USER_IDS,user.id);
+  if(!pair)notFound();
   return <ArenaShell current="lobby">
     <div className="mx-auto max-w-4xl space-y-4 p-4">
       <header><p className="text-xs uppercase tracking-widest">Operator only · manual test</p>
         <h1 className="text-2xl font-bold">운영 2계정 E2E 검증</h1>
         <p>기존 계정 A/B로 서로 다른 브라우저에서 접속하세요. 모든 쓰기는 명시적인 버튼을 눌러야 실행됩니다.</p>
       </header>
-      <TwoAccountQa userId={user.id}/>
+      <TwoAccountQa userId={user.id} pair={pair}/>
     </div>
   </ArenaShell>;
 }
