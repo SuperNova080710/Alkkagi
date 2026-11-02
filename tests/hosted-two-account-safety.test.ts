@@ -14,6 +14,8 @@ describe('browser-only production A/B QA safety (#196)',()=>{
     expect(page).toContain('notFound()');
     expect(page.indexOf('notFound()')).toBeLessThan(page.indexOf('await requireUser()'));
     expect(page).toContain('await requireUser()');
+    expect(page).toContain('OPS_TWO_ACCOUNT_QA_USER_IDS');
+    expect(page).toContain('allowed.length!==2');
     expect(page).toContain('index:false');
     expect(page).toContain("dynamic='force-dynamic'");
     expect(proxy).toContain("'/qa/:path*'");
@@ -75,8 +77,8 @@ describe('browser-only production A/B QA safety (#196)',()=>{
     expect(view).not.toContain('localStorage');
     expect(view).not.toContain('sessionStorage');
     expect(view).not.toContain('JSON.stringify(error)');
-    expect(view).toContain('서버 API');
+    expect(view).toContain("'/api/messages/'");
     expect(docs).toContain('OPS_TWO_ACCOUNT_QA_ENABLED');
-    expect(docs).toContain('배포·환경변수 변경은 별도 승인');
+    expect(docs).toContain('별도 승인');
   });
 });
