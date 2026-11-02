@@ -24,6 +24,8 @@ describe('browser-only production A/B QA safe integration (#196)',()=>{
     expect(view).not.toContain('setRole(');
     expect(page).toContain('index:false');
     expect(proxy).toContain("'/qa/:path*'");
+    // Production must also send a noindex HTTP header, not just HTML metadata.
+    expect(read('next.config.ts')).toContain('"/qa/:path*"');
   });
 
   it('uses real SSR Auth session, same-origin APIs and no privileged database mutation',()=>{
