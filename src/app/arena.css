@@ -2027,3 +2027,17 @@
     font-size: clamp(19px, 6.5vw, 24px);
   }
 }
+
+/* #179 QA: 44px touch targets on invite/room actions at all viewports. */
+.arena-waiting--v2 .arena-invite .arena-button,
+.arena-waiting--v2 .arena-wait-invites-head .arena-button,
+.arena-waiting--v2 .arena-invite-sent-head .arena-button,
+.arena-waiting--v2 .arena-room-leave .arena-button,
+.arena-received-invites .arena-received-heading .arena-button,
+.arena-received-invites .arena-received-actions .arena-button {
+  min-height: 44px;
+}
+.arena-waiting--v2 .arena-invite-sent-head .arena-button,
+.arena-received-invites .arena-received-heading .arena-button {
+  white-space: normal;
+}
