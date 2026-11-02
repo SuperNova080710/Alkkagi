@@ -3,7 +3,7 @@
 import {createBrowserClient} from '@supabase/ssr';
 import {useEffect,useRef,useState} from 'react';
 import {
-  qaDmIdentity,qaPeerAllowed,qaReward,qaScopeMatch,qaScopeRoom,qaScopeSeats,
+  qaCanSendDm,qaCanSendInvite,qaDmIdentity,qaPeerAllowed,qaReward,qaScopeMatch,qaScopeRoom,qaScopeSeats,
   qaUuid,type QaMatch,type QaPair,type QaRoom,type QaSeat,type QaSnapshot,
 } from '@/lib/qa/two-account-guards';
 
@@ -172,7 +172,7 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
     const history=await api<{messages:{id:string;body:string}[]}>(
       '/api/messages/'+encodeURIComponent(peer)+'?limit=50');
     const existing=history.messages.find(m=>m.body===marker);
-    if(existing){
+    if(!qaCanSendDm(history.messages,marker)&&existing){
       setDmSent({id:existing.id,marker});
       setNotice('ALREADY EXISTS: 이 A/B의 QA DM은 이미 발송됐습니다. 신규 INSERT 이벤트 재검증 불가');
       return;
@@ -216,7 +216,7 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
     // accepted/declined/expired counts as already spent. Never POST twice.
     const sent=await api<{inviteeId:string;status:string}[]>(
       '/api/room-invites/sent?roomId='+encodeURIComponent(room));
-    if(sent.some(x=>x.inviteeId===peer)){
+    if(!qaCanSendInvite(sent,peer)){
       setNotice('ALREADY EXISTS: A→B 초대 기록 존재. 같은 방에 다시 보내지 않습니다');
       return;
     }
