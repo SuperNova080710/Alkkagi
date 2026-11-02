@@ -50,7 +50,7 @@ export function isDmInbox(value: unknown): value is DmInboxItem[] {
     (item.lastAt === null || timestamp(item.lastAt)) &&
     (item.lastMessage === null || isDmMessage(item.lastMessage)) &&
     (item.lastMessage === null || item.lastAt !== null) &&
-    Number.isSafeInteger(item.unreadCount) && (item.unreadCount as number) >= 0);
+    typeof item.unreadCount === 'number' && Number.isSafeInteger(item.unreadCount) && item.unreadCount >= 0);
 }
 export function isDmHistory(value: unknown): value is DmHistory {
   return isRecord(value) && (value.threadId === null || uuid(value.threadId)) &&
@@ -59,7 +59,7 @@ export function isDmHistory(value: unknown): value is DmHistory {
     (value.threadId !== null || (value.messages.length === 0 && value.hasMore === false));
 }
 export function isDmSent(value: unknown): value is DmSent {
-  return isDmMessage(value) && uuid(value.threadId) && typeof value.alreadySent === 'boolean';
+  return isRecord(value) && isDmMessage(value) && uuid(value.threadId) && typeof value.alreadySent === 'boolean';
 }
 export async function dmValidatedRequest<T>(
   path: string, valid: (value: unknown) => value is T, options: RequestInit = {},
