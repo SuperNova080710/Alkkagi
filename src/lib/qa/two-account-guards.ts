@@ -75,3 +75,14 @@ export async function qaDmIdentity(userA:string,userB:string){
   const requestId=[h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-');
   return {requestId,marker:'ALK-QA-'+requestId};
 }
+
+
+export function qaCanSendDm(history:{body:string}[],marker:string):boolean {
+  return marker.startsWith('ALK-QA-')&&!history.some(entry=>entry.body===marker);
+}
+
+export function qaCanSendInvite(history:{inviteeId:string;status:string}[],targetId:string):boolean {
+  // A previously accepted, expired or declined invite is still spent. This
+  // mirrors SQL's non-resettable unique (room_id,invitee_id) invariant.
+  return qaUuid(targetId)&&!history.some(entry=>entry.inviteeId===targetId);
+}
