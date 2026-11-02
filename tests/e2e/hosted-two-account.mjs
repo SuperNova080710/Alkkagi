@@ -11,7 +11,7 @@
  */
 import assert from 'node:assert/strict';
 import {randomBytes, randomUUID} from 'node:crypto';
-import {existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {createClient} from '@supabase/supabase-js';
