@@ -6,7 +6,8 @@ export type QaRole='A'|'B';
 export type QaPair={userA:string;userB:string;otherUserId:string;role:QaRole};
 export type QaSnapshot={startedAt:string;totalXp:number;dailyPvp:number;dailyCasualPeer:number};
 export type QaRoom={id:string;owner_id:string;created_at:string;status:string};
-export type QaSeat={user_id:string;seat:number};
+/** Membership-checked get_casual_room RPC: exposes seat/nickname but NOT player UUID. */
+export type QaRpcRoom={id:string;status:string;yourSeat:number;players:{seat:number;nickname?:string}[]};
 export type QaMatch={id:string;room_id:string;status:string;mode:string;winner_id:string|null;
   player1_id:string;player2_id:string;created_at:string};
 export type QaReward={kind:'awarded'|'capped'|'invalid';expected:number;actual:number};
@@ -36,15 +37,33 @@ export function qaScopeRoom(room:QaRoom|null,pair:QaPair,snapshot:QaSnapshot|nul
     Number.isFinite(Date.parse(snapshot.startedAt)));
 }
 
-export function qaScopeSeats(seats:QaSeat[],pair:QaPair):boolean {
-  return seats.length===2&&seats.some(x=>x.seat===1&&x.user_id===pair.userA)&&
-    seats.some(x=>x.seat===2&&x.user_id===pair.userB);
+/**
+ * Room owner / creation time are checked through member-only rooms RLS.
+ * Both seat numbers come from get_casual_room, whose SECURITY DEFINER body
+ * checks auth.uid() is a room member before exposing players.
+ *
+ * Unlike room_players (RLS self only), the RPC is safe for both A and B.
+ * RPC does not expose player IDs: match ownership is verified separately.
+ */
+export function qaScopeRpcRoom(
+  room:QaRoom|null,rpc:QaRpcRoom|null,pair:QaPair,
+  snapshot:QaSnapshot|null,actor:string,expectedSeats:1|2,
+):boolean {
+  if(!qaScopeRoom(room,pair,snapshot)||!rpc||
+    rpc.id!==room?.id||rpc.status!==room.status||
+    !qaPeerAllowed(actor,actor.toLowerCase()===pair.userA?pair.userB:pair.userA,pair)||
+    rpc.yourSeat!==(pair.role==='A'?1:2)||
+    !Array.isArray(rpc.players)||rpc.players.length!==expectedSeats)
+    return false;
+  const sorted=rpc.players.map(p=>p.seat).sort((a,b)=>a-b);
+  return sorted.every((seat,index)=>seat===index+1);
 }
 
 export function qaScopeMatch(
-  match:QaMatch|null,room:QaRoom|null,seats:QaSeat[],pair:QaPair,snapshot:QaSnapshot|null,
+  match:QaMatch|null,room:QaRoom|null,rpc:QaRpcRoom|null,
+  pair:QaPair,snapshot:QaSnapshot|null,actor:string,
 ):boolean {
-  return qaScopeRoom(room,pair,snapshot)&&qaScopeSeats(seats,pair)&&Boolean(match&&
+  return qaScopeRpcRoom(room,rpc,pair,snapshot,actor,2)&&Boolean(match&&
     match.room_id===room?.id&&match.status==='finished'&&match.mode==='casual'&&
     match.player1_id===pair.userA&&match.player2_id===pair.userB&&
     (match.winner_id===null||match.winner_id===pair.userA||match.winner_id===pair.userB)&&
