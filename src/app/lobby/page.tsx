@@ -25,5 +25,7 @@ export default async function Lobby() {
     activeCasual: activeCasual.data ?? [],
     recoveryUnavailable: Boolean(activeAi.error || activeCasual.error),
   };
-  return <LobbyView data={data} modes={<LobbyModes />} account={<LogoutForm />} />;
+  return <LobbyView data={data} modes={<LobbyModes />} account={<LogoutForm />}
+    friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}
+    cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'} />;
 }

@@ -17,4 +17,20 @@ describe('lobby data states', () => {
   expect(html).toContain('1,056 RP');
   expect(html).toContain('실제응답');
  });
+ it('shows friend and wardrobe links only for enabled flags', () => {
+  const on = renderToStaticMarkup(<LobbyView data={data} modes={null} friendsEnabled cosmeticsEnabled />);
+  expect(on).toContain('href="/friends"');
+  expect(on).toContain('href="/cosmetics"');
+  expect(on).not.toContain('친구 <small>준비 중</small>');
+  expect(on).not.toContain('꾸미기 <small>준비 중</small>');
+  const off = renderToStaticMarkup(<LobbyView data={data} modes={null} />);
+  expect(off).not.toContain('href="/cosmetics"');
+  expect(off).toContain('친구 <small>준비 중</small>');
+  expect(off).toContain('꾸미기 <small>준비 중</small>');
+  const partial = renderToStaticMarkup(<LobbyView data={data} modes={null} friendsEnabled />);
+  expect(partial).toContain('href="/friends"');
+  expect(partial).not.toContain('href="/cosmetics"');
+  expect(partial).toContain('꾸미기 <small>준비 중</small>');
+ });
+
 });
