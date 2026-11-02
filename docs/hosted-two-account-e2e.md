@@ -7,6 +7,7 @@
 - 운영 PostgreSQL 17.11의 SQL 004~009는 2026-11-02 적용 완료. **이 도구는 마이그레이션/SQL 관리자 작업을 수행하지 않습니다**.
 - 프로젝트 개발자는 로컬 저장소·`.env.local`·Node.js 설치 없이 **Vercel/Supabase 연결 서비스만 사용**합니다. 앞선 로컬 터미널/TTP용 실계정 로그인 스크립트는 PR #198에서 **제거했습니다**.
 - 신규 브라우저 QA: `/qa/two-account`, 소스 `src/app/qa/two-account/page.tsx` 및 `src/components/qa/two-account-qa.tsx`.
+- 브라우저 QA 경로는 서버 allowlist/기본 OFF 외에도 **Production HTTP `X-Robots-Tag: noindex, nofollow`**와 페이지 robots 메타 태그를 함께 적용합니다. 비색인 설정은 보안 인가를 대체하지 않습니다.
 - **현재 운영에서 이 화면을 이용할 수 있다고 주장하지 않습니다.** 새 코드가 배포되지 않았으며, 출시 환경에서 다음 명시적 옵션을 설정하지 않았습니다. 저장소 CI 빌드는 운영 브라우저 E2E의 PASS가 아닙니다.
 - 기능 플래그, Vercel Production/Preview 배포, GitHub PR 병합은 **이 문서 작성/PR에서 실행하지 않습니다**. 설정 및 배포는 별도 승인.
 - 테스트 사용자 비밀번호, JWT·쿠키·Supabase 비밀키, API 키 값을 Github/채팅/CI/QA 보고에 넣지 않습니다.
