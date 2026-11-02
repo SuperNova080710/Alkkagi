@@ -74,9 +74,13 @@ describe('browser-only production A/B QA safe integration (#196)',()=>{
   });
 
   it('validates exact A/B room, match, UTC cap, XP baseline, unique reward',()=>{
-    expect(view).toContain('qaScopeRoom(info.room,pair,snapshot)');
-    expect(view).toContain('qaScopeSeats(info.seats,pair)');
-    expect(view).toContain('qaScopeMatch(match as QaMatch|null,info.room,info.seats,pair,snapshot)');
+    expect(view).toContain("db.rpc('get_casual_room',{p_room_id:roomId})");
+    expect(view).toContain('qaScopeRpcRoom(info.room,info.rpc,pair,snapshot,userId,1)');
+    expect(view).toContain('qaScopeRpcRoom(info.room,info.rpc,pair,snapshot,userId,2)');
+    expect(view).toContain('qaScopeMatch(match as QaMatch|null,info.room,info.rpc,pair,snapshot,userId)');
+    expect(view).not.toContain("db.from('room_players')");
+    expect(guards).toContain('rpc.yourSeat');
+    expect(guards).toContain('rpc.players.length!==expectedSeats');
     expect(view).toContain('qaDailyCounts(userId,peer,now)');
     expect(view).toContain('UTC_DAY_CHANGED_BASELINE_EXPIRED');
     expect(view).toContain("base().in('source_kind',['casual','ranked'])");
