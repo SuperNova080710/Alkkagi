@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
 import {
-  resolveQaPair,qaPeerAllowed,qaScopeRoom,qaScopeSeats,qaScopeMatch,
-  qaReward,qaDmIdentity,qaCanSendDm,qaCanSendInvite,type QaSnapshot,type QaMatch,type QaRoom,type QaSeat,
+  resolveQaPair,qaPeerAllowed,qaScopeRoom,qaScopeRpcRoom,qaScopeMatch,
+  qaReward,qaDmIdentity,qaCanSendDm,qaCanSendInvite,type QaSnapshot,type QaMatch,type QaRoom,type QaRpcRoom,
 } from '../src/lib/qa/two-account-guards';
 
 const A='11111111-1111-4111-8111-111111111111';
@@ -14,7 +14,12 @@ const pair=resolveQaPair(config,A)!;
 const before:QaSnapshot={startedAt:'2026-11-02T01:00:00.000Z',totalXp:100,
   dailyPvp:0,dailyCasualPeer:0};
 const room:QaRoom={id:ROOM,owner_id:A,created_at:'2026-11-02T01:01:00.000Z',status:'finished'};
-const seats:QaSeat[]=[{user_id:A,seat:1},{user_id:B,seat:2}];
+const hostRpc:QaRpcRoom={id:ROOM,status:'waiting',yourSeat:1,players:[{seat:1,nickname:'A'}]};
+const aRpc:QaRpcRoom={id:ROOM,status:'finished',yourSeat:1,
+  players:[{seat:1,nickname:'A'},{seat:2,nickname:'B'}]};
+const bRpc:QaRpcRoom={id:ROOM,status:'finished',yourSeat:2,
+  players:[{seat:1,nickname:'A'},{seat:2,nickname:'B'}]};
+const pairB=resolveQaPair(config,B)!;
 const match:QaMatch={id:MATCH,room_id:ROOM,status:'finished',mode:'casual',
   winner_id:A,player1_id:A,player2_id:B,created_at:'2026-11-02T01:02:00.000Z'};
 
@@ -36,29 +41,50 @@ describe('A/B QA browser guard real behavior (#198)',()=>{
     expect(qaPeerAllowed(A,A,pair)).toBe(false);
   });
 
-  it('rejects old rooms, another host and unapproved pair seats',()=>{
+  it('verifies a host with one RPC seat, and a guest with member-only RPC seats',()=>{
     expect(qaScopeRoom(room,pair,before)).toBe(true);
     expect(qaScopeRoom({...room,owner_id:OUTSIDER},pair,before)).toBe(false);
     expect(qaScopeRoom({...room,created_at:'2026-11-01T23:59:00Z'},pair,before)).toBe(false);
     expect(qaScopeRoom(room,pair,null)).toBe(false);
-    expect(qaScopeSeats(seats,pair)).toBe(true);
-    expect(qaScopeSeats([{user_id:A,seat:1},{user_id:OUTSIDER,seat:2}],pair)).toBe(false);
-    expect(qaScopeSeats([{user_id:B,seat:1},{user_id:A,seat:2}],pair)).toBe(false);
-    expect(qaScopeSeats([{user_id:A,seat:1}],pair)).toBe(false);
+    expect(qaScopeRpcRoom({...room,status:'waiting'},hostRpc,pair,before,A,1)).toBe(true);
+    expect(qaScopeRpcRoom(room,aRpc,pair,before,A,2)).toBe(true);
+    expect(qaScopeRpcRoom(room,bRpc,pairB,before,B,2)).toBe(true);
+    expect(qaScopeRpcRoom(room,aRpc,pair,before,B,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,bRpc,pairB,before,OUTSIDER,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,yourSeat:2},pair,before,A,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,players:[{seat:1}]},pair,before,A,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,players:[{seat:1},{seat:1}]},pair,before,A,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,players:[{seat:2},{seat:3}]},pair,before,A,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,id:OUTSIDER},pair,before,A,2)).toBe(false);
+    expect(qaScopeRpcRoom(room,{...aRpc,status:'waiting'},pair,before,A,2)).toBe(false);
+  });
+
+  it('handles room_players RLS self-only visibility without relying on two SELECT rows',()=>{
+    // Real policy room_players_read_self only returns one row to each JWT.
+    // The verified get_casual_room RPC is the sole source of both seat numbers.
+    const aSelfVisible=[{user_id:A,seat:1}];
+    const bSelfVisible=[{user_id:B,seat:2}];
+    expect(aSelfVisible).toHaveLength(1);
+    expect(bSelfVisible).toHaveLength(1);
+    expect(qaScopeRpcRoom(room,aRpc,pair,before,A,2)).toBe(true);
+    expect(qaScopeRpcRoom(room,bRpc,pairB,before,B,2)).toBe(true);
+    expect(qaScopeRpcRoom(room,{...bRpc,players:bSelfVisible},pairB,before,B,2)).toBe(false);
+    expect(qaScopeMatch(match,room,aRpc,pair,before,A)).toBe(true);
+    expect(qaScopeMatch(match,room,bRpc,pairB,before,B)).toBe(true);
   });
 
   it('requires the exact new A/B casual match, owner, winner and fixed room',()=>{
-    expect(qaScopeMatch(match,room,seats,pair,before)).toBe(true);
-    expect(qaScopeMatch({...match,player2_id:OUTSIDER},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,player1_id:B},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,room_id:OUTSIDER},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,mode:'ranked'},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,winner_id:OUTSIDER},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,status:'active'},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch({...match,created_at:'2026-11-01T23:00:00Z'},room,seats,pair,before)).toBe(false);
-    expect(qaScopeMatch(match,{...room,owner_id:OUTSIDER},seats,pair,before)).toBe(false);
-    expect(qaScopeMatch(match,room,[{user_id:A,seat:1},{user_id:OUTSIDER,seat:2}],pair,before)).toBe(false);
-    expect(qaScopeMatch(match,room,seats,pair,null)).toBe(false);
+    expect(qaScopeMatch(match,room,aRpc,pair,before,A)).toBe(true);
+    expect(qaScopeMatch({...match,player2_id:OUTSIDER},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,player1_id:B},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,room_id:OUTSIDER},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,mode:'ranked'},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,winner_id:OUTSIDER},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,status:'active'},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch({...match,created_at:'2026-11-01T23:00:00Z'},room,aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch(match,{...room,owner_id:OUTSIDER},aRpc,pair,before,A)).toBe(false);
+    expect(qaScopeMatch(match,room,{...aRpc,players:[{seat:1}]},pair,before,A)).toBe(false);
+    expect(qaScopeMatch(match,room,aRpc,pair,null,A)).toBe(false);
   });
 
   it('classifies capped XP as LIMITED not paid; rejects incorrect ledger amounts',()=>{
