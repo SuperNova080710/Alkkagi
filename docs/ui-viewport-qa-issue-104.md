@@ -2,6 +2,14 @@
 
 기준: `develop` (2026-10-30), 연관 상위 #102, 기존 밀도 변경 PR #109·#119·#121·#123·#125·#181.
 
+## Chromium 공개 화면 자동 QA (#195)
+
+- [GitHub UI viewport browser QA](../.github/workflows/ui-viewport-browser.yml) 워크플로는 **GitHub Actions 격리 runner**에 설치된 Chrome을 사용하여 로컬 `next start`의 공개 `/`, `/how-to-play`, `/login`, `/signup`을 픽셀 단위로 측정합니다. `scripts/qa/public-viewport.mjs`에서 10종 viewport 총 40회 검사합니다.
+- 각 경로의 `scrollWidth/clientWidth`와 `scrollHeight/clientHeight`, 주요 초점·랜드마크·가로를 넘는 요소를 `results.json`으로 저장하고, 문제가 있는 화면과 대표 크기의 PNG 스크린샷을 **7일 보관하는 CI artifact**로 남깁니다.
+- 가로 문서 오버플로 **1 CSS px 초과**, HTTP 오류, main/h1/건너뛰기 링크 누락은 CI 실패 처리합니다. 수직 스크롤은 긴 문서에서는 정상일 수 있으므로 수치로 기록하되 일률적으로 실패 처리하지 않습니다.
+- `960×540` 검사 대상은 1920×1080의 200% 확대 시 **CSS 레이아웃 폭을 근사한 것**입니다. **Chrome 자체 브라우저 Zoom 200%를 직접 측정한 것은 아니며** 실화면 검증은 별도 필요합니다.
+- CI 실행은 Vercel Preview를 생성하지 않고 테스트 계정·실제 Supabase 데이터에도 접근하지 않습니다. **로그인 후 로비/친구/메신저/XP/장착/게임판과 Realtime의 E2E는 #194의 후속 단계와 시스템 E2E 담당**에게 남겨 둡니다.
+
 ## 코드 검토에서 발견한 반응형 위험과 변경
 
 1. **짧은 와이드(1600px+, 높이 900~999px)**: 기존 `@media(min-width:1600px,min-height:900px)` 하단에서 모든 배너에 공통 `min-height:clamp(270px,30dvh,320px)`를 지정해, 앞서 정의한 로비 compact 배너의 `126px` 최소 높이를 덮고 있었습니다. 긴 랭킹/복구 영역이 있을 때 하단이 밀릴 수 있는 구조입니다. 새 조건은 짧은 와이드에만 홈 `244px`, 로비 `220px` 최소 높이와 이에 맞는 글자 크기를 지정합니다. **높이 1000px 이상 큰 배너 디자인은 변경하지 않습니다.**
