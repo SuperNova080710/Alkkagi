@@ -6,8 +6,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type Keyboard
 import { shouldSubmitChatOnEnter } from '@/lib/chat/keyboard';
 import {
   DmApiError, canSendDm, dmBodyLength, dmConversationPath, dmErrorMessage, dmMutation,
-  dmRequest, isDmPeerId, normalizedDmBody,
-  type DmFriends, type DmHistory, type DmInboxItem, type DmPeer, type DmSent,
+  dmValidatedRequest, isDmFriends, isDmHistory, isDmInbox, isDmPeerId, isDmSent, normalizedDmBody,
+  type DmHistory, type DmInboxItem, type DmPeer,
 } from './message-api';
 
 type Props = { userId: string; initialPeer: string | null };
@@ -50,8 +50,8 @@ export function MessengerView({ userId, initialPeer }: Props) {
   useEffect(() => {
     let current = true;
     Promise.all([
-      dmRequest<DmFriends>('/api/friends'),
-      dmRequest<DmInboxItem[]>('/api/messages'),
+      dmValidatedRequest('/api/friends', isDmFriends),
+      dmValidatedRequest('/api/messages', isDmInbox),
     ]).then(([contacts, threads]) => {
       if (!current) return;
       setFriends(contacts.friends);
@@ -69,7 +69,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
   useEffect(() => {
     if (!selected || !isDmPeerId(selected)) return;
     let current = true;
-    dmRequest<DmHistory>(endpoint(selected) + '?limit=30').then(data => {
+    dmValidatedRequest(endpoint(selected) + '?limit=30', isDmHistory).then(data => {
       if (!current) return;
       setHistory(data); setLoadingHistory(false); setThreadError(null);
     }).catch(error => {
@@ -152,7 +152,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
     setThreadError(null);
     try {
       const before = history.messages[history.messages.length - 1].id;
-      const page = await dmRequest<DmHistory>(endpoint(selected) + '?before=' + encodeURIComponent(before) + '&limit=30');
+      const page = await dmValidatedRequest(endpoint(selected) + '?before=' + encodeURIComponent(before) + '&limit=30', isDmHistory);
       if (page.threadId !== history.threadId) { refreshAll(); return; }
       const element = listRef.current;
       if (element) scrollRestore.current = { height: element.scrollHeight, top: element.scrollTop };
@@ -183,7 +183,8 @@ export function MessengerView({ userId, initialPeer }: Props) {
     const restoreFocus = document.activeElement === composer.current;
     setSending(true); setSendError(null);
     try {
-      await dmMutation<DmSent>(endpoint(selected), 'POST', { body, requestId });
+      const confirmed = await dmMutation<unknown>(endpoint(selected), 'POST', { body, requestId });
+      if (!isDmSent(confirmed)) throw new DmApiError(503, 'DM_SERVICE_UNAVAILABLE');
       pendingRequest.current = null; setDraft(''); setActivity('메시지를 전송했습니다.');
       refreshAll();
     } catch (error) {
@@ -245,7 +246,7 @@ export function MessengerView({ userId, initialPeer }: Props) {
             <span className="arena-dm-avatar" aria-hidden="true">●</span>
             <span className="arena-dm-peer-copy">
               <strong>{item.nickname}</strong>
-              <span>{item.recent?.lastMessage ?? '새 대화 시작하기'}</span>
+              <span>{item.recent?.lastMessage?.body ?? '새 대화 시작하기'}</span>
             </span>
             {Number.isFinite(item.recent?.unreadCount) && (item.recent?.unreadCount ?? 0) > 0 &&
               <span className="arena-dm-unread" aria-label={`읽지 않은 메시지 ${item.recent?.unreadCount}개`}>
