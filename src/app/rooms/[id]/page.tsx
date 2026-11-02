@@ -75,7 +75,9 @@ export default async function RoomPage({params,searchParams}:{params:Promise<{id
          <button type="submit" className="arena-button arena-button--gold">경기 시작</button>
         </form>}
        {room.status==='waiting'&&room.players.length<2&&
-        <p className="arena-room-wait-note">초대 코드 또는 친구 초대를 전달하면 상대가 참가할 수 있습니다.</p>}
+        <p className="arena-room-wait-note">{room.yourSeat===1
+         ? '친구에게 초대 코드나 대전 초대를 보내 상대를 기다려 주세요.'
+         : '방장이 상대를 초대하고 있습니다. 입장 현황은 자동으로 갱신됩니다.'}</p>}
        {room.status==='waiting'&&<form action={leaveRoom} className="arena-room-leave">
         <input type="hidden" name="id" value={id}/>
         <button type="submit" className="arena-button arena-button--outline">
