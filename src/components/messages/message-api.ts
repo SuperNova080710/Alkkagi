@@ -59,7 +59,9 @@ export function isDmHistory(value: unknown): value is DmHistory {
     (value.threadId !== null || (value.messages.length === 0 && value.hasMore === false));
 }
 export function isDmSent(value: unknown): value is DmSent {
-  return isRecord(value) && isDmMessage(value) && uuid(value.threadId) && typeof value.alreadySent === 'boolean';
+  if (!isDmMessage(value)) return false;
+  const sent = value as DmMessage & { threadId?: unknown; alreadySent?: unknown };
+  return uuid(sent.threadId) && typeof sent.alreadySent === 'boolean';
 }
 export async function dmValidatedRequest<T>(
   path: string, valid: (value: unknown) => value is T, options: RequestInit = {},
