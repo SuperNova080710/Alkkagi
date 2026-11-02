@@ -68,7 +68,8 @@ describe('browser-only production A/B QA safe integration (#196)',()=>{
     expect(view).toContain('await qaDmIdentity(pair.userA,pair.userB)');
     expect(view).toContain('if(sent.alreadySent)');
     expect(view).toContain("'/api/room-invites/sent?roomId='");
-    expect(view).toContain("if(sent.some(x=>x.inviteeId===peer))");
+    expect(view).toContain('qaCanSendInvite(sent,peer)');
+    expect(view).toContain('qaCanSendDm(history.messages,marker)');
     expect(view).toContain('REALTIME_INSERT_NOT_OBSERVED');
   });
 
