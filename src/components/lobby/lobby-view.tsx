@@ -13,7 +13,10 @@ export type LobbyData = {
 };
 
 /** Presentation boundary for backend integration and credential-free visual verification. */
-export function LobbyView({ data, modes, account }: { data: LobbyData; modes: ReactNode; account?: ReactNode }) {
+export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false }: {
+  data: LobbyData; modes: ReactNode; account?: ReactNode;
+  friendsEnabled?: boolean; cosmeticsEnabled?: boolean;
+}) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
     <ArenaHero compact />
@@ -37,7 +40,12 @@ export function LobbyView({ data, modes, account }: { data: LobbyData; modes: Re
           {data.rankingUnavailable ? <p role="status" className="arena-muted">랭킹을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p> : data.leaderboard.length ? <ol className="arena-leaderboard">{data.leaderboard.slice(0, 3).map(player => <li key={player.position}><span className="arena-rank-number">{player.position}</span><span className="arena-rank-name">{player.nickname}</span><strong>{player.rating.toLocaleString('ko-KR')}<small> RP</small></strong></li>)}</ol> : <p className="arena-muted">아직 등록된 순위가 없어요.</p>}
           <Link href="/ranked" className="arena-text-link">전체 랭킹 보기 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
-        <div className="arena-future"><span>친구 <small>준비 중</small></span><span>꾸미기 <small>준비 중</small></span></div>
+        <div className="arena-future">
+          {friendsEnabled ? <Link href="/friends">친구 <small>친구 목록으로 ›</small></Link>
+            : <span>친구 <small>준비 중</small></span>}
+          {cosmeticsEnabled ? <Link href="/cosmetics">꾸미기 <small>아이템 관리하기 ›</small></Link>
+            : <span>꾸미기 <small>준비 중</small></span>}
+        </div>
       </aside>
     </div>
   </ArenaShell>;
