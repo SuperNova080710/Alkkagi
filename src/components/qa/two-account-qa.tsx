@@ -3,8 +3,8 @@
 import {createBrowserClient} from '@supabase/ssr';
 import {useEffect,useRef,useState} from 'react';
 import {
-  qaCanSendDm,qaCanSendInvite,qaDmIdentity,qaPeerAllowed,qaReward,qaScopeMatch,qaScopeRoom,qaScopeSeats,
-  qaUuid,type QaMatch,type QaPair,type QaRoom,type QaSeat,type QaSnapshot,
+  qaCanSendDm,qaCanSendInvite,qaDmIdentity,qaPeerAllowed,qaReward,qaScopeMatch,qaScopeRpcRoom,
+  qaUuid,type QaMatch,type QaPair,type QaRoom,type QaRpcRoom,type QaSnapshot,
 } from '@/lib/qa/two-account-guards';
 
 type Friend={id:string;userId?:string};
@@ -31,12 +31,14 @@ function database(){
 }
 async function qaRoomState(roomId:string){
   const db=database();
-  const [{data:room,error:roomError},{data:seats,error:seatsError}]=await Promise.all([
+  // room_players SELECT has self-only RLS. Never try to infer two seats
+  // from it: verified room members instead use get_casual_room RPC.
+  const [{data:room,error:roomError},{data:rpc,error:rpcError}]=await Promise.all([
     db.from('rooms').select('id,owner_id,created_at,status').eq('id',roomId).maybeSingle(),
-    db.from('room_players').select('user_id,seat').eq('room_id',roomId),
+    db.rpc('get_casual_room',{p_room_id:roomId}),
   ]);
-  if(roomError||seatsError)throw Error('QA_ROOM_QUERY_FAILED');
-  return {room:room as QaRoom|null,seats:(seats??[]) as QaSeat[]};
+  if(roomError||rpcError||!rpc)throw Error('QA_ROOM_RPC_QUERY_FAILED');
+  return {room:room as QaRoom|null,rpc:rpc as QaRpcRoom};
 }
 
 async function qaDailyCounts(userId:string,peerId:string,now:Date){
@@ -204,9 +206,8 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
   async function scopeRoomForHost(){
     if(!validRoom)throw Error('ENTER_ROOM_UUID');
     const info=await qaRoomState(room);
-    if(!qaScopeRoom(info.room,pair,snapshot)||info.room?.status!=='waiting'||
-      info.seats.length!==1||info.seats[0].seat!==1||
-      info.seats[0].user_id!==pair.userA)
+    if(!qaScopeRpcRoom(info.room,info.rpc,pair,snapshot,userId,1)||
+      info.room?.status!=='waiting')
       throw Error('NOT_THIS_QA_ROOM_OR_HOST');
     return info;
   }
@@ -231,7 +232,7 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
     const invite=received.find(x=>x.inviterId===peer&&x.roomId===room);
     if(!invite){
       const info=await qaRoomState(room);
-      if(qaScopeRoom(info.room,pair,snapshot)&&qaScopeSeats(info.seats,pair)){
+      if(qaScopeRpcRoom(info.room,info.rpc,pair,snapshot,userId,2)){
         setNotice('ALREADY EXISTS: B의 해당 QA 방 seat 2 참여가 확인됩니다. 추가 초대 수락 0건');
         return;
       }
@@ -242,10 +243,8 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
     if(response.status!=='accepted'||response.roomId!==room)
       throw Error('INVITE_NOT_ACCEPTED');
     const info=await qaRoomState(room);
-    const db=database();
-    const {data,error}=await db.rpc('get_casual_room',{p_room_id:room});
-    if(!qaScopeRoom(info.room,pair,snapshot)||!qaScopeSeats(info.seats,pair)||
-      error||data?.yourSeat!==2)throw Error('SEAT_2_NOT_CONFIRMED');
+    if(!qaScopeRpcRoom(info.room,info.rpc,pair,snapshot,userId,2))
+      throw Error('SEAT_2_NOT_CONFIRMED');
     record('B의 허용된 A/B 초대 수락·seat 2 확인');
   }
   async function verifyGame(){
@@ -259,7 +258,7 @@ export function TwoAccountQa({userId,pair}:{userId:string;pair:QaPair}){
       db.from('matches').select('id,room_id,status,mode,winner_id,player1_id,player2_id,created_at')
         .eq('room_id',room).order('created_at',{ascending:false}).limit(1).maybeSingle(),
     ]);
-    if(error||!qaScopeMatch(match as QaMatch|null,info.room,info.seats,pair,snapshot))
+    if(error||!qaScopeMatch(match as QaMatch|null,info.room,info.rpc,pair,snapshot,userId))
       throw Error('QA_PAIR_ROOM_MATCH_SCOPE_FAILED');
     const item=match as QaMatch;
     const expected=item.winner_id===userId?40:item.winner_id===null?25:20;
