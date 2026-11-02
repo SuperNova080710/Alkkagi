@@ -14,6 +14,10 @@ export default async function TwoAccountQaPage(){
     process.env.NEXT_PUBLIC_SUPABASE_URL!=='https://igjvccohxthmgbfilzxi.supabase.co')
     notFound();
   const user=await requireUser();
+  const allowed=(process.env.OPS_TWO_ACCOUNT_QA_USER_IDS??'').split(',')
+    .map(id=>id.trim().toLowerCase()).filter(Boolean);
+  if(allowed.length!==2||new Set(allowed).size!==2||!allowed.includes(user.id.toLowerCase()))
+    notFound();
   return <ArenaShell current="lobby">
     <div className="mx-auto max-w-4xl space-y-4 p-4">
       <header><p className="text-xs uppercase tracking-widest">Operator only · manual test</p>
