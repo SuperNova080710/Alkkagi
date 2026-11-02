@@ -238,7 +238,8 @@ async function prepare(s) {
   console.log('  Then run: node --env-file=.env.local tests/e2e/hosted-two-account.mjs verify '+file);
 }
 async function verify(s,path) {
-  const file=resolve(path||'');
+  assert.ok(typeof path==='string' && path.endsWith('.json'),'Private state file path required');
+  const file=resolve(path);
   const state=JSON.parse(readFileSync(file,'utf8'));
   assert.equal(state.project,PROJECT_HOST);
   assert.equal(state.userA,s.userA,'Different A account from prepare');
@@ -289,7 +290,7 @@ async function main() {
     if(mode==='prepare')await prepare(s);else await verify(s,process.argv[3]);
   } finally {
     await Promise.allSettled([s.a.removeAllChannels(),s.b.removeAllChannels(),s.guest.removeAllChannels()]);
-    await Promise.allSettled([s.a.auth.signOut(),s.b.auth.signOut()]);
+    await Promise.allSettled([s.a.auth.signOut({scope:'local'}),s.b.auth.signOut({scope:'local'})]);
   }
 }
 if(process.argv[1] && import.meta.url===new URL('file://'+resolve(process.argv[1])).href) {
