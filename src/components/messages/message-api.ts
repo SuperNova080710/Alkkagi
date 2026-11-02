@@ -5,7 +5,7 @@ export type DmInboxItem = {
   userId: string;
   nickname: string;
   lastAt: string | null;
-  lastMessage: string | null;
+  lastMessage: DmMessage | null;
   unreadCount: number;
 };
 export type DmMessage = { id: string; senderId: string; body: string; createdAt: string };
@@ -21,6 +21,53 @@ export class DmApiError extends Error {
 
 export const isDmPeerId = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+// HTTP 200 is not a runtime type guarantee. SQL returns lastMessage as an
+// OBJECT (or null), not a string. Validate all nested records before React uses
+// .map(), .find(), string interpolation or pagination.
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+const uuid = (value: unknown): value is string =>
+  typeof value === 'string' && isDmPeerId(value);
+const decimalId = (value: unknown): value is string =>
+  typeof value === 'string' && /^[1-9][0-9]*$/.test(value);
+const timestamp = (value: unknown): value is string =>
+  typeof value === 'string' && value.length > 0 && Number.isFinite(Date.parse(value));
+
+export function isDmPeer(value: unknown): value is DmPeer {
+  return isRecord(value) && uuid(value.id) && typeof value.nickname === 'string';
+}
+export function isDmFriends(value: unknown): value is DmFriends {
+  return isRecord(value) && Array.isArray(value.friends) && value.friends.every(isDmPeer);
+}
+export function isDmMessage(value: unknown): value is DmMessage {
+  return isRecord(value) && decimalId(value.id) && uuid(value.senderId) &&
+    typeof value.body === 'string' && timestamp(value.createdAt);
+}
+export function isDmInbox(value: unknown): value is DmInboxItem[] {
+  return Array.isArray(value) && value.every(item => isRecord(item) &&
+    uuid(item.threadId) && uuid(item.userId) && typeof item.nickname === 'string' &&
+    (item.lastAt === null || timestamp(item.lastAt)) &&
+    (item.lastMessage === null || isDmMessage(item.lastMessage)) &&
+    (item.lastMessage === null || item.lastAt !== null) &&
+    Number.isSafeInteger(item.unreadCount) && (item.unreadCount as number) >= 0);
+}
+export function isDmHistory(value: unknown): value is DmHistory {
+  return isRecord(value) && (value.threadId === null || uuid(value.threadId)) &&
+    Array.isArray(value.messages) && value.messages.every(isDmMessage) &&
+    typeof value.hasMore === 'boolean' &&
+    (value.threadId !== null || (value.messages.length === 0 && value.hasMore === false));
+}
+export function isDmSent(value: unknown): value is DmSent {
+  return isDmMessage(value) && uuid(value.threadId) && typeof value.alreadySent === 'boolean';
+}
+export async function dmValidatedRequest<T>(
+  path: string, valid: (value: unknown) => value is T, options: RequestInit = {},
+): Promise<T> {
+  const value = await dmRequest<unknown>(path, options);
+  if (!valid(value)) throw new DmApiError(503, 'DM_SERVICE_UNAVAILABLE');
+  return value;
+}
 
 export const normalizedDmBody = (value: string) => value.trim();
 export const dmBodyLength = (value: string) => Array.from(normalizedDmBody(value)).length;
