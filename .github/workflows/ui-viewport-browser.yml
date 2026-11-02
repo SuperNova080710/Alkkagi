@@ -1,0 +1,52 @@
+name: UI viewport browser QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/ui-viewport-browser.yml'
+      - 'scripts/qa/public-viewport.mjs'
+      - 'src/app/arena.css'
+      - 'src/app/globals.css'
+      - 'src/app/page.tsx'
+      - 'src/components/ui/arena.tsx'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-viewport-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Confirm preinstalled Chrome / Chromium
+        run: |
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Build actual Next.js production pages
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - name: Measure public routes in headless Chrome (10 viewports)
+        run: node scripts/qa/public-viewport.mjs
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          QA_OUTPUT_DIR: artifacts/ui-viewport-qa
+      - name: Save pixel diagnostics and public-only screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-ui-viewport-${{ github.run_id }}
+          path: artifacts/ui-viewport-qa/
+          retention-days: 7
+          if-no-files-found: warn
