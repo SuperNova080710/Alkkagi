@@ -121,7 +121,10 @@
 .arena-leaderboard strong { white-space: nowrap; }
 .arena-leaderboard small { font-size: 10px; color: var(--arena-muted); }
 .arena-future { display: flex; gap: 10px; padding: 14px 18px; background: #fff9ecb3; border: 1px solid #dfd0b6; border-radius: 16px; }
-.arena-future > span { flex: 1; font-size: 14px; font-weight: 700; }
+.arena-future > :is(span, a) { flex: 1; font-size: 14px; font-weight: 700; }
+.arena-future > a { color: var(--arena-ink); text-decoration: none; border-radius: 6px; }
+.arena-future > a:hover small { text-decoration: underline; }
+.arena-future > a:focus-visible { outline: 3px solid var(--arena-forest); outline-offset: 3px; }
 .arena-future small { display: block; color: var(--arena-muted); font-size: 11px; font-weight: 400; }
 .arena-dialog { color: var(--arena-ink); background: var(--arena-cream); width: min(700px, calc(100% - 28px)); max-height: calc(100dvh - 40px); margin: auto; padding: 26px; border: 1px solid var(--arena-line); border-radius: 24px; box-shadow: 0 24px 80px #00180f66; overflow-y: auto; }
 .arena-dialog::backdrop { background: #0a241dc9; backdrop-filter: blur(4px); }
