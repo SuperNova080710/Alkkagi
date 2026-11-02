@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
 import {
   resolveQaPair,qaPeerAllowed,qaScopeRoom,qaScopeSeats,qaScopeMatch,
-  qaReward,qaDmIdentity,type QaSnapshot,type QaMatch,type QaRoom,type QaSeat,
+  qaReward,qaDmIdentity,qaCanSendDm,qaCanSendInvite,type QaSnapshot,type QaMatch,type QaRoom,type QaSeat,
 } from '../src/lib/qa/two-account-guards';
 
 const A='11111111-1111-4111-8111-111111111111';
@@ -85,4 +85,18 @@ describe('A/B QA browser guard real behavior (#198)',()=>{
     expect(first.requestId).not.toBe(stranger.requestId);
     await expect(qaDmIdentity(A,A)).rejects.toThrow('INVALID_QA_PAIR');
   });
+  it('blocks repeated DM and invite mutations after refresh or an earlier stage',()=>{
+    const marker='ALK-QA-11111111-1111-4111-8111-111111111111';
+    expect(qaCanSendDm([],marker)).toBe(true);
+    expect(qaCanSendDm([{body:'different'}],marker)).toBe(true);
+    expect(qaCanSendDm([{body:marker}],marker)).toBe(false);
+    expect(qaCanSendDm([], 'wrong-marker')).toBe(false);
+    expect(qaCanSendInvite([],B)).toBe(true);
+    for(const status of ['pending','accepted','declined','expired']){
+      expect(qaCanSendInvite([{inviteeId:B,status}],B)).toBe(false);
+    }
+    expect(qaCanSendInvite([{inviteeId:OUTSIDER,status:'accepted'}],B)).toBe(true);
+    expect(qaCanSendInvite([], 'not-an-id')).toBe(false);
+  });
+
 });
