@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 
 const HOST = '11111111-1111-4111-8111-111111111111';
 const GUEST = '22222222-2222-4222-8222-222222222222';
@@ -80,6 +81,16 @@ beforeEach(() => { testState.requests.length = 0; testState.viewer = { id: HOST 
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe('#179 server-rendered casual waiting room/role permissions', () => {
+  it('uses 44px touch targets and shared 3D buttons for room and invite actions', () => {
+    const css = readFileSync(new URL('../src/app/arena.css', import.meta.url), 'utf8');
+    const rule = css.slice(css.indexOf('/* #179 QA: 44px touch targets'));
+    expect(rule).toContain('.arena-waiting--v2 .arena-invite .arena-button');
+    expect(rule).toContain('.arena-waiting--v2 .arena-room-leave .arena-button');
+    expect(rule).toContain('.arena-received-invites .arena-received-actions .arena-button');
+    expect(rule).toContain('min-height: 44px');
+    expect(css).toContain('box-shadow: 0 5px 0 #c6b99b');
+  });
+
   it('host 1/2: when both flags ON, shows friend invite and AI alongside copy code', async () => {
     const markup = await html(room(), { friends: true, invites: true });
     expect(markup).toContain('data-testid="send-friend-invite"');
