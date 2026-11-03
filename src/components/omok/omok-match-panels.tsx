@@ -133,12 +133,12 @@ export function OmokMatchPanel({
           : myTurn ? '차례입니다. 빈 교차점에 착수해 주세요.'
           : `${turn?.nickname || '상대'}님의 착수를 기다리고 있습니다.`}</p>
         {error && <p className="arena-omok-panel-error" role="alert">{error}</p>}
-        {finished && <p className="arena-omok-panel-hint">재대결 동의 {Math.min(2, Math.max(0, rematchReadyCount))}/2</p>}
+        {finished && onRematch && <p className="arena-omok-panel-hint">재대결 동의 {Math.min(2, Math.max(0, rematchReadyCount))}/2</p>}
         <div className="arena-omok-panel-actions">
           {finished ? <>
-            <ActionButton onClick={onRematch} disabled={pending || reconnecting || myRematchVote}>
+            {onRematch && <ActionButton onClick={onRematch} disabled={pending || reconnecting || myRematchVote}>
               {myRematchVote ? '상대 수락 대기 중' : '재대결 신청'}
-            </ActionButton>
+            </ActionButton>}
             <ActionButton onClick={onReturn} secondary>로비로 돌아가기</ActionButton>
           </> : <>
             <ActionButton onClick={onForfeit} disabled={pending || reconnecting || status !== 'active'} secondary>기권</ActionButton>
