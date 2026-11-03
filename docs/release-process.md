@@ -1,6 +1,6 @@
 # Alkkagi Arena — 브랜치·버전·Preview 릴리스 운영
 
-> **최신 상태 (2026-11-03):** 현재 릴리스 후보는 `release/v0.2.0`의 Draft PR #207이며 `main` 병합/정식 v0.2.0 태그는 미완료입니다. 운영 SQL 004~009는 2026-11-02 적용 완료되어 재실행하면 안 됩니다. 브라우저 A/B 및 Preview AI 관리자키 #211, 사용자 승인 #203/#206이 남았습니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+> **최신 상태 (2026-11-03):** v0.2.0 **PR #207 main 병합**(`dc5a2f4`), Vercel Production **READY 및 서비스 alias 확인**. 실제 두 계정·AI·Realtime/모바일 Smoke와 `v0.2.0` 태그/GitHub Release는 별도 미확인입니다. 운영 SQL 004~009는 2026-11-02 적용 완료되어 재실행하면 안 됩니다. 브라우저 A/B 및 Preview AI 관리자키 #211, 사용자 승인 #203/#206이 남았습니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
 
 
 관련: #144 (상위), #145 (Vercel), #146 (CI), #147 (인수)
@@ -21,7 +21,7 @@
 
 - 도입 전 `main`의 기존 코드와 운영 Production 배포 기록은 그대로 유지합니다.
 - 이번 정책 전환 PR은 부트스트랩 예외로 `main` 대상으로 생성됩니다. **병합 이후** 진행 중 PR의 base를 `develop`으로 조정할 수 있습니다. Base 변경 시 diff/필수 CI 결과를 확인합니다.
-- `package.json`의 `0.1.0`은 현재 소스 버전 문자열입니다. 이 문서만으로 `v0.1.0` Git 태그나 검증된 릴리스 기록이 생기는 것은 아닙니다.
+- **2026-11-03 이전 기준:** `package.json`의 `0.1.0`은 당시 소스 버전 문자열이었습니다. 11월 3일 #207 병합으로 main은 0.2.0 코드를 포함합니다. 이 문서만으로 `v0.1.0` Git 태그나 검증된 릴리스 기록이 생기는 것은 아닙니다.
 - 첫 공식 버전 번호는 공개 기능·DB migration·실제 QA·릴리스 범위를 토대로 결정하고 승인 후 태깅합니다.
 
 ## 배포 비용 제어
@@ -85,7 +85,7 @@ Preview 배포에서 동일 코드가 통과해도 Production에는 환경변수
 - PR [#148](https://github.com/SuperNova080710/Alkkagi/pull/148)은 **2026-10-30 main 병합 완료** (`8cf4dc0`). `develop`을 main과 동일 SHA에서 생성했고 조회 시점에도 두 브랜치가 일치했습니다.
 - `vercel.json`에는 Git 자동 배포를 `main`만 허용하는 `deploymentEnabled` 규칙이 존재합니다. **실제 Vercel 배포 설정 반영/차단 동작 및 첫 Release Candidate CLI Preview는 확인되지 않았으므로 완료로 단정하지 않습니다.**
 - 전환 전 PR #115/#138/#143은 이미 main에 병합된 상태였으므로 base 변경 대상이 아닙니다. **후속 신규 기능 및 문서 PR은 `develop`을 base**로 사용합니다.
-- `package.json`의 `0.1.0`은 소스 문자열일 뿐, 실제 확인된 정식 `v0.1.0` 태그나 GitHub Release는 없습니다. `CHANGELOG.md`의 Unreleased 항목도 공식 출시를 뜻하지 않습니다.
+- **과거(릴리스 전환 시):** `package.json`의 `0.1.0`은 소스 문자열이었고 당시 정식 `v0.1.0` tag/GitHub Release는 확인되지 않았습니다. 11월 3일 이후 main은 #207의 0.2.0 코드를 포함합니다. `CHANGELOG.md`의 Unreleased 항목도 공식 출시를 뜻하지 않습니다.
 - [상위 릴리스 이슈 #144](https://github.com/SuperNova080710/Alkkagi/issues/144)는 운영 정책 실제 동작·첫 RC 검증이 끝날 때까지 열어 둡니다.
 
 ## PG17.11 운영 DB 사전 점검·릴리스 STOP 게이트 (2026-10-30)
@@ -93,5 +93,5 @@ Preview 배포에서 동일 코드가 통과해도 Production에는 환경변수
 - [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161) / [운영 사전점검 문서(아직 PR 브랜치)](https://github.com/SuperNova080710/Alkkagi/blob/feat/ops-db-preflight/docs/db-rollout-preflight.md): 운영 Supabase PostgreSQL **17.11**에서 읽기 전용 68항목 검사. baseline 7 ready, 004 1 inspect(방 생성 제한 미반영), 005~009 60 pending. 실제 객체/이력 기준 004~009 미적용. 작업은 **조회만**, 운영 DDL·데이터 변경 없음.
 - 위 점검은 기능을 **배포할 수 있다는 승인**이 아닙니다. 출시에 앞서 004→009 순차 적용 설계와 선행·후행 API 호환성, 백업/복구, 테이블/RLS/GRANT/Realtime, PG17 실제 스테이징 및 2계정 E2E를 확인해야 합니다. PG16 기반 과거 동시성 CI와 PG17 운영 실증을 구분합니다.
 - [XP UI PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)는 **`develop`에 Squash 병합** (`f6cb2e9`)됐으며 `main`에는 아직 미포함입니다. `EXPERIENCE_UI_ENABLED` 기본 OFF. 코스메틱 UI는 #162~#165 작업 중. 운영 SQL 008/009 적용·실사용 확인 전 일반 기능으로 노출하지 않습니다.
-- 기존 Production SHA `8cf4dc0`의 READY 상태는 #161 조사 기록에 있으나 **실 HTTP/사용자 E2E·Vercel 배포 제한 정책 검증을 대신하지 않습니다**. 첫 `release/vX.Y.Z` 수동 CLI Preview와 공식 버전 태그도 별도입니다.
-- #161은 Draft·미병합이므로 검사 SQL·STOP 문서를 `main`에 이미 있다고 간주하지 마세요. 운영 환경에서 임의 DDL을 실행하지 않습니다.
+- 2026-10-30 과거 Production SHA `8cf4dc0`의 READY 상태는 #161 조사 기록에 있으나 **실 HTTP/사용자 E2E·Vercel 배포 제한 정책 검증을 대신하지 않습니다**. 첫 `release/vX.Y.Z` 수동 CLI Preview와 공식 버전 태그도 별도입니다.
+- **과거 기록 정정:** PR #161은 이후 `develop`에 병합됐으며, 당시 Draft·미병합 표현은 작성 시점 기록입니다. 신규 검사 도구의 main 포함 여부는 현재 릴리스 소스로 확인하세요. 운영 환경에서 임의 DDL을 실행하지 않습니다.
