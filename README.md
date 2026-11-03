@@ -197,4 +197,4 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 
 ## 차기 개발 — v0.3.0 오목 멀티게임 (기획·Draft 단계)
 
-[오목 확장 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 #218~#224에서 15×15 자유룰 오목 엔진·DB/RLS·2인 일반전·AI·독립 랭크/XP 정책 및 멀티게임 로비를 기획/개발하고 있습니다. [설계 Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [순수 엔진 Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)은 아직 릴리스된 기능이 아닙니다. **v0.2.0 RC #207의 실사용 QA·Production 승인과 완전히 분리**합니다.
+[오목 확장 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 #218~#224에서 15×15 자유룰 오목 엔진·DB/RLS·2인 일반전·AI·독립 랭크/XP 정책 및 멀티게임 로비를 기획/개발하고 있습니다. [설계 Draft #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [엔진 Draft #230](https://github.com/SuperNova080710/Alkkagi/pull/230), [DB/RPC Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232), [PvP API·재대결 Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233), [AI Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)는 코드/CI 단계이며 **develop 병합·서비스 배포가 되지 않은 기능**입니다. **v0.2.0 RC #207의 실사용 QA·Production 승인과 완전히 분리**합니다.
