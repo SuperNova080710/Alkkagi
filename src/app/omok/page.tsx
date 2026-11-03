@@ -17,7 +17,7 @@ export default async function OmokPage() {
 
   return <ArenaShell current="lobby" account={<LogoutForm />}>
     <div className="arena-omok-lobby-page">
-      <ArenaHero compact />
+      <ArenaHero compact game="omok" />
       <div className="arena-lobby-grid arena-lobby-grid--multigame">
         <div className="arena-play-column">
           <GameSwitcher current="omok" />
