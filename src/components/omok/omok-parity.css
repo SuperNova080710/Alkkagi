@@ -64,7 +64,7 @@
   grid-template-columns:minmax(0,1fr) minmax(225px,300px);
   align-items:start;gap:clamp(10px,1.4vw,16px);
 }
-.arena-omok-match-layout .arena-omok-board-view {
+.arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
   width:min(100%,510px,max(250px,calc(100dvh - 360px)));
   max-width:100%;margin-inline:auto;
 }
@@ -101,7 +101,7 @@
 
 @media(max-width:880px) {
   .arena-omok-match-layout {grid-template-columns:minmax(0,1fr);}
-  .arena-omok-match-layout .arena-omok-board-view {
+  .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
     width:min(100%,450px,max(250px,calc(100dvh - 255px)));margin-inline:auto;
   }
   .arena-omok-match-side {max-width:600px;width:100%;margin-inline:auto;}
@@ -109,11 +109,11 @@
 @media(max-width:480px) {
   .arena-omok-hero-quicknote {max-width:280px;}
   .arena-omok-match-panel .arena-omok-match-players li {flex-wrap:wrap;}
-  .arena-omok-match-layout .arena-omok-board-view {width:min(100%,calc(100dvh - 240px));}
+  .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {width:min(100%,calc(100dvh - 240px));}
   .arena-omok-board-stage .game-result-card {padding:12px;}
 }
 @media(max-height:650px) and (min-width:881px) {
-  .arena-omok-match-layout .arena-omok-board-view {
+  .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
     width:min(100%,380px,max(210px,calc(100dvh - 300px)));
   }
   .arena-omok-match-side .arena-omok-chat-list {max-height:70px;}
