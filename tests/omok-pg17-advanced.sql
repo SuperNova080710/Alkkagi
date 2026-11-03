@@ -62,13 +62,17 @@ select public.forfeit_omok_ai_match(
 reset role;
 
 do $ai_xp$
+declare mid uuid;
 begin
- if (select count(*) from public.omok_ai_turns where match_id=:'ai_match'::uuid)<>1
+ select id into strict mid from public.omok_ai_matches
+   where owner_id='11111111-1111-4111-8111-111111111111'::uuid
+   order by created_at desc limit 1;
+ if (select count(*) from public.omok_ai_turns where match_id=mid)<>1
    then raise exception 'AI_TURN_LOG_DUPLICATED'; end if;
  if (select count(*) from public.xp_events
-     where source_kind='omok_ai' and source_id=:'ai_match'::uuid)<>1
+     where source_kind='omok_ai' and source_id=mid)<>1
    then raise exception 'AI_XP_DUPLICATE_OR_MISSING'; end if;
- if (select status from public.omok_ai_matches where id=:'ai_match'::uuid)<>'finished'
+ if (select status from public.omok_ai_matches where id=mid)<>'finished'
     then raise exception 'AI_FORFEIT_NOT_FINAL'; end if;
  raise notice 'PASS: AI turn, replay, service RPC scope, owner and XP';
 end;
@@ -118,17 +122,16 @@ select (elem->>'id')::uuid as received_invite
   where (elem->>'roomId')::uuid=:'friend_room'::uuid
   limit 1 \gset
 select public.respond_omok_friend_invite(:'received_invite'::uuid,true);
+select set_config('qa.received_invite',:'received_invite',false);
 do $double_accept$
 declare denied boolean:=false;
 begin
  begin
   perform public.respond_omok_friend_invite(
-    (select (e->>'id')::uuid from jsonb_array_elements(
-      public.list_omok_received_invites()) e limit 1),true);
+    current_setting('qa.received_invite')::uuid,true);
  exception when others then denied:=true; end;
  -- Second request cannot create extra seat even when duplicate UI events race.
- if (select count(*) from public.omok_room_players
-   where user_id=auth.uid())>3 then raise exception 'EXCESS_SEATS'; end if;
+ if not denied then raise exception 'DUPLICATE_ACCEPT_ALLOWED'; end if;
 end;
 $double_accept$;
 reset role;
