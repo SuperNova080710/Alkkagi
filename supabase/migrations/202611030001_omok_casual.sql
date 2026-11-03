@@ -59,9 +59,9 @@ grant all on public.omok_rooms,public.omok_room_players,public.omok_matches,publ
 create policy omok_rooms_members on public.omok_rooms for select to authenticated
  using(exists(select 1 from public.omok_room_players rp
    where rp.room_id=omok_rooms.id and rp.user_id=(select auth.uid())));
-create policy omok_room_players_members on public.omok_room_players for select to authenticated
- using(exists(select 1 from public.omok_room_players rp
-   where rp.room_id=omok_room_players.room_id and rp.user_id=(select auth.uid())));
+-- Avoid recursive self-referencing RLS: seating list is returned only by the guarded room RPC.
+create policy omok_room_players_self on public.omok_room_players for select to authenticated
+ using(user_id=(select auth.uid()));
 create policy omok_matches_members on public.omok_matches for select to authenticated
  using((select auth.uid()) in (black_id,white_id));
 create policy omok_moves_members on public.omok_moves for select to authenticated
