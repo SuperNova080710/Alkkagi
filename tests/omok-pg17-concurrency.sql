@@ -167,3 +167,104 @@ begin
   raise notice 'PASS: finished game history retained; room playing for 002 rematch votes';
 end;
 $terminal$;
+
+
+-- #221 is layered on the core with a second independently tested migration.
+\i supabase/migrations/202611030002_omok_social_and_rematch.sql
+
+do $social_acl$
+begin
+ if has_table_privilege('anon','public.omok_match_messages','SELECT') or
+    has_table_privilege('authenticated','public.omok_match_messages','INSERT') or
+    has_table_privilege('authenticated','public.omok_rematch_votes','INSERT') or
+    has_function_privilege('anon','public.vote_omok_rematch(uuid)','EXECUTE') or
+    has_function_privilege('anon','public.send_omok_match_message(uuid,text,uuid)','EXECUTE') then
+   raise exception 'Omok social table/RPC permissions unsafe';
+ end if;
+ raise notice 'PASS: PostgreSQL 17 rematch votes/chat ACL';
+end;
+$social_acl$;
+
+create function public.verify_omok_rematch_pg17()
+returns void language plpgsql as $rematch$
+declare
+ conn text:='host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres';
+ alice text:='11111111-1111-4111-8111-111111111111';
+ bob text:='22222222-2222-4222-8222-222222222222';
+ room uuid;
+ original uuid;
+ first_response text;
+ second_response text;
+ retry_response text;
+ worker_pid integer;
+ waiting boolean:=false;
+ latest record;
+ i integer;
+begin
+ select id into strict room from public.omok_rooms where code='ABCDEFGH';
+ select id into strict original from public.omok_matches where room_id=room and status='finished';
+ perform dblink_connect('rematch_alice',conn);
+ perform dblink_connect('rematch_bob',conn);
+ perform dblink_exec('rematch_alice','begin');
+ perform dblink_exec('rematch_alice','set local role authenticated');
+ perform dblink_exec('rematch_alice',format('set local request.jwt.claim.sub = %L',alice));
+ select result into first_response from dblink('rematch_alice',
+    format('select public.vote_omok_rematch(%L::uuid)::text',room)) as t(result text);
+ if first_response not like '%"status": "waiting"%' then
+    raise exception 'First rematch vote did not wait: %',first_response;
+ end if;
+ select result into retry_response from dblink('rematch_alice',
+    format('select public.vote_omok_rematch(%L::uuid)::text',room)) as t(result text);
+ if retry_response not like '%"readyCount": 1%' then
+    raise exception 'Same voter counted twice: %',retry_response;
+ end if;
+
+ perform dblink_exec('rematch_bob','begin');
+ perform dblink_exec('rematch_bob','set local role authenticated');
+ perform dblink_exec('rematch_bob','set local statement_timeout = 9000');
+ perform dblink_exec('rematch_bob',format('set local request.jwt.claim.sub = %L',bob));
+ select pid into worker_pid from dblink('rematch_bob','select pg_backend_pid()') as t(pid integer);
+ perform dblink_send_query('rematch_bob',
+   format('select public.vote_omok_rematch(%L::uuid)::text',room));
+ for i in 1..120 loop
+   select exists(select 1 from pg_stat_activity
+     where pid=worker_pid and wait_event_type='Lock') into waiting;
+   exit when waiting;
+   perform pg_sleep(0.025);
+ end loop;
+ if not waiting then raise exception 'Rematch vote did not serialize on room'; end if;
+ perform dblink_exec('rematch_alice','commit');
+ select result into second_response from dblink_get_result('rematch_bob') as t(result text);
+ perform result from dblink_get_result('rematch_bob') as t(result text);
+ if second_response not like '%"status": "started"%' then
+   raise exception 'Second voter did not start next match: %',second_response;
+ end if;
+ perform dblink_exec('rematch_bob','commit');
+
+ if (select count(*) from public.omok_matches where room_id=room)<>2
+    or (select count(*) from public.omok_rematch_votes where match_id=original)<>2
+    or (select count(*) from public.omok_moves where match_id=original)<>1 then
+   raise exception 'Race duplicated match or changed previous game history';
+ end if;
+ select id,black_id,white_id,turn_user_id,turn_no,status,board_state
+   into strict latest from public.omok_matches
+   where room_id=room and id<>original;
+ if latest.black_id<>bob::uuid or latest.white_id<>alice::uuid
+    or latest.turn_user_id<>bob::uuid or latest.turn_no<>1
+    or latest.status<>'active' or jsonb_array_length(latest.board_state)<>15 then
+   raise exception 'Rematch failed to alternate colors/start clean';
+ end if;
+ if (select count(*) from jsonb_array_elements(latest.board_state) item
+     cross join lateral jsonb_array_elements(item.value) cell
+      where cell.value<>'null'::jsonb)<>0 then
+   raise exception 'New match board not empty';
+ end if;
+ if (select status from public.omok_rooms where id=room)<>'playing' then
+   raise exception 'Rematch room status wrong';
+ end if;
+ perform dblink_disconnect('rematch_alice');
+ perform dblink_disconnect('rematch_bob');
+ raise notice 'PASS: independent PG17 actors voted once, lock serialized, exactly one rematch';
+end;
+$rematch$;
+select public.verify_omok_rematch_pg17();
