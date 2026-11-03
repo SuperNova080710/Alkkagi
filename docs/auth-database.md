@@ -1,5 +1,8 @@
 # Issue #5 — 인증과 DB 접근 경계
 
+> **2026-11-03 최신 상태:** 운영 Supabase PostgreSQL 17.11에 2026-11-02 SQL 004~009 적용 완료(#155). 기존 초기 Auth/DB 구성 설명은 역사적 기준이며 실제 두 계정 브라우저 인증·Realtime/RLS E2E는 #196/#206에서 별도 검증합니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 ## 구현
 
 - `/signup`: 이메일/비밀번호/확인 입력 → Server Action → Supabase Auth.

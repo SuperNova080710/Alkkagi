@@ -1,6 +1,6 @@
-# Alkkagi Arena — ALEPH 프로젝트 계획 v10
+# Alkkagi Arena — ALEPH 프로젝트 계획 v13
 
-> 갱신일: 2026-10-30. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
+> 갱신일: 2026-11-03. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
 > 이 문서는 작업 시작용 GitHub 버전입니다. ALEPH 제출용 상세 계획서 원본과 함께 관리하고, 변경 시 사유와 버전을 기록합니다.
 
 ## 프로젝트 목표
@@ -142,19 +142,34 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 - **PG17 일회용 통합** [Draft PR #171](https://github.com/SuperNova080710/Alkkagi/pull/171): disposable PostgreSQL 17에서 SQL 004~009 순차 적용·XP/코스메틱/권한 CI 통과(운영 Supabase·실계정 E2E는 수행하지 않음).
 - 작성 범위: 이번 문서 PR [#160](https://github.com/SuperNova080710/Alkkagi/pull/160)에서 문서/이슈만 업데이트하며 기능 코드·운영 DB·Vercel 설정은 수정하지 않음.
 
-## 계획 변경 이력
+## 운영·릴리스 최신 계획 v11 (2026-11-03)
 
-| 버전 | 날짜 | 내용 |
+기존 v1~v10 섹션은 작성 시점의 의사결정·구현 이력을 보존한 것입니다. 현재 진행/종료 조건은 [최신 인수](docs/current-status-2026-11-03.md)와 다음 표가 우선합니다.
+
+| 워크스트림 | 현재 상태 | 남은 성공 조건 |
 | --- | --- | --- |
-| v1 | 2026-10-28 | 1:1 알까기·방·랭크 시스템 확정, 브랜치·이슈 계획 |
-| v2 | 2026-10-28 | P1 제출·P2 랭크/정산·P3 재접속/보안 현황 |
-| v3 | 2026-10-28 | 실사용·운영 DB 정산과 검증 경계 추가 |
-| v4 | 2026-10-28 | P2 중간 점검 기준점 고정 및 P3 최종 제출 분리 |
-| v5 | 2026-10-29 | P2 이후 닉네임·경기 채팅/UX 개선, P3 최종 제출 자료 |
-| v6 | 2026-10-29 | UI·보안·친구·DM 초기 코드 병합 상태와 운영 미확인 구분 |
-| v7 | 2026-10-30 | #90/#96 및 PC·로비·히어로 개선 병합 반영. XP/코스메틱/SEO Draft와 운영 DB·배포·E2E 검증 경계 |
-| v8 | 2026-10-30 | #110 XP, #115 코스메틱, #131 SEO, #137 공개 가이드 병합; PG16 경합 검사·운영 DDL/실사용 E2E 경계 명시 |
-| v9 | 2026-10-30 | 메신저 UI 병합, develop/RC/main 릴리스 체계 및 기능별 플래그·운영 검증 미완료 경계 반영 |
-| v10 | 2026-10-30 | XP UI #159, 코스메틱 UI #162, PG17.11 사전점검 #161 및 STOP/릴리스 인수 현황 반영 |
+| Supabase PG17 운영 | **SQL 004~009 2026-11-02 적용 완료** (#155/#196) | **SQL 재실행 금지**, RLS·Realtime 및 A/B 브라우저 실제 증거 #196 |
+| 기능·UI 구현 | 친구·DM·초대·XP·꾸미기·게임판·로비 XP #76~#215 해당 PR 병합 | 기능 플래그 ON/OFF, 실제 모바일/200%·로그인 화면 #194 |
+| 통합 CI/복구 | PG17 #171, Supabase local #178, 백업복원 #185, 릴리스 CI #190/#193 병합 | Required Checks/정상·비정상 PR 차단 실제 동작 #188/#192 |
+| v0.2.0 | [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) `main` 병합 `dc5a2f4`, Vercel Production READY | 실제 A/B E2E·AI Preview 장애 #211·배포 후 Smoke/공식 태그·Release 인수 #203/#206 |
+| AI 샷 장애 | #211 당시 RC Preview 키 누락 및 500. 현재 Vercel에는 Production+전체 Preview 범위로 키 등록됨(값 미열람) | 배포 스냅샷·브랜치별 실제 적용 여부 및 AI 샷/기권 E2E는 미확인; 권한 축소와 별도 테스트 DB 검토 |
+| Auth/SEO | Supabase Free 유출 비밀번호 보호 제약 #65, Search Console #126 | 운영 대시보드 설정/외부 소유권 확인(코드만으로 완료 불가) |
 
-ALEPH는 반 추가 과제가 아닌 프리미엄 앱 프로젝트 P1→P2→P3만 진행합니다.
+**릴리스 STOP:** 실제 배포 승인, 서비스 관리자 키 접근 범위 검토, CI 5종·두 계정 실사용·UI QA 확인 없이 `main`에 병합하거나 QA 플래그를 임의로 켜지 않습니다. 운영 PostgreSQL 마이그레이션 004~009는 적용됐으며 재실행하지 않습니다.
+
+## 차기 v0.3.0 확장 로드맵 (2026-11-03)
+
+- [Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217): 기존 알까기와 15×15 자유룰 **오목**을 구분. 공통 계정·친구·DM·XP는 검증된 계약에 한해 재사용하고 오목 경기/랭크 RP/AI/DB/RLS/Realtime는 독립 관리.
+- [#218 설계](https://github.com/SuperNova080710/Alkkagi/issues/218) → [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [#219 순수 오목 엔진](https://github.com/SuperNova080710/Alkkagi/issues/219) → [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)로 분리 검토. 아직 develop 병합/실사용 구현 완료 아님.
+- #220 별도 SQL/RLS [Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232) → #221 PvP·채팅·재대결 [Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233) → #222 AI [Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)는 구현/격리 CI 보완까지 진행됐지만 미병합·운영 DB 미적용입니다. #223 오목 전용 RP/매칭 → #224 멀티게임 로비·UI QA·v0.3 RC/릴리스는 후속입니다.
+- **선행 원칙:** v0.2.0 [병합 PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production READY만으로 AI Preview #211·운영 두 계정 E2E #196·배포 후 QA 인수 #203/#206이 완료되었다고 간주하지 않습니다.
+- 신기능 작업은 develop 대상 개별 PR, 별도 릴리스 후보 승인, 운영 DB 마이그레이션 추가 시 기존 004~009 재실행 금지.
+
+## 2026-11-03 릴리스 상태 후속 확인
+
+- PR #207은 **main에 병합**됐고 Vercel Production 배포 `dc5a2f4` **READY/서비스 도메인 Alias**가 확인됐습니다. 기존 v0.1.0 기준 설명은 이전 스냅샷입니다.
+- 현재 관리형 운영 PostgreSQL 17.11 SQL 004~009 **적용 완료**. QA용 Preview 인증키 범위 확장이나 SQL 재실행은 금지합니다.
+- 배포 후 실제 두 계정 Auth/RLS/DM WebSocket·XP·AI 발사/기권, 모바일/200% UI, Production Smoke 및 공식 `v0.2.0` GitHub Release는 미확인입니다. 이슈 #194/#196/#203/#206/#211을 유지합니다.
+- 다른 채팅의 차기 v0.3.0 오목 개발은 이번 v0.2.0 릴리스 검증과 분리합니다.
+
+## 계획 변경 이력

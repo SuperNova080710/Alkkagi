@@ -1,5 +1,8 @@
 # Release source guard — main에 릴리스 이외 PR 진입 차단 (#192)
 
+> **최신 상태 (2026-11-03):** release-source-guard PR #193 병합; 임시 비릴리스 main PR #208은 음성 프로브로 의도적 실패 후 미병합 종료됐습니다. 실제 main Required Check 강제/RC #207 최종 소스 게이트는 #188/#192/#203에서 계속 확인합니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+
+
 기준: 2026-10-30 · 선행: [#188](https://github.com/SuperNova080710/Alkkagi/issues/188), [#144](https://github.com/SuperNova080710/Alkkagi/issues/144).
 
 ## 목적과 정확한 동작
