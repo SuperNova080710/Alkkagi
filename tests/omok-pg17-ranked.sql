@@ -73,6 +73,7 @@ begin
  if not waiting then raise exception 'Queue entries did not serialize'; end if;
  perform dblink_exec('ranked_alice','commit');
  select result into bob_response from dblink_get_result('ranked_bob') as t(result text);
+ perform result from dblink_get_result('ranked_bob') as t(result text);
  perform dblink_exec('ranked_bob','commit');
  if (bob_response::jsonb->>'status')<>'matched' then
    raise exception 'Concurrent matchmaking did not form a match: %',bob_response; end if;
@@ -108,7 +109,7 @@ returns void language plpgsql as $race$
 declare
  connection text:='host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres';
  alice constant text:='11111111-1111-4111-8111-111111111111';
- current_turn uuid; expiry text; worker_pid int;
+ current_turn uuid; expiry text; late_error text; worker_pid int;
  waiting boolean:=false; i int;
 begin
  update public.omok_matches set turn_deadline=clock_timestamp()-interval '1 second'
@@ -142,9 +143,11 @@ begin
  if not waiting then raise exception 'Move did not serialize behind timeout'; end if;
  perform dblink_exec('ranked_expire','commit');
  perform result from dblink_get_result('ranked_move',false) as t(result text);
- if dblink_error_message('ranked_move') not like '%MATCH_FINISHED%'
-   and dblink_error_message('ranked_move') not like '%TURN_EXPIRED%' then
-   raise exception 'Late move unexpectedly succeeded: %',dblink_error_message('ranked_move');
+ late_error:=dblink_error_message('ranked_move');
+ perform result from dblink_get_result('ranked_move',false) as t(result text);
+ if late_error not like '%MATCH_FINISHED%'
+   and late_error not like '%TURN_EXPIRED%' then
+   raise exception 'Late move unexpectedly succeeded: %',late_error;
  end if;
  perform dblink_exec('ranked_move','rollback');
  if (select count(*) from public.omok_rating_history where match_id=p_match)<>2
