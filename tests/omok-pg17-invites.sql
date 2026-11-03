@@ -50,11 +50,13 @@ set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 select public.create_omok_room('ABCDEFGH') as room_id \gset
 select (public.send_omok_friend_invite(:'room_id'::uuid,'22222222-2222-4222-8222-222222222222'::uuid)->>'inviteId') as invitation \gset
+select set_config('qa.invite_room', :'room_id', false);
+select set_config('qa.invite_id', :'invitation', false);
 do $retry$
 declare answer jsonb;
 begin
-  answer:=public.send_omok_friend_invite(:'room_id'::uuid,'22222222-2222-4222-8222-222222222222');
-  if answer->>'inviteId' <> :'invitation' or answer->>'alreadyPending'<>'true' then
+  answer:=public.send_omok_friend_invite(current_setting('qa.invite_room')::uuid,'22222222-2222-4222-8222-222222222222');
+  if answer->>'inviteId' <> current_setting('qa.invite_id') or answer->>'alreadyPending'<>'true' then
     raise exception 'Duplicate send created another invite';
   end if;
 end;
@@ -69,7 +71,7 @@ begin
  if public.list_omok_received_invites()<>'[]'::jsonb then
    raise exception 'Outsider sees private invitation'; end if;
  begin
-   perform public.respond_omok_friend_invite(:'invitation'::uuid,true);
+   perform public.respond_omok_friend_invite(current_setting('qa.invite_id')::uuid,true);
  exception when others then blocked:=true; end;
  if not blocked then raise exception 'Outsider accepted invitation'; end if;
 end;
@@ -145,6 +147,7 @@ set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 select public.create_omok_room('ABCD2345') as blocked_room \gset
 select (public.send_omok_friend_invite(:'blocked_room'::uuid,'22222222-2222-4222-8222-222222222222'::uuid)->>'inviteId') as blocked_invite \gset
+select set_config('qa.blocked_invite_id', :'blocked_invite', false);
 reset role;
 insert into public.player_blocks(blocker_id,blocked_id) values
  ('22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111111');
@@ -155,7 +158,7 @@ declare rejected boolean:=false;
 begin
  if public.list_omok_received_invites()<>'[]'::jsonb then
    raise exception 'Blocked host remains in inbox'; end if;
- begin perform public.respond_omok_friend_invite(:'blocked_invite'::uuid,true);
+ begin perform public.respond_omok_friend_invite(current_setting('qa.blocked_invite_id')::uuid,true);
  exception when others then rejected:=true; end;
  if not rejected then raise exception 'Blocked invitation was accepted'; end if;
 end;
