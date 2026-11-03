@@ -1,0 +1,117 @@
+/* #261: Omok reuses Alkkagi layout metrics, never changes Alkkagi pages. */
+.arena-hero--omok { background:#183b30; }
+.arena-omok-hero-art {
+  position:absolute; inset:0; z-index:-2;
+  background:
+    radial-gradient(ellipse at 52% 45%, #153f3290, #0b261dba 75%),
+    repeating-linear-gradient(0deg,transparent 0 43px,#e7c68d62 44px 45px,transparent 46px 88px),
+    repeating-linear-gradient(90deg,transparent 0 43px,#e7c68d62 44px 45px,transparent 46px 88px),
+    linear-gradient(135deg,#a9793c,#d0a66d 48%,#8a5929);
+}
+.arena-omok-hero-art span {
+  position:absolute; display:block; width:clamp(22px,4.5vw,60px); aspect-ratio:1;
+  border:2px solid #171817; border-radius:50%;
+  background:radial-gradient(circle at 30% 25%,#7d7770,#090909 75%);
+  box-shadow:0 4px 10px #0008;
+}
+.arena-omok-hero-art span:nth-child(1) {top:18%; left:13%;}
+.arena-omok-hero-art span:nth-child(2) {top:56%; left:22%;}
+.arena-omok-hero-art span:nth-child(3) {top:30%; right:18%;}
+.arena-omok-hero-art span:nth-child(4) {bottom:13%; right:29%;}
+.arena-omok-hero-art span:nth-child(5) {bottom:22%; left:48%;}
+.arena-omok-hero-art span:nth-child(even) {
+  border-color:#9d9586;
+  background:radial-gradient(circle at 30% 23%,#fff,#d4cbb6 85%);
+}
+.arena-hero--omok .arena-hero-copy {text-shadow:0 2px 8px #091b16;}
+.arena-hero--omok .arena-omok-hero-quicknote {
+  max-width:min(92vw,650px);margin:6px auto 0;
+  color:#fff2d2;font-size:clamp(10px,1vw,12px);font-weight:700;line-height:1.35;
+}
+.arena-mode--omok .arena-mode-omok-art {
+  position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent 0 29px,#5f472672 30px 31px,transparent 32px 62px),
+    repeating-linear-gradient(90deg,transparent 0 29px,#5f472672 30px 31px,transparent 32px 62px),
+    linear-gradient(140deg,#efcf98,#d8a966 55%,#b77b40);
+}
+.arena-mode--omok .arena-mode-omok-art span {
+  display:block;position:absolute;width:clamp(21px,4vw,42px);aspect-ratio:1;
+  border:1px solid #111;border-radius:50%;
+  box-shadow:0 3px 5px #0006;
+  background:radial-gradient(circle at 30% 25%,#5e5e5e,#080808 78%);
+}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(1) {top:31%;right:26%;}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(2) {top:46%;right:45%;}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(3) {top:60%;right:26%;}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(4) {top:22%;right:61%;}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(5) {top:70%;right:58%;}
+.arena-mode--omok .arena-mode-omok-art span:nth-child(even) {
+  border-color:#bfb5a3;background:radial-gradient(circle at 30% 25%,#fff,#d1c6b3 80%);
+}
+.arena-mode--omok .arena-mode-heading {text-shadow:0 2px 6px #163026;}
+.arena-avatar--omok {background:radial-gradient(circle at 30% 25%,#fff,#d3c8aa 70%);color:#232323;}
+.arena-omok-entry-dialog {width:min(680px,calc(100vw - 24px));max-height:min(88dvh,780px);overflow-y:auto;}
+.arena-omok-entry-dialog .arena-omok-live-panel {margin-top:0;box-shadow:none;}
+.arena-omok-entry-dialog .arena-omok-live-panel .arena-omok-live-heading {gap:6px;}
+.arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
+.arena-omok-lobby-grid .arena-mode--omok {height:100%;}
+
+/* Keep the full 15x15 board visible in typical desktop viewports. Board is
+   square; no CSS transform/zoom and no document overflow:hidden trick. */
+.arena-omok-board-stage {position:relative;min-width:0;display:grid;justify-items:center;align-content:start;}
+.arena-omok-match-layout {
+  grid-template-columns:minmax(0,1fr) minmax(225px,300px);
+  align-items:start;gap:clamp(10px,1.4vw,16px);
+}
+.arena-omok-match-layout .arena-omok-board-view {
+  width:min(100%,510px,max(250px,calc(100dvh - 360px)));
+  max-width:100%;margin-inline:auto;
+}
+.arena-omok-match-panel {padding:clamp(10px,1.3vw,16px);}
+.arena-omok-match-panel .arena-omok-panel-heading {margin-bottom:8px;}
+.arena-omok-match-panel .arena-omok-match-players {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:7px 0 12px;
+}
+.arena-omok-match-panel .arena-omok-match-players li {min-width:0;padding:8px 10px;gap:6px;}
+.arena-omok-match-side {gap:8px;padding:10px;min-width:0;}
+.arena-omok-match-side .arena-omok-panel-actions {display:grid;gap:8px;margin-top:8px;}
+.arena-omok-match-side .arena-omok-chat {padding:10px;border-radius:12px;box-shadow:none;}
+.arena-omok-match-side .arena-omok-chat .arena-omok-panel-heading {margin-bottom:4px;}
+.arena-omok-match-side .arena-omok-chat .arena-omok-panel-heading h2 {font-size:15px;}
+.arena-omok-match-side .arena-omok-chat-list {min-height:58px;max-height:clamp(60px,15dvh,170px);margin-bottom:6px;}
+.arena-omok-match-side .arena-omok-ranked-meta {
+  display:flex;flex-direction:column;align-items:stretch;gap:8px;
+  padding:10px;box-shadow:none;border-radius:11px;margin:0;
+}
+.arena-omok-match-side .arena-omok-ranked-meta strong {font-size:14px;}
+.arena-omok-board-stage .game-result-overlay {position:absolute;inset:0;border-radius:16px;z-index:5;}
+.arena-omok-board-stage .game-result-card {max-height:calc(100% - 20px);overflow-y:auto;}
+.arena-omok-board-view .arena-omok-board-heading {margin-bottom:6px;}
+.arena-omok-board-view .arena-omok-board-instructions {margin-top:6px;line-height:1.3;}
+.arena-omok-board-view .arena-omok-coordinate-entry {margin-top:8px;gap:6px;}
+.arena-omok-board-view .arena-omok-coordinate-entry label {gap:2px;}
+.arena-omok-board-view .arena-omok-coordinate-entry select {min-height:44px;padding:6px 8px;}
+
+@media(max-width:880px) {
+  .arena-omok-match-layout {grid-template-columns:minmax(0,1fr);}
+  .arena-omok-match-layout .arena-omok-board-view {
+    width:min(100%,450px,max(250px,calc(100dvh - 255px)));margin-inline:auto;
+  }
+  .arena-omok-match-side {max-width:600px;width:100%;margin-inline:auto;}
+}
+@media(max-width:480px) {
+  .arena-omok-hero-quicknote {max-width:280px;}
+  .arena-omok-match-panel .arena-omok-match-players li {flex-wrap:wrap;}
+  .arena-omok-match-layout .arena-omok-board-view {width:min(100%,calc(100dvh - 240px));}
+  .arena-omok-board-stage .game-result-card {padding:12px;}
+}
+@media(max-height:650px) and (min-width:881px) {
+  .arena-omok-match-layout .arena-omok-board-view {
+    width:min(100%,380px,max(210px,calc(100dvh - 300px)));
+  }
+  .arena-omok-match-side .arena-omok-chat-list {max-height:70px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .arena-mode--omok .arena-button {transition:none;}
+}
