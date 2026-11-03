@@ -197,6 +197,8 @@ begin
   insert into public.omok_matches(room_id,black_id,white_id,turn_user_id,board_state)
     values(p_room_id,actor,guest,actor,to_jsonb(array_fill(null::text,array[15,15])))
     returning id into match_id;
+  -- This is intentionally the first match only. #221 extends the same room
+  -- with vote_omok_rematch() after a finished game; no waiting reset here.
   update public.omok_rooms set status='playing' where id=p_room_id;
   return match_id;
 end;
