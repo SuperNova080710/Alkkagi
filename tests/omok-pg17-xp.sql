@@ -123,7 +123,7 @@ begin
  if not waiting then raise exception 'XP completion did not lock shared profiles'; end if;
  perform dblink_exec('xp_first','commit');
  select t.result into result from dblink_get_result('xp_second') as t(result text);
- perform result from dblink_get_result('xp_second') as t(result text);
+ perform t.result from dblink_get_result('xp_second') as t(result text);
  perform dblink_exec('xp_second','commit');
  if result<>'finished' then raise exception 'Second XP finish failed'; end if;
  if (select count(*) from public.xp_events where source_kind='omok_casual')<>4
