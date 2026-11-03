@@ -48,8 +48,8 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
   it('sets active game with actual links instead of fake interactive tab roles', () => {
     const alkkagi = renderToStaticMarkup(<GameSwitcher current="alkkagi"/>);
     const omok = renderToStaticMarkup(<GameSwitcher current="omok"/>);
-    expect(alkkagi).toMatch(/class="is-active" aria-current="page" href="\\/lobby"/);
-    expect(omok).toMatch(/class="is-active" aria-current="page" href="\\/omok"/);
+    expect(alkkagi).toContain('class="is-active" aria-current="page" href="/lobby"');
+    expect(omok).toContain('class="is-active" aria-current="page" href="/omok"');
     expect(omok).not.toContain('role="tab"');
     expect(omok).toContain('aria-label="게임 선택"');
   });
