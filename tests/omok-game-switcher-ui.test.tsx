@@ -74,19 +74,20 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('로그아웃');
   });
 
-  it('connects casual entry under the flag without falsely enabling AI or ranked', async () => {
+  it('connects three Omok modes under the flag while preserving existing Alkkagi links', async () => {
     vi.stubEnv('OMOK_UI_ENABLED', 'true');
     const html = renderToStaticMarkup(await OmokPage());
     expect(html).toContain('일반전');
     expect(html).toContain('AI 대전');
     expect(html).toContain('랭크전');
-    expect(html.match(/disabled=""/g)).toHaveLength(2);
-    expect(html).toContain('오목 일반전 연결');
+    expect(html).toContain('href="/omok/ai"');
+    expect(html).toContain('href="/omok/ranked"');
+    expect(html).not.toContain('준비 중</button>');
+    expect(html).toContain('일반전·AI·랭크 화면 연결 완료');
     expect(html).toContain('href="#omok-casual-start"');
     expect(html).toContain('새 방 만들기');
     expect(html).toContain('코드로 참가');
     expect(html).not.toContain('href="/omok/rooms/');
-    expect(html).not.toContain('href="/omok/ranked"');
   });
 
   it('uses 3D visual tokens and responsive 44px game switching targets', () => {
