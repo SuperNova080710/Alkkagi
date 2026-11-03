@@ -61,7 +61,7 @@ describe('freestyle Gomoku: pure rules engine', () => {
     const impossible = won.board.map(row=>[...row]);
     for(const col of [2,3,4,5,6]) impossible[14][col]='white';
     // Restore parity using black stones away from the winning lines.
-    for(const col of [7,8,9,10,11]) impossible[13][col]='black';
+    for(const col of [7,9]) impossible[13][col]='black';
     expect(validOmokState({...won,board:impossible,moves:19,
       next:'white',status:'finished',winner:'black'})).toBe(false);
   });
