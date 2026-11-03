@@ -90,8 +90,9 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
 
   it('shrinks a square board using viewport height rather than hide document scrolling', () => {
     const css = readFileSync(new URL('../src/components/omok/omok-parity.css', import.meta.url), 'utf8');
-    expect(css).toContain('max(250px,calc(100dvh - 360px))');
+    expect(css).toContain('max(250px,calc(100dvh - 480px))');
     expect(css).toContain('width:min(100%,510px');
+    expect(css).toContain('including ArenaShell header');
     expect(css).toContain('@media(max-width:880px)');
     expect(css).toContain('@media(max-width:480px)');
     expect(css).toContain('max-height:clamp(60px,15dvh,170px)');
