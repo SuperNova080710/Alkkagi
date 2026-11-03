@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createOmokInviteCode, isOmokUuid, normalizeOmokInvite, parseOmokMove, omokRpcError,
+  createOmokInviteCode, isOmokUuid, normalizeOmokInvite, parseOmokMove, parseOmokMessage, omokRpcError,
 } from '../src/lib/omok/http';
 
 describe('Omok API input contracts', () => {
@@ -27,6 +27,13 @@ describe('Omok API input contracts', () => {
       { ...valid, turnNo:0 }, { ...valid, turnNo:226 },
       { ...valid, turnNo:'1' }, { ...valid, requestId:'invalid' },
     ]) expect(parseOmokMove(input)).toBeNull();
+  });
+
+  it('bounds and trims chat messages', () => {
+    expect(parseOmokMessage({ body: ' hello ', requestId:id }))
+      .toEqual({ body:'hello', requestId:id });
+    for(const invalid of [{body:' ',requestId:id},{body:'x'.repeat(281),requestId:id},
+      {body:'fine',requestId:'x'},null,[]]) expect(parseOmokMessage(invalid)).toBeNull();
   });
 
   it('does not leak unexpected database errors to clients', () => {
