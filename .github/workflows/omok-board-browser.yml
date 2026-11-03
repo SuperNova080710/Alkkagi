@@ -39,7 +39,8 @@ jobs:
           cat > src/app/omok-browser-qa-fixture/page.tsx <<'EOF'
           'use client';
           import { useEffect, useState } from 'react';
-          import { OmokBoardView, type OmokPosition, type OmokStone } from '@/components/omok/omok-board-view';
+          import { type OmokPosition, type OmokStone } from '@/components/omok/omok-board-view';
+          import { OmokMatchPanel, OmokChatPanel } from '@/components/omok/omok-match-panels';
 
           type Cell = OmokStone | null;
           function initial(): Cell[][] {
@@ -63,9 +64,14 @@ jobs:
               setLastMove(move);
             }
             return <main style={{ padding: 12, minWidth: 0 }}>
-              <h1>오목 보드 브라우저 UI 검사 전용</h1>
-              <OmokBoardView board={board} lastMove={lastMove} stoneToPlace="white"
-                myTurn onPlace={place} />
+              <h1>오목 전체 경기 화면 브라우저 UI 검사</h1>
+              <OmokMatchPanel board={board} lastMove={lastMove}
+                players={[{ id: 'me', nickname: '테스트', stone: 'white' },
+                  { id: 'other', nickname: '상대', stone: 'black' }]}
+                currentUserId="me" turnUserId="me" status="active"
+                onPlace={place} onForfeit={() => {}} onReturn={() => {}}
+                chat={<OmokChatPanel currentUserId="me" messages={[]}
+                  onSend={async () => true}/>}/>
               <output id="qa-moves" aria-label="테스트 착수 기록">{JSON.stringify(moves)}</output>
             </main>;
           }
