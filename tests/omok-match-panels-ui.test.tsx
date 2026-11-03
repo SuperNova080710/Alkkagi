@@ -75,7 +75,8 @@ describe('Omok pre-integration presentation panels (#254)', () => {
       onSend={async () => true}/>);
     expect(html).toContain('안녕하세요');
     expect(html).toContain('반갑습니다');
-    expect(html).toContain('maxlength="280"');
+    // React SSR may preserve JSX attribute casing; HTML attributes are case-insensitive.
+    expect(html.toLowerCase()).toContain('maxlength="280"');
     expect(html).toContain('Enter 전송 · Shift+Enter 줄바꿈');
     expect(html).toContain('aria-label="채팅 메시지"');
     const source = readFileSync(new URL('../src/components/omok/omok-match-panels.tsx', import.meta.url), 'utf8');
