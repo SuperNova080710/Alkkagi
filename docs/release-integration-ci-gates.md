@@ -1,6 +1,6 @@
 # CI R6 — 릴리스 후보 `release/vX.Y.Z → main` 통합 검사 게이트
 
-> **최신 상태 (2026-11-03):** 출시 CI 소스·통합 게이트 PR #190 및 #193은 병합됐습니다. 릴리스 후보 PR #207은 여전히 Draft입니다. main Ruleset의 실제 Required 5종 설정/우회 방지 확인은 #188/#192에서 추적하고, 필수 검사 성공은 배포된 두 사용자 E2E를 뜻하지 않습니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+> **최신 상태 (2026-11-03):** 출시 CI 소스·통합 게이트 PR #190 및 #193은 병합됐습니다. 릴리스 PR #207은 main 병합(dc5a2f4) 및 Vercel Production READY 상태입니다. 그러나 배포 후 실제 사용자/AI·Realtime E2E와 Required 5종 강제 여부는 별도 검증 대상입니다. main Ruleset의 실제 Required 5종 설정/우회 방지 확인은 #188/#192에서 추적하고, 필수 검사 성공은 배포된 두 사용자 E2E를 뜻하지 않습니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
 
 
 날짜: 2026-10-30 · GitHub Issue [#188](https://github.com/SuperNova080710/Alkkagi/issues/188) · 릴리스 운영 [#144](https://github.com/SuperNova080710/Alkkagi/issues/144).
