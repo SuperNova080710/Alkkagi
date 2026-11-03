@@ -1,5 +1,8 @@
 # Friends Room Invitations V1 — 시스템·디자인 연동 API
 
+> **2026-11-03 최신 상태:** 친구 방 초대 API #90·UI #181 병합, SQL 007 적용 완료. 실제 초대 수락·중복·만료·좌석 경쟁 및 기능 플래그 검증은 #194/#196에서 별도 인수합니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 작업: [#82](https://github.com/SuperNova080710/Alkkagi/issues/82) · SQL [#83](https://github.com/SuperNova080710/Alkkagi/issues/83) · API [#84](https://github.com/SuperNova080710/Alkkagi/issues/84) · 검증 [#85](https://github.com/SuperNova080710/Alkkagi/issues/85).
 
 **최신 상태(2026-10-30): PR #90 main 병합 완료**(`4b3008e`). 신규 초대 SQL/API는 저장소에 포함됐으나, **운영 Supabase SQL 007은 최종 조회 기준 미적용**이며 실계정 A/B E2E 및 사용자 초대 UI는 별도입니다. DM #81과 런타임 의존성은 없습니다.

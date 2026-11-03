@@ -168,30 +168,33 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 
 설정, SQL 적용, 테스트 범위와 배포 후 점검은 [docs/auth-database.md](docs/auth-database.md)를 따릅니다.
 
-## 2026-10-30 최신 개발 현황
+## 2026-11-03 현재 개발 현황
 
-**서비스에서 이미 사용 가능한지 판단할 때는 GitHub main 병합과 운영 Supabase 적용·최신 Vercel 배포·실제 두 계정 검증을 별도로 확인해야 합니다.** 이전 P3 실사용/DB 수치(`dced773`)는 당시의 검증 증빙입니다.
+> **현재 상태 판단에는 [11월 3일 통합 인수 문서](docs/current-status-2026-11-03.md)를 우선 사용합니다.** 이전 P2/P3 제출·2026-10-29/30 기능 설명은 해당 날짜의 과거 기록입니다.
 
-| 기능 | GitHub 상태 | 운영·검증 상태 |
+| 영역 | 현재 상태 | 미완료 |
 | --- | --- | --- |
-| 기존 1:1 일반전·랭크·AI 연습전 | 구현 및 병합 | P1~P3 운영/실사용 기록 존재; AI 난이도별 실사용은 후속 |
-| 아레나 UI·공개 플레이어 검색/설정 | #61/#66/#68/#70/#71/#91 병합 | 최신 main 통합 E2E 별도 |
-| PC 화면 밀도·세로 스크롤 완화 | **PR #109 병합** | 실제 앱 전체 해상도/확대 검증 별도 |
-| 로비 카드·사이드바 높이/간격 | **PR #117/#119/#121 병합** | #119에서 #117의 원치 않은 패딩 변경 원복; 실제 브라우저 QA 별도 |
-| 와이드 히어로 이미지/텍스트 | **PR #123/#125 병합** | Chromium 재구성 fixture 확인, 실제 앱 E2E는 별도 |
-| 친구 요청·차단 백엔드 + UI | **PR #76/#96 병합** | SQL 005 운영 적용 미확인; `FRIENDS_UI_ENABLED` 기본 OFF, 실제 A/B E2E 미검증 |
-| 친구 1:1 DM·읽음·메신저 UI | **PR #81/#143 병합** | SQL 006 적용 미확인. `FRIENDS_UI_ENABLED`와 `MESSAGES_UI_ENABLED` 둘 다 명시적으로 true일 때만 화면 표시, 기본 OFF. 실제 A/B·Realtime E2E 미확인 |
-| 친구 대전방 초대 백엔드 | **PR #90 병합** | SQL 007 적용 미확인, 초대 발신·수신 UI 미구현 |
-| 방 생성 남용 제한 | PR #69 병합 | SQL 004 운영 적용 미확인 |
-| XP·레벨 시스템 | **PR #110 main 병합, UI PR #159 develop 병합** | 운영 SQL 008 미적용(운영 조회 근거), XP UI 기본 OFF·미배포; UI #159 최종 Quality 49파일/249테스트 통과, 실제 사용자 E2E 별도 |
-| 알·캐릭터 보유·해금·장착 | **PR #115 main 병합, 디자인 #162 진행 중** | 운영 SQL 009 미적용(운영 조회 근거). 인벤토리/에셋·경기 외형 UI는 #162~#165 별도 구현 작업 |
-| 기술 SEO: canonical·sitemap·robots | **PR #131 main 병합** | robots/noindex 충돌 수정·CI 통과; 최신 Production 응답·Search Console 색인 별도 |
-| 공개 알까기 규칙·조작법·FAQ | **PR #137 main 병합** | `/how-to-play` 공개 페이지·홈 링크·SEO 사이트맵 2건 통합 CI 통과; 실제 Production HTTP/E2E 별도 |
+| Production 서비스 | **v0.2.0 코드 `main` 병합 완료** (`dc5a2f4`, PR #207); Vercel **Production READY**, 실도메인 alias 확인 | 배포 후 기능별 HTTP/실사용 A/B·Realtime/AI·모바일 E2E는 별도 |
+| v0.2.0 릴리스 | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **`main` 병합 완료**, Vercel Production SHA 일치 READY | 실제 두 계정 QA/Preview AI 인증키 장애·Production Smoke 인수 및 정식 GitHub Release·태그 미확인 |
+| 운영 DB | PostgreSQL **17.11**, **2026-11-02 SQL 004~009 적용 완료** (#155) | SQL 재실행 금지. 실제 사용자 E2E/기능 플래그는 별도 |
+| 친구·DM·방 초대 | 백엔드 #76/#81/#90, UI #96/#143/#181 병합 | 실제 친구·DM WebSocket·초대/좌석 A/B 검증 |
+| XP·레벨·로비 카드 | #110/#159·로비 컴팩트 카드 #214(`develop`)/#215(`release`) 병합 | `EXPERIENCE_UI_ENABLED` 수용/실계정 경험치 지급 확인 |
+| 알·캐릭터 꾸미기 | #115/#167 인벤토리, #173 게임판 외형 병합 | 실제 장착/상대 공개 범위·AI 기본 스킨 확인 |
+| 반응형/통합 UI QA | #189/#197/#200/#202 병합, 플래그 안내 #210/#212 반영 | [#194](https://github.com/SuperNova080710/Alkkagi/issues/194) 실제 로그인/확대 화면 인수 |
+| 릴리스 CI·QA 도구 | #190/#193, PG17 #171, Local Supabase #178, 백업복원 #185, Hosted QA #198 병합 | 실제 릴리스 보호 정책·브라우저 QA·운영 승인 |
+| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) 과거 500 발생 시 관리자 키 누락 확인 | 현재 `SUPABASE_SECRET_KEY`는 Production+전체 Preview 대상에 **이름/설정 범위만 확인됨**. 실제 배포 반영 및 AI 발사·기권 성공은 미검증; 키 범위 제한·운영 DB 사용 승인 필요 |
+| Google 검색 | 공개 가이드·사이트맵·noindex 정책 구현 | 실제 Search Console 소유권/색인 요청 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) |
 
-운영 사전점검 [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161)의 조사 기록에 따르면 **현재 Production DB는 PostgreSQL 17.11**, 운영 migration 004~009는 미적용이며, Production 최신 배포 SHA `8cf4dc0`은 **READY**입니다. 이는 실제 앱 HTTP·두 계정 E2E와 별개이고, 사전점검 쿼리는 읽기 전용으로 실행됐습니다. PR #161은 develop 미병합이며 사전점검 도구는 아직 main에 없습니다. Vercel Free Preview 한도로 인해 기능 PR #159는 develop에 병합됐으나 Production 미출시이며 #161은 Draft입니다. Preview는 별도 확인이 필요합니다. 마이그레이션 004→005→006→007의 운영 적용 이력, 008/009도 main에 SQL 소스가 포함됐지만 **운영 적용은 별도 확인·승인**이 필요합니다. **P3 실제 최종 접수·승인은 여전히 확인되지 않았습니다.**
+**기능 노출 게이트:** `FRIENDS_UI_ENABLED`, `MESSAGES_UI_ENABLED`, `ROOM_INVITES_UI_ENABLED`, `EXPERIENCE_UI_ENABLED`, `COSMETICS_UI_ENABLED`는 실제 배포 환경 설정과 DB 권한/E2E를 별도로 점검해야 합니다. QA 화면 `OPS_TWO_ACCOUNT_QA_ENABLED`는 정확한 A/B allowlist와 함께 승인 후에만 활성화합니다.
 
-**브랜치·릴리스 정책(2026-10-30):** [PR #148](https://github.com/SuperNova080710/Alkkagi/pull/148) 병합으로 `main`은 승인 후 Production 릴리스 전용, `develop`은 기능 통합, `release/vX.Y.Z`는 RC 검증 브랜치로 구분합니다. 기능·수정 PR은 `develop`으로 작성하고, 릴리스 후보에서만 수동 Vercel CLI Preview를 수행합니다. `vercel.json`은 Git 자동 배포를 `main`으로 제한합니다. **실제 Vercel 정책 적용·첫 RC CLI Preview·공식 릴리스 태그는 아직 확인되지 않았습니다.** [릴리스 운영 매뉴얼](docs/release-process.md) · [CHANGELOG](CHANGELOG.md).
+**최신 릴리스 사실 (2026-11-03):** GitHub [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) 병합 및 Vercel의 Production 배포 `dc5a2f4` READY 확인([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)). 단 실제 HTTP/사용자 동선·AI 오류 #211 및 Google Search Console·공식 태그/GitHub Release는 별도로 확인해야 합니다.
 
-XP 프로필 UI는 [PR #159](https://github.com/SuperNova080710/Alkkagi/pull/159)에서 구현되어 **develop 병합 완료**됐습니다. `EXPERIENCE_UI_ENABLED`는 기본 OFF이며 운영 SQL 008·실계정 E2E 전에는 활성 기능으로 표시하지 않습니다. 코스메틱 디자인 이슈 [#162](https://github.com/SuperNova080710/Alkkagi/issues/162)도 진행 중입니다. 게임판/랭크 RP에 영향을 주는 기능으로 오해하면 안 됩니다.
+**릴리스 프로세스:** 기능/문서는 `develop` → `release/vX.Y.Z` RC/검증 → 사용자 승인 후 `main` Production 배포. 최신 `release/v0.2.0` [CHANGELOG](CHANGELOG.md) 및 [RC 체크리스트](https://github.com/SuperNova080710/Alkkagi/blob/release/v0.2.0/docs/release-v0.2.0-rc.md)를 참고하세요. Vercel Git 자동 배포 제약은 `vercel.json`과 [릴리스 운영 문서](docs/release-process.md)에서 관리합니다.
 
-자세한 담당/파일 경계와 검증 근거: **[2026-10-30 최신 인수 현황](docs/current-status-2026-10-30.md)**. [2026-10-29 문서](docs/current-status-2026-10-29.md)는 당시 스냅샷으로 보존합니다.
+**운영 안전:** SQL 004~009는 이미 실행됐으므로 재실행하지 않습니다. 승인되지 않은 Preview 키 확대·운영 DML·main 병합·태그 발행을 수행하지 않으며, 이전 P2/P3 검증 기록은 그대로 보존합니다.
+
+문서: [최신 인수](docs/current-status-2026-11-03.md) · [QA 인수](docs/hosted-two-account-e2e.md) · [전체 UI 검증](docs/integrated-ui-qa-2026-11-02.md) · [이전 2026-10-30 스냅샷](docs/current-status-2026-10-30.md).
+
+## 차기 개발 — v0.3.0 오목 멀티게임 (기획·Draft 단계)
+
+[오목 확장 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 #218~#224에서 15×15 자유룰 오목 엔진·DB/RLS·2인 일반전·AI·독립 랭크/XP 정책 및 멀티게임 로비를 기획/개발하고 있습니다. [설계 Draft #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [엔진 Draft #230](https://github.com/SuperNova080710/Alkkagi/pull/230), [DB/RPC Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232), [PvP API·재대결 Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233), [AI Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)는 코드/CI 단계이며 **develop 병합·서비스 배포가 되지 않은 기능**입니다. **v0.2.0 RC #207의 실사용 QA·Production 승인과 완전히 분리**합니다.
