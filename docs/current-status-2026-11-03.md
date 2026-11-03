@@ -1,16 +1,23 @@
 # Alkkagi Arena — 2026-11-03 전체 개발·이슈·운영 인수
 
-> **조회 기준:** 2026-11-03 KST. `main` `cd752f6bd335a518302595e2187b54717c9ddaea`(기존 v0.1.0 코드), `develop` `5c2180806910c1ffaf6881b9b948031cf0239729`, `release/v0.2.0` `434ea6dcb0c8ac2314e779c6775c2ee398189a5b`. GitHub 상태는 이후 변경 가능하며 링크된 각 이슈/PR이 최신 원천입니다.
+> **조회 기준:** 2026-11-03 KST. `main` `dc5a2f4311a0f851494ab635815cb00a7c2d9592`(PR #207 릴리스 병합), `develop` `5c2180806910c1ffaf6881b9b948031cf0239729`, `release/v0.2.0` `434ea6dcb0c8ac2314e779c6775c2ee398189a5b`. GitHub 상태는 이후 변경 가능하며 링크된 각 이슈/PR이 최신 원천입니다.
 >
 > **중요:** 코드 병합, `release` Preview 검증, 운영 DB DDL, 브라우저 두 계정 E2E, `main` Production 릴리스는 **서로 다른 단계**입니다. 과거의 10월 30일 운영 SQL 미적용 기록은 당시 스냅샷일 뿐 현재 상태가 아닙니다.
+
+## 0. 릴리스 이후 추가 확인 (2026-11-03)
+
+- **GitHub 릴리스 PR #207 main 병합:** 2026-11-03 01:20:05 UTC, merge commit `dc5a2f4311a0f851494ab635815cb00a7c2d9592`.
+- **Vercel 실제 Production:** deployment `dpl_4mQ86h7Ed71BAQYT4YLc2Sci2wFr` **READY**, Git SHA `dc5a2f4`, 서비스 alias `alkkagi-alpha.vercel.app` 확인([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)).
+- **아직 확인되지 않은 항목:** A/B 두 사용자 Auth/RLS/DM WebSocket·XP/꾸미기·AI shot/forfeit, 모바일·200% 실제 브라우저, Production smoke 및 공식 `v0.2.0` tag/GitHub Release(2026-11-03 GitHub Release 목록 비어 있음). 기능 플래그 운영 실제 값도 별도 확인 필요. SQL 004~009는 11월 2일 이미 적용되어 재실행 금지.
+- **차기 오목 v0.3.0**은 별도 미출시 범위이며 0.2.0 QA를 소급 완료시키지 않습니다.
 
 ## 1. 운영·릴리스 상태
 
 | 구분 | 2026-11-03 확인 상태 | 남은 승인/검증 |
 | --- | --- | --- |
 | 운영 DB | Supabase PostgreSQL **17.11**, **2026-11-02 SQL 004~009 적용 완료**(운영 이슈 [#155](https://github.com/SuperNova080710/Alkkagi/issues/155)·[#196](https://github.com/SuperNova080710/Alkkagi/issues/196) 근거). 마이그레이션 이력 총 18건/핵심 RPC·RLS·Realtime 읽기 전용 재점검 기록 | **재실행 금지**; 실제 사용 권한/이벤트/데이터 경계 검증은 별도 |
-| 현재 Production 코드 | `main` `cd752f6`, 기존 v0.1.0 계열. `develop`과 RC 기능이 곧바로 운영 공개되는 것은 아님 | 승인된 RC 합격·main 병합/새 Production 배포 |
-| v0.2.0 후보 | [Draft PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) `release/v0.2.0 → main`, 미병합. 소스 RC에는 최신 로비 XP 소형 카드 [#215](https://github.com/SuperNova080710/Alkkagi/pull/215)까지 포함 | [#203](https://github.com/SuperNova080710/Alkkagi/issues/203), [#206](https://github.com/SuperNova080710/Alkkagi/issues/206) 배포·실브라우저 E2E·최종 승인 |
+| 현재 Production 코드 | **`main` `dc5a2f4`(PR #207 병합)**, Vercel 배포 **READY** 및 `alkkagi-alpha.vercel.app` alias 확인 | 실제 HTTP/Auth·게임·AI/Realtime·모바일 A/B E2E·Production Smoke 및 기능 플래그 검증은 별도 |
+| v0.2.0 코드 릴리스 | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **병합 완료**, SHA `dc5a2f4`, Production READY. RC에 로비 XP UI #215 포함 | [#203](https://github.com/SuperNova080710/Alkkagi/issues/203)·[#206](https://github.com/SuperNova080710/Alkkagi/issues/206) 배포 후 실브라우저 QA/Smoke·정식 GitHub Release 확인 미완료 |
 | 릴리스 보호 | [#190](https://github.com/SuperNova080710/Alkkagi/pull/190) 4종 CI, [#193](https://github.com/SuperNova080710/Alkkagi/pull/193) release-source-guard 구현 병합. 비릴리스 main PR [#208](https://github.com/SuperNova080710/Alkkagi/pull/208)은 의도된 실패 검사용으로 미병합 종료 | 실제 `main` 보호 Required Checks 5종 등록/강제 검증은 [#188](https://github.com/SuperNova080710/Alkkagi/issues/188)·[#192](https://github.com/SuperNova080710/Alkkagi/issues/192) 및 RC에서 별도 확인 |
 | QA | 격리된 PG17·로컬 Supabase Auth/Realtime·백업복원 CI 구현 병합(#171/#178/#185), hosted QA 페이지 PR [#198](https://github.com/SuperNova080710/Alkkagi/pull/198) 병합 | **실제 운영/Preview 브라우저 두 계정 A/B E2E 미완료**([#196](https://github.com/SuperNova080710/Alkkagi/issues/196)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)) |
 | Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211): RC Preview에서 AI 발사/기권 500; Preview 전용 `SUPABASE_SECRET_KEY` 미설정이 Runtime 로그에서 확인됨 | 운영 DB와 동일한 Preview에서 서비스 관리자 키 범위 확대는 **사용자 승인/환경 분리** 선행. 값·토큰을 이슈에 게시하지 말 것 |
@@ -34,19 +41,19 @@
 
 ## 2-1. 차기 v0.3.0 계획 — 오목 멀티게임 분리 (2026-11-03 추가)
 
-기존 v0.2.0 RC는 별도로 **동결/출시 승인 대기**이며, 새 기능은 [v0.3.0 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 **#218~#224**에서 `develop` 기준으로만 진행합니다.
+v0.2.0 코드는 **main 병합·Vercel Production READY**이나 배포 후 실사용 검증은 남았으며, 새 기능은 [v0.3.0 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 **#218~#224**에서 `develop` 기준으로만 진행합니다.
 
 - **오목 15×15 자유룰**(5목 이상 승리, 흑 선공, 금수·무르기 없음)을 두 번째 게임으로 추가하는 목표. 알까기 물리·기존 RP/데이터를 변경하지 않고 새로운 오목 엔진/스키마/Realtime·UI/랭크/AI를 분리합니다.
 - 설계 [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231)과 순수 오목 엔진 [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)은 **현재 검토 중·미병합**입니다. 오목 실제 경기/랭크/AI는 지금 서비스에 구현·배포 완료된 기능이 아닙니다.
 - #220 DB/RLS·#221 2인 오목·#222 AI·#223 독립 RP·#224 로비 및 v0.3.0 RC/QA도 모두 후속 작업입니다.
-- `v0.2.0` Draft [#207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production 승인·Preview 실사용 E2E를 오목 개발 계획으로 대체하거나 생략하지 않습니다.
+- `v0.2.0` [병합 PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production READY는 실사용 E2E를 대체하지 않습니다. 오목 개발로 기존 0.2.0 QA를 생략하지 않습니다.
 
 ## 3. 품질 검사 단계별 경계
 
 - **자동화 구현/병합 확인:** PostgreSQL 17 SQL 004~009 일회용 적용 [#171](https://github.com/SuperNova080710/Alkkagi/pull/171); Docker 기반 Supabase Auth·JWT·Realtime [#178](https://github.com/SuperNova080710/Alkkagi/pull/178); 격리 `pg_dump → pg_restore` [#185](https://github.com/SuperNova080710/Alkkagi/pull/185); 릴리스 소스/CI 정책 #190/#193.
 - **실제 QA 보조 구현/병합 확인:** 두 계정 브라우저 인수 경로 #198, 공개 viewport 자동화 #197, 친구 초대 SSR·터치 영역 #200, 통합 UI 회귀 #202. 통과한 자동화는 실제 운영 로그인·브라우저/서비스키 설정 검증을 대체하지 않습니다.
 - **남은 승인형 시험:** Vercel Preview 환경·키 범위·QA 플래그, 두 사용자 로그인/친구/DM/초대/일반전 1판·XP·꾸미기·AI 발사 및 기권. 승인된 한정 테스트 이외 운영 데이터 변경/대량 시도/권한 확대 금지.
-- **브랜치/버전 규칙:** 기능·문서 PR → `develop`; 검증된 `release/vX.Y.Z` RC 수동 Preview → 사용자 승인 뒤 `main` Production. RC #207은 아직 Draft이므로 `v0.2.0` Production 출시/태그 발행 완료라고 쓰지 않습니다.
+- **브랜치/버전 규칙:** 기능·문서 PR → `develop`; 검증된 `release/vX.Y.Z` RC 수동 Preview → 사용자 승인 뒤 `main` Production. #207은 main에 병합됐고 Vercel Production READY까지 확인됐지만, 정식 태그/GitHub Release 및 두 계정·기능별 Smoke는 미확인입니다.
 
 ## 4. 이슈 종료 기준 및 후속 책임
 
