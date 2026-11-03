@@ -41,6 +41,7 @@ jobs:
           import { useEffect, useState } from 'react';
           import { type OmokPosition, type OmokStone } from '@/components/omok/omok-board-view';
           import { OmokMatchPanel, OmokChatPanel } from '@/components/omok/omok-match-panels';
+          import { ArenaShell } from '@/components/ui/arena';
 
           type Cell = OmokStone | null;
           function initial(): Cell[][] {
@@ -63,24 +64,30 @@ jobs:
                 rowNo === move.row ? row.map((cell, colNo) => colNo === move.col ? 'white' : cell) : row));
               setLastMove(move);
             }
-            return <main style={{ padding: 12, minWidth: 0 }}>
-              <h1>오목 전체 경기 화면 브라우저 UI 검사</h1>
-              <OmokMatchPanel board={board} lastMove={lastMove}
-                players={[{ id: 'me', nickname: '테스트', stone: 'white' },
-                  { id: 'other', nickname: '상대', stone: 'black' }]}
-                currentUserId="me" turnUserId="me" status="active"
-                onPlace={place} onForfeit={() => {}} onReturn={() => {}}
-                chat={<OmokChatPanel currentUserId="me" messages={[]}
-                  onSend={async () => true}/>}/>
-              <output id="qa-moves" aria-label="테스트 착수 기록">{JSON.stringify(moves)}</output>
-            </main>;
+            // Match pages use this exact shell/header/footer + back-link structure.
+            // No Supabase credentials: only the gameplay snapshot is fixture data.
+            return <ArenaShell current="lobby" account={<button type="button">로그아웃</button>}>
+              <div className="arena-omok-overview arena-omok-live-stack">
+                <a href="/omok" className="arena-button arena-button--outline">← 오목 로비</a>
+                <div className="arena-omok-live-stack">
+                  <OmokMatchPanel board={board} lastMove={lastMove}
+                    players={[{ id: 'me', nickname: '테스트', stone: 'white' },
+                      { id: 'other', nickname: '상대', stone: 'black' }]}
+                    currentUserId="me" turnUserId="me" status="active"
+                    onPlace={place} onForfeit={() => {}} onReturn={() => {}}
+                    chat={<OmokChatPanel currentUserId="me" messages={[]}
+                      onSend={async () => true}/>}/>
+                </div>
+                <output id="qa-moves" hidden aria-label="테스트 착수 기록">{JSON.stringify(moves)}</output>
+              </div>
+            </ArenaShell>;
           }
           EOF
       - name: Build Next.js production fixture
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
-      - name: Verify 15x15 board / Arrow / Enter / Home / End in real Chrome
+      - name: Verify actual match shell / vertical scroll / 15x15 keyboard in real Chrome
         run: node scripts/qa/omok-board-browser.mjs
         env:
           NEXT_TELEMETRY_DISABLED: '1'
