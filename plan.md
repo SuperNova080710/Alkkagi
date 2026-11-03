@@ -1,4 +1,4 @@
-# Alkkagi Arena — ALEPH 프로젝트 계획 v11
+# Alkkagi Arena — ALEPH 프로젝트 계획 v12
 
 > 갱신일: 2026-11-03. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
 > 이 문서는 작업 시작용 GitHub 버전입니다. ALEPH 제출용 상세 계획서 원본과 함께 관리하고, 변경 시 사유와 버전을 기록합니다.
@@ -156,5 +156,13 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 | Auth/SEO | Supabase Free 유출 비밀번호 보호 제약 #65, Search Console #126 | 운영 대시보드 설정/외부 소유권 확인(코드만으로 완료 불가) |
 
 **릴리스 STOP:** 실제 배포 승인, 서비스 관리자 키 접근 범위 검토, CI 5종·두 계정 실사용·UI QA 확인 없이 `main`에 병합하거나 QA 플래그를 임의로 켜지 않습니다. 운영 PostgreSQL 마이그레이션 004~009는 적용됐으며 재실행하지 않습니다.
+
+## 차기 v0.3.0 확장 로드맵 (2026-11-03)
+
+- [Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217): 기존 알까기와 15×15 자유룰 **오목**을 구분. 공통 계정·친구·DM·XP는 검증된 계약에 한해 재사용하고 오목 경기/랭크 RP/AI/DB/RLS/Realtime는 독립 관리.
+- [#218 설계](https://github.com/SuperNova080710/Alkkagi/issues/218) → [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [#219 순수 오목 엔진](https://github.com/SuperNova080710/Alkkagi/issues/219) → [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)로 분리 검토. 아직 develop 병합/실사용 구현 완료 아님.
+- #220 별도 SQL/RLS → #221 실시간 일반전·초대 → #222 AI → #223 오목 전용 RP/매칭 → #224 멀티게임 로비·UI QA·v0.3 RC/릴리스.
+- **선행 원칙:** 현재 v0.2.0 [Draft #207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 AI Preview #211, 운영 두 계정 E2E #196, 실제 릴리스 승인 #203/#206은 이 확장 일정으로 생략하거나 소급 완료 처리하지 않습니다.
+- 신기능 작업은 develop 대상 개별 PR, 별도 릴리스 후보 승인, 운영 DB 마이그레이션 추가 시 기존 004~009 재실행 금지.
 
 ## 계획 변경 이력
