@@ -79,7 +79,7 @@ export function parseRoom(data: unknown): RoomSnapshot {
   const players = data.players.map(p => {
     if (!isRecord(p) || !isUuid(p.userId) || typeof p.nickname !== 'string' ||
       (p.seat !== 1 && p.seat !== 2)) throw new OmokClientError('MALFORMED_RESPONSE', 200);
-    return { userId: p.userId, nickname: p.nickname, seat: p.seat };
+    return { userId: p.userId, nickname: p.nickname, seat: p.seat as 1 | 2 };
   });
   return {
     id: data.id, code: data.code,
