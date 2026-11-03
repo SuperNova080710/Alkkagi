@@ -66,6 +66,14 @@ export function OmokBoardView({
     )?.focus();
   }
   function onGridKey(event: KeyboardEvent<HTMLButtonElement>, row: number, col: number) {
+    // A gridcell's overridden button role does not reliably produce a native
+    // click on Enter/Space. Handle keyboard activation explicitly, and prevent
+    // the browser's default activation so one key press never places twice.
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      if (canPlace(row, col)) onPlace?.({ row, col });
+      return;
+    }
     let next: OmokPosition;
     switch (event.key) {
       case 'ArrowUp': next = { row: row - 1, col }; break;
