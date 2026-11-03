@@ -12,7 +12,7 @@ create or replace function private.record_match_xp(
   p_kind text,p_source uuid,p_user uuid,p_opponent uuid,
   p_outcome text,p_reward integer
 ) returns void language plpgsql security definer set search_path=''
-as $
+as $legacy_xp$
 declare
   start_utc timestamptz := date_trunc('day',clock_timestamp() at time zone 'UTC') at time zone 'UTC';
   awarded integer:=p_reward;
@@ -45,7 +45,7 @@ begin
         updated_at=now();
   end if;
 end;
-$;
+$legacy_xp$;
 
 create function private.record_omok_xp(
   p_kind text,p_source uuid,p_user uuid,p_opponent uuid,
