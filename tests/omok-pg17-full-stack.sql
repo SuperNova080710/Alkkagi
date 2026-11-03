@@ -116,16 +116,19 @@ select public.forfeit_omok_match(:'match_id'::uuid);
 reset role;
 
 do $settled$
+declare mid uuid;
 begin
- if (select status from public.omok_matches where id=:'match_id'::uuid)<>'finished'
-    or (select winner_id from public.omok_matches where id=:'match_id'::uuid)
+ select m.id into strict mid from public.omok_matches m
+ join public.omok_rooms r on r.id=m.room_id where r.code='ABCDEFGH';
+ if (select status from public.omok_matches where id=mid)<>'finished'
+    or (select winner_id from public.omok_matches where id=mid)
        <>'11111111-1111-4111-8111-111111111111'::uuid then
    raise exception 'Omok casual settlement failed'; end if;
  if (select count(*) from public.xp_events
-    where source_id=:'match_id'::uuid and source_kind='omok_casual')<>2
+    where source_id=mid and source_kind='omok_casual')<>2
     then raise exception 'Omok XP transition failed'; end if;
  if (select count(*) from public.xp_events
-    where source_id=:'match_id'::uuid and source_kind='omok_casual' and xp_amount>0)<>2
+    where source_id=mid and source_kind='omok_casual' and xp_amount>0)<>2
     then raise exception 'Omok XP rewards missing'; end if;
  raise notice 'PASS: Omok forfeit, winner and exactly-once XP trigger';
 end;
