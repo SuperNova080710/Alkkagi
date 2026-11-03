@@ -33,6 +33,30 @@ export function validOmokBoard(value: unknown): value is OmokBoard {
       row.every(cell => cell === null || cell === 'black' || cell === 'white'));
 }
 
+/** A single bounded scan detects finished lines without repeatedly validating the board. */
+function boardHasFive(board: OmokBoard, stone: Stone): boolean {
+  for (let r = 0; r < OMOK_SIZE; r++) {
+    for (let c = 0; c < OMOK_SIZE; c++) {
+      if (board[r][c] !== stone) continue;
+      for (const [dr, dc] of directions) {
+        // Only scan the first stone in each run.
+        const beforeR = r - dr, beforeC = c - dc;
+        if (beforeR >= 0 && beforeR < OMOK_SIZE &&
+            beforeC >= 0 && beforeC < OMOK_SIZE &&
+            board[beforeR][beforeC] === stone) continue;
+        let length = 1, row = r + dr, col = c + dc;
+        while (row >= 0 && row < OMOK_SIZE && col >= 0 && col < OMOK_SIZE &&
+               board[row][col] === stone) {
+          length++;
+          if (length >= 5) return true;
+          row += dr; col += dc;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 export function validOmokState(value: unknown): value is OmokState {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const state = value as Partial<OmokState>;
@@ -48,8 +72,16 @@ export function validOmokState(value: unknown): value is OmokState {
   if (!(black === white || black === white + 1)) return false;
   if (state.next !== (black === white ? 'black' : 'white')) return false;
   if (state.winner !== null && (state.winner === 'black' ? black !== white + 1 : black !== white)) return false;
-  if (state.status === 'active' && state.moves === OMOK_SIZE ** 2) return false;
-  return true;
+  // Terminal metadata must correspond to the actual 225-cell position.
+  // A finished draw requires a full board with no line; a win requires the
+  // recorded winner's line. Neither color may already have five during play.
+  const blackWon = boardHasFive(state.board, 'black');
+  const whiteWon = boardHasFive(state.board, 'white');
+  if (blackWon && whiteWon) return false;
+  if (state.status === 'active') return state.moves < OMOK_SIZE ** 2 && !blackWon && !whiteWon;
+  if (state.winner === null)
+    return state.moves === OMOK_SIZE ** 2 && !blackWon && !whiteWon;
+  return state.winner === 'black' ? blackWon && !whiteWon : whiteWon && !blackWon;
 }
 
 export function hasFive(board: OmokBoard, row: number, col: number, stone: Stone): boolean {
