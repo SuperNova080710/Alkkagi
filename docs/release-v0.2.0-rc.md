@@ -2,7 +2,7 @@
 
 작성: 2026-11-02 · 관리: [#203](https://github.com/SuperNova080710/Alkkagi/issues/203) · [#204](https://github.com/SuperNova080710/Alkkagi/issues/204) · [#205](https://github.com/SuperNova080710/Alkkagi/issues/205) · [#206](https://github.com/SuperNova080710/Alkkagi/issues/206)
 
-**상태: 출시 후보 준비 중. 이 문서 및 브랜치 생성은 배포 승인이 아닙니다.**
+**상태 (2026-11-03): [Draft PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) `release/v0.2.0 → main` 검토·승인 대기. QA Preview가 확인됐지만 실제 두 계정 E2E와 AI 발사/기권 오류가 남았으므로 Production 출시 아님.**
 
 ## 릴리스 원본과 경계
 
@@ -23,7 +23,7 @@
 ## 단계 1 — GitHub CI, 배포 없이 진행
 
 - [ ] 정확한 RC 소스·package/lock 버전이 동일한지 확인하고 본 문서에 SHA 기록
-- [ ] `release/v0.2.0 → main` Draft PR 생성. 동일 저장소에서만 PR 허용; `main` merge 금지
+- [x] [`release/v0.2.0 → main` Draft PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) 생성. `main` merge 및 Production은 **미승인**
 - [ ] GitHub Ruleset `No-main-push` active / 최신 브랜치 강제 / Actions 소스 Required 5개 재확인
 - [ ] 실제 RC PR에서 아래 job **전부** `success`. `skipped`·`pending`·상충하는 SHA는 통과 아님
   - `release-source-guard`
@@ -66,8 +66,17 @@ Required CI 실패/스킵, 운영 DB RLS 차단/보안 위험, 관리자 키의 
 | --- | --- |
 | RC 원본 SHA | `b00bbcf7519ab826e860d2f3222de4d07a9bf6cd` |
 | 릴리스 메타데이터/문서 커밋 | 이 문서를 포함한 RC 브랜치의 커밋 로그 참조 |
-| RC Draft PR | 아직 미생성 |
-| GitHub Required CI 5종 | RC PR 생성 후 검증 |
-| Vercel QA 배포 URL | 미생성 |
+| RC Draft PR | [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) **생성 완료·Draft·main 미병합** |
+| GitHub Required CI 5종 | 릴리스 PR #207의 정확한 최신 HEAD로 각각 확인 필요; 과거 완료 체크만으로 승인 불가 |
+| Vercel QA 배포 URL | [2026-11-02 Preview](https://alkkagi-git-release-v020-mallang1.vercel.app) 기록(#211); 환경·HEAD 일치 확인 및 A/B 실사용 재검증 필요 |
 | 운영 A/B E2E | NOT RUN |
 | 사용자 Production 승인 | 미승인 |
+
+## 최신 RC 추가 인수 (2026-11-03)
+
+- **현 release HEAD:** `434ea6dcb0c8ac2314e779c6775c2ee398189a5b`, Draft PR [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) main 미병합. 기준 `main` `cd752f6bd335a518302595e2187b54717c9ddaea`은 그대로 운영 코드입니다.
+- **UI 보완 병합:** [#210](https://github.com/SuperNova080710/Alkkagi/pull/210) RC 로비/프로필 기능 플래그별 준비 중 표시 정정. [#215](https://github.com/SuperNova080710/Alkkagi/pull/215) 메인 로비 내 정보 Lv/XP 미니카드 RC 반영. develop 역반영은 각각 #212/#214. 기능 공개/플래그 ON은 별도 승인입니다.
+- **실제 Preview 장애 [#211](https://github.com/SuperNova080710/Alkkagi/issues/211):** AI 발사·기권 500 `Server game credentials missing`. Preview 환경에서 `SUPABASE_SECRET_KEY`가 설정되지 않았고 Production에만 존재합니다. Preview에 운영 서비스 관리자 키를 확대하는 것은 보안/운영 DB 쓰기 범위가 달라지므로 **사용자 사전 승인**, 가능하면 별도 테스트 Supabase 프로젝트/브랜치 한정 환경 설정 후 E2E 수행. 키/토큰/UUID를 이슈나 문서에 쓰지 마세요.
+- **운영 SQL 004~009:** 2026-11-02 Supabase PostgreSQL 17.11에 적용 완료, 재실행 금지. 그러나 실제 두 계정 친구→DM WebSocket INSERT→방 초대→일반전→XP/꾸미기 및 모바일/200% UI 전체 인수는 미완료([#196](https://github.com/SuperNova080710/Alkkagi/issues/196)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)·[#206](https://github.com/SuperNova080710/Alkkagi/issues/206)).
+- **릴리스 STOP:** 사용자 별도 QA 승인 → 안전한 Preview 환경/키 범위 확인 → 해당 RC 최신 SHA Required 5종 CI·A/B·AI 샷/기권·UI 검증 → 별도 Production/main 승인 → Smoke, `v0.2.0` 태그 및 GitHub Release. 이 순서 전에는 RC를 Draft로 유지합니다.
+- 전체 상태와 이슈 인수는 [develop 문서 PR #216 관련 인수](https://github.com/SuperNova080710/Alkkagi/blob/docs/216-full-issues-docs-sync-20261103/docs/current-status-2026-11-03.md)에서 관리하며, 이 파일의 2026-11-02 초기 표/체크 항목은 작성 당시 증빙으로 해석하세요.
