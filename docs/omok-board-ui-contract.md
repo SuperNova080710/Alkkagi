@@ -16,7 +16,7 @@
 - 15행 × 15열 = 225 `role=gridcell`, 1개의 tab stop(`tabindex=0`), ArrowUp/Down/Left/Right 및 Home/End 로빙 포커스, Enter/Space는 기본 button click에 위임.
 - ARIA 라벨: `N행 M열, 빈 칸/흑돌/백돌, 마지막 착수`; 차례 상태는 `role=status`.
 - 320px에서 개별 셀은 44px보다 작으므로, 조작 가능한 보드에서는 **44px 이상 행·열 선택 + '선택한 칸에 착수' 버튼**을 함께 제공해 작은 터치 타깃의 대체 경로를 확보합니다.
-- CSS는 `arena-omok-board-*` 한정으로 기존 알까기 Physics/Board/RADIUS/Shot/CSS에 영향 없음. 실제 320/390/768/1920 및 Chrome Zoom 200% **브라우저 픽셀 실측은 별도**.
+- 보드 스타일은 `src/components/omok/omok-board.css`에서 컴포넌트가 직접 가져옵니다. 공통 `arena.css`는 수정하지 않으며 클래스는 `arena-omok-board-*` 접두사로 격리합니다. 최근 착수는 선택(`aria-selected`)이 아닌 현재 기록 위치(`aria-current`)로 알립니다. 기존 알까기 Physics/Board/RADIUS/Shot/CSS에는 영향이 없습니다. 실제 320/390/768/1920 및 Chrome Zoom 200% **브라우저 픽셀 실측은 별도**.
 
 ## 인수/의존성
 
