@@ -26,7 +26,7 @@ function OmokFriendInvitePicker({ roomId }: { roomId: string }) {
       setFriends(safeFriends(data)); setError('');
     } catch (e) { setError(omokErrorText(e)); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { queueMicrotask(() => { void load(); }); }, [load]);
   async function send() {
     if (lock.current || !friends.some(f => f.id === targetId)) return;
     lock.current = true; setPending(true); setError(''); setFeedback('');
@@ -87,7 +87,8 @@ export function OmokCasualRoomClient({ roomId, currentUserId }: {
     }
   }, [roomId, router]);
   useEffect(() => {
-    void reload();
+    const sequenceRef = sequence;
+    queueMicrotask(() => { void reload(); });
     const poll = window.setInterval(() => {
       if (document.visibilityState === 'visible') void reload();
     }, 4000);
@@ -105,7 +106,7 @@ export function OmokCasualRoomClient({ roomId, currentUserId }: {
       }, () => { void reload(); })
       .subscribe();
     return () => {
-      sequence.current++;
+      sequenceRef.current++;
       window.clearInterval(poll);
       window.removeEventListener('focus', focus);
       if (client && channel) void client.removeChannel(channel);
