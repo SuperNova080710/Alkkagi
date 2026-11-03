@@ -2,6 +2,12 @@
 
 > **스냅샷:** 2026-11-03 KST, GitHub REST 전체 페이지 조회. PR 이슈 객체는 **일반 이슈 집계에서 제외**합니다. 작성 후에도 새 이슈·PR이 생길 수 있으므로 최신 GitHub 상태가 항상 우선입니다.
 
+## 조회 이후 상태 변경 (2026-11-03)
+
+- 기존 집계와 이슈 목록은 **조회 당시 스냅샷**입니다. 이후 [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)이 **main 병합**(`dc5a2f4`)됐고 Vercel Production에 해당 SHA가 **READY**로 배포됐습니다.
+- `#203`/`#206`은 실제 두 계정 브라우저 QA·AI Preview 문제 #211·Production smoke 및 태그/Release 인수 여부가 불확실하므로 완료로 소급하지 않습니다.
+- 이 문서화 PR #228/#229 및 신규 오목 #230/#231도 조회 이후 열림 상태가 변할 수 있습니다. 최신 판정은 GitHub 현행 이슈/PR을 우선합니다.
+
 ## 집계
 
 | 항목 | 건수 |
@@ -189,7 +195,7 @@
 - 현 기준 열린 PR: [#231](https://github.com/SuperNova080710/Alkkagi/pull/231) (`develop` 대상), [#230](https://github.com/SuperNova080710/Alkkagi/pull/230) (`develop` 대상), [#229](https://github.com/SuperNova080710/Alkkagi/pull/229) (`release/v0.2.0` 대상), [#228](https://github.com/SuperNova080710/Alkkagi/pull/228) (`develop` 대상).
 - 이미 병합된 기능 PR의 head 브랜치가 존재하거나 삭제돼도 원래 구현 근거는 **merged_at 및 실제 커밋**으로 판단. **브랜치가 없다는 이유만으로 미완료 이슈를 닫지 않습니다.**
 - 운영 SQL 004~009는 **2026-11-02 적용 완료**. 과거 미적용 기록은 당시 스냅샷으로 분리. 동일 SQL 재실행 금지.
-- `main` Production과 `develop` 기능, `release/v0.2.0` RC는 서로 다릅니다. [v0.2.0 Draft #207](https://github.com/SuperNova080710/Alkkagi/pull/207)은 실제 QA·Production 승인 전 미병합입니다.
+- `main` Production과 `develop` 기능, `release/v0.2.0` RC는 서로 다릅니다. [v0.2.0 PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)은 이제 **main 병합**됐고 Vercel Production READY입니다. 브라우저 QA·태그/GitHub Release는 별도로 검증해야 합니다.
 - 이슈 상태 기록 및 본 문서 작업의 정확한 후속은 [#216](https://github.com/SuperNova080710/Alkkagi/issues/216), [전체 현황](current-status-2026-11-03.md)을 참고하세요.
 
 이 문서는 **이슈 상태/문서 조회 결과**이며 운영 SQL·GitHub 관리자 규칙·Vercel 환경 설정이나 실제 브라우저 QA의 실행 증거가 아닙니다.
