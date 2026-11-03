@@ -152,7 +152,7 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 | 기능·UI 구현 | 친구·DM·초대·XP·꾸미기·게임판·로비 XP #76~#215 해당 PR 병합 | 기능 플래그 ON/OFF, 실제 모바일/200%·로그인 화면 #194 |
 | 통합 CI/복구 | PG17 #171, Supabase local #178, 백업복원 #185, 릴리스 CI #190/#193 병합 | Required Checks/정상·비정상 PR 차단 실제 동작 #188/#192 |
 | v0.2.0 | [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) `main` 병합 `dc5a2f4`, Vercel Production READY | 실제 A/B E2E·AI Preview 장애 #211·배포 후 Smoke/공식 태그·Release 인수 #203/#206 |
-| AI 샷 장애 | RC Preview `SUPABASE_SECRET_KEY` 누락 #211 | 별도 테스트 DB 또는 사용자 승인된 브랜치 한정 비밀 설정 후 AI 샷/기권 E2E |
+| AI 샷 장애 | #211 당시 RC Preview 키 누락 및 500. 현재 Vercel에는 Production+전체 Preview 범위로 키 등록됨(값 미열람) | 배포 스냅샷·브랜치별 실제 적용 여부 및 AI 샷/기권 E2E는 미확인; 권한 축소와 별도 테스트 DB 검토 |
 | Auth/SEO | Supabase Free 유출 비밀번호 보호 제약 #65, Search Console #126 | 운영 대시보드 설정/외부 소유권 확인(코드만으로 완료 불가) |
 
 **릴리스 STOP:** 실제 배포 승인, 서비스 관리자 키 접근 범위 검토, CI 5종·두 계정 실사용·UI QA 확인 없이 `main`에 병합하거나 QA 플래그를 임의로 켜지 않습니다. 운영 PostgreSQL 마이그레이션 004~009는 적용됐으며 재실행하지 않습니다.
