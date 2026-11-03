@@ -8,6 +8,7 @@ import { OmokChatPanel, OmokMatchPanel } from './omok-match-panels';
 import './omok-live.css';
 import {
   isRecord, isUuid, omokErrorText, omokRequest, parseMatch, parseMessages, parseRoom,
+  preserveOmokChatRetry,
   type MatchSnapshot, type OmokChatRecord,
 } from './omok-client-api';
 import type { OmokPosition } from './omok-board-view';
@@ -157,9 +158,13 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     finally { lock.current = false; setPending(false); }
   }
   async function sendChat(body: string): Promise<boolean> {
-    if (chatRequest.current && chatRequest.current.body !== body) return false;
+    if (chatRequest.current && chatRequest.current.body !== body) {
+      setChatError('이전 메시지의 전송 결과가 불확실합니다. 같은 메시지를 먼저 재시도해 주세요.');
+      return false;
+    }
     const active = chatRequest.current ?? { body, requestId: crypto.randomUUID() };
     chatRequest.current = active;
+    setChatError('');
     try {
       await omokRequest('/api/omok/matches/' + matchId + '/messages',
         { method: 'POST', body: active });
@@ -167,6 +172,9 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       await loadChat();
       return true;
     } catch (e) {
+      // A definite HTTP 4xx rejection cannot commit a message. Network,
+      // timeout and server errors remain ambiguous and reuse the request ID.
+      if (!preserveOmokChatRetry(e)) chatRequest.current = null;
       setChatError(omokErrorText(e));
       return false;
     }
