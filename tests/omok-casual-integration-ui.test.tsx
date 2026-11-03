@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import {
   parseRoom, parseMatch, parseMessages, OmokClientError, omokErrorText, omokRequest,
+  preserveOmokChatRetry,
 } from '../src/components/omok/omok-client-api';
 
 const uid = (letter: string) => letter.repeat(8) + '-0000-4000-8000-' + letter.repeat(12);
@@ -30,6 +31,47 @@ describe('Omok backend snapshot contracts (#243)', () => {
     expect(snapshot.lastMove).toEqual({ row: 7, col: 8 });
     expect(snapshot.board[7][8]).toBeNull();
     expect(() => parseMatch({ match: { board_state: [] }, moves: [] })).toThrow();
+  });
+
+  it('does not infer ranked mode when the API snapshot omits mode', () => {
+    const game = {
+      id: uid('a'), room_id: null, black_id: uid('a'), white_id: uid('b'),
+      turn_user_id: uid('a'), turn_no: 1, board_state: board(),
+      status: 'active', winner_id: null, finish_reason: null,
+    };
+    const snapshot = parseMatch({ match: game, moves: [] });
+    expect('mode' in snapshot).toBe(false);
+    // Game mode is supplied by the authenticated route, never guessed from missing API fields.
+    expect(snapshot.roomId).toBeNull();
+  });
+
+  it('clears definite chat rejections and preserves ambiguous retry IDs', () => {
+    const confirmed = [
+      ['CHAT_RATE_LIMIT', 429], ['CHAT_CLOSED', 409],
+      ['INVALID_MESSAGE', 400], ['AUTH_REQUIRED', 401],
+      ['MATCH_NOT_FOUND', 404], ['REQUEST_CONFLICT', 409],
+    ] as const;
+    for (const [code, status] of confirmed)
+      expect(preserveOmokChatRetry(new OmokClientError(code, status))).toBe(false);
+    expect(preserveOmokChatRetry(new OmokClientError('NETWORK_ERROR', 0))).toBe(true);
+    expect(preserveOmokChatRetry(new OmokClientError('GAME_SERVICE_UNAVAILABLE', 503))).toBe(true);
+    expect(preserveOmokChatRetry(new OmokClientError('TIMEOUT', 408))).toBe(true);
+    expect(preserveOmokChatRetry(new OmokClientError('MALFORMED_RESPONSE', 200))).toBe(true);
+    expect(preserveOmokChatRetry(new Error('fetch aborted'))).toBe(true);
+
+    // Model the ref transition across rejected message A and new message B.
+    let pending: { body: string; requestId: string } | null = { body: '첫 메시지', requestId: uid('a') };
+    const rejected = new OmokClientError('CHAT_RATE_LIMIT', 429);
+    if (!preserveOmokChatRetry(rejected)) pending = null;
+    expect(pending).toBeNull();
+    const next = pending ?? { body: '다음 메시지', requestId: uid('b') };
+    expect(next).toEqual({ body: '다음 메시지', requestId: uid('b') });
+
+    // An uncertain outcome continues to reserve the same body and requestId.
+    pending = { body: '재전송 메시지', requestId: uid('a') };
+    if (!preserveOmokChatRetry(new OmokClientError('NETWORK_ERROR', 0))) pending = null;
+    expect(pending).toEqual({ body: '재전송 메시지', requestId: uid('a') });
+    expect(pending?.body).not.toBe('다음 메시지');
   });
 
   it('uses no-store cookies and reports explicit HTTP status / network ambiguity', async () => {
