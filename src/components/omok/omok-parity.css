@@ -75,16 +75,22 @@
 }
 .arena-omok-match-panel .arena-omok-match-players li {min-width:0;padding:8px 10px;gap:6px;}
 .arena-omok-match-side {gap:8px;padding:10px;min-width:0;}
-.arena-omok-match-side .arena-omok-panel-actions {display:grid;gap:8px;margin-top:8px;}
+ .arena-omok-match-side .arena-omok-panel-actions {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;
+}
+.arena-omok-match-side .arena-omok-panel-actions .arena-button {min-width:0;padding-inline:6px;}
 .arena-omok-match-side .arena-omok-chat {padding:10px;border-radius:12px;box-shadow:none;}
 .arena-omok-match-side .arena-omok-chat .arena-omok-panel-heading {margin-bottom:4px;}
 .arena-omok-match-side .arena-omok-chat .arena-omok-panel-heading h2 {font-size:15px;}
 .arena-omok-match-side .arena-omok-chat-list {min-height:58px;max-height:clamp(60px,15dvh,170px);margin-bottom:6px;}
 .arena-omok-match-side .arena-omok-ranked-meta {
-  display:flex;flex-direction:column;align-items:stretch;gap:8px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
   padding:10px;box-shadow:none;border-radius:11px;margin:0;
 }
-.arena-omok-match-side .arena-omok-ranked-meta strong {font-size:14px;}
+.arena-omok-match-side .arena-omok-ranked-meta > div {min-width:0;overflow-wrap:anywhere;}
+.arena-omok-match-side .arena-omok-ranked-meta > button,
+.arena-omok-match-side .arena-omok-ranked-meta > [role="alert"] {grid-column:1/-1;}
+.arena-omok-match-side .arena-omok-ranked-meta strong {font-size:13px;}
 .arena-omok-board-stage .game-result-overlay {position:absolute;inset:0;border-radius:16px;z-index:5;}
 .arena-omok-board-stage .game-result-card {max-height:calc(100% - 20px);overflow-y:auto;}
 .arena-omok-board-view .arena-omok-board-heading {margin-bottom:6px;}
