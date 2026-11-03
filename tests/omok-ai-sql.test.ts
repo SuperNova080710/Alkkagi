@@ -70,9 +70,12 @@ describe('Omok AI server settlement',()=>{
     await role('service_role');
     const state=(await db.query<{board_state:unknown}>(
       'select board_state from public.omok_ai_matches where id='+q(matchId))).rows[0].board_state;
-    await expect(commit(matchId,req(98),1,state,0,0,1,1)).rejects.toThrow('MATCH_NOT_FOUND');
-    // service-role caller can only settle on the verified p_actor supplied by API;
-    // no arbitrary data mutation is reachable through the client RPC grant.
+    await expect(db.query(
+      'select public.commit_omok_ai_turn($1,$2,$3,1,$4::jsonb,0,0,1,1)',
+      [matchId,outsider,req(98),JSON.stringify(state)]
+    )).rejects.toThrow('MATCH_NOT_FOUND');
+    // The RPC trusts only a user ID passed by trusted Next.js server code;
+    // browser callers cannot EXECUTE this service-only function.
   });
 
   it('atomically commits human plus AI move and supports exact idempotent retry',async()=>{
