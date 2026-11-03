@@ -27,11 +27,11 @@ async function setup(board:(string|null)[][],turn:number) {
 }
 async function commit(id:string,requestId:string,turn:number,board:unknown,
   humanRow:number,humanCol:number,aiRow:number|null,aiCol:number|null) {
-  return (await db.query<{commit_omok_ai_turn:{
+  const {rows}=await db.query<{commit_omok_ai_turn:{
     status:string;winner:string|null;finishReason:string|null;replayed:boolean;turnNo:number
   }}>(`select public.commit_omok_ai_turn($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9)`,
-  [id,human,requestId,turn,JSON.stringify(board),humanRow,humanCol,aiRow,aiCol]))
-  ).rows[0].commit_omok_ai_turn;
+    [id,human,requestId,turn,JSON.stringify(board),humanRow,humanCol,aiRow,aiCol]);
+  return rows[0].commit_omok_ai_turn;
 }
 
 describe('Omok AI server settlement',()=>{
