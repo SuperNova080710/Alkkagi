@@ -7,7 +7,7 @@ const { auth, notFound } = vi.hoisted(() => ({
   notFound: vi.fn(() => { throw new Error('NOT_FOUND'); }),
 }));
 vi.mock('@/lib/auth/user', () => ({ requireUser: auth }));
-vi.mock('next/navigation', () => ({ notFound }));
+vi.mock('next/navigation', () => ({ notFound, useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 vi.mock('@/components/auth/logout-form', () => ({ LogoutForm: () => <button type="button">로그아웃</button> }));
 
 import OmokPage from '../src/app/omok/page';
@@ -74,14 +74,17 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('로그아웃');
   });
 
-  it('does not expose unmerged PvP, AI, ranked actions as working buttons', async () => {
+  it('connects casual entry under the flag without falsely enabling AI or ranked', async () => {
     vi.stubEnv('OMOK_UI_ENABLED', 'true');
     const html = renderToStaticMarkup(await OmokPage());
     expect(html).toContain('일반전');
     expect(html).toContain('AI 대전');
     expect(html).toContain('랭크전');
-    expect(html.match(/disabled=""/g)).toHaveLength(3);
-    expect(html).toContain('서버 연결 준비 중');
+    expect(html.match(/disabled=""/g)).toHaveLength(2);
+    expect(html).toContain('오목 일반전 연결');
+    expect(html).toContain('href="#omok-casual-start"');
+    expect(html).toContain('새 방 만들기');
+    expect(html).toContain('코드로 참가');
     expect(html).not.toContain('href="/omok/rooms/');
     expect(html).not.toContain('href="/omok/ranked"');
   });
