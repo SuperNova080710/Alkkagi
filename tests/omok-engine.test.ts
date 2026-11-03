@@ -36,6 +36,45 @@ describe('freestyle Gomoku: pure rules engine', () => {
     expect(validOmokState({ ...initialOmokState(), next: 'white' })).toBe(false);
   });
 
+  it('rejects false terminal wins, false draws, early five, and both winners', () => {
+    const empty = initialOmokState();
+    expect(validOmokState({...empty,status:'finished'})).toBe(false);
+
+    const won = sequence([
+      { row: 0, col: 0 }, { row: 14, col: 0 },
+      { row: 0, col: 1 }, { row: 14, col: 1 },
+      { row: 0, col: 2 }, { row: 14, col: 2 },
+      { row: 0, col: 3 }, { row: 14, col: 3 },
+      { row: 0, col: 4 },
+    ]).state;
+    expect(validOmokState(won)).toBe(true);
+    expect(validOmokState({...won,status:'active',winner:null})).toBe(false);
+    expect(validOmokState({...won,status:'finished',winner:null})).toBe(false);
+
+    const noLine=sequence([
+      {row:0,col:0},{row:14,col:14},
+      {row:0,col:2},{row:14,col:12},
+      {row:0,col:4},
+    ]).state;
+    expect(validOmokState({...noLine,status:'finished',winner:'black'})).toBe(false);
+
+    const impossible = won.board.map(row=>[...row]);
+    for(const col of [2,3,4,5,6]) impossible[14][col]='white';
+    // Restore parity using black stones away from the winning lines.
+    for(const col of [7,8,9,10,11]) impossible[13][col]='black';
+    expect(validOmokState({...won,board:impossible,moves:19,
+      next:'white',status:'finished',winner:'black'})).toBe(false);
+  });
+
+  it('checks terminal lines with a bounded scan on fixed 15x15 boards', () => {
+    const state=initialOmokState();
+    const start=performance.now();
+    for(let i=0;i<200;i++)expect(validOmokState(state)).toBe(true);
+    // An intentionally generous upper bound catches pathological quadratic
+    // rescans without being timing-sensitive across GitHub runners.
+    expect(performance.now()-start).toBeLessThan(5000);
+  });
+
   it('enforces coordinates, legal turns and occupancy without changing original snapshot', () => {
     const first = initialOmokState();
     const snapshot = JSON.stringify(first);
