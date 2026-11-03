@@ -1,51 +1,41 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth/user';
-import { ArenaShell } from '@/components/ui/arena';
+import { createClient } from '@/lib/supabase/server';
 import { LogoutForm } from '@/components/auth/logout-form';
-import { GameSwitcher } from '@/components/lobby/game-switcher';
-import { OmokCasualLobby } from '@/components/omok/omok-casual-lobby';
+import { OmokLobbyView, type OmokLobbyData } from '@/components/omok/omok-lobby-view';
+import '@/components/omok/omok-parity.css';
 
 export const dynamic = 'force-dynamic';
 
-const modes = [
-  { key: 'casual', number: '01', title: '일반전', description: '친구와 방을 만들고 오목 한 판을 즐겨요.', action: '방 만들기 · 코드 참가', color: 'gold' },
-  { key: 'ranked', number: '02', title: '랭크전', description: '오목만의 독립된 RP와 순위에 도전해요.', action: '랭크 매칭', color: 'green' },
-  { key: 'ai', number: '03', title: 'AI 대전', description: '쉬움·보통·어려움 난이도로 연습해요.', action: 'AI 연습', color: 'blue' },
-] as const;
-
-/** Omok entry is protected by a server-only feature flag; no production bypass. */
+/** Omok UI stays behind the same server-side feature gate; never enables DB features. */
 export default async function OmokPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
-  await requireUser();
-  return <ArenaShell current="lobby" account={<LogoutForm />}>
-    <div className="arena-omok-overview">
-      <GameSwitcher current="omok" />
-      <header className="arena-omok-hero">
-        <div>
-          <p className="arena-section-kicker">OMOK ARENA · 15×15</p>
-          <h1>오목 아레나</h1>
-          <p>검은 돌이 먼저 시작합니다. 가로·세로·대각선으로 다섯 개 이상 연결하면 승리합니다.</p>
-          <span className="arena-omok-notice">일반전·AI·랭크 화면 연결 완료 · 실제 이용 가능 여부는 서버 준비 상태에 따라 달라집니다.</span>
-        </div>
-        <div className="arena-omok-emblem" aria-hidden="true">
-          <span/><span/><span/><span/><span/>
-        </div>
-      </header>
-      <section className="arena-omok-mode-grid" aria-label="오목 대전 방식">
-        {modes.map(mode => <article key={mode.key}
-          className={`arena-omok-mode-card arena-omok-mode-card--${mode.color}`}>
-          <span className="arena-omok-mode-number" aria-hidden="true">{mode.number}</span>
-          <h2>{mode.title}</h2>
-          <p>{mode.description}</p>
-          {mode.key === 'casual'
-            ? <a className="arena-button" href="#omok-casual-start">{mode.action}</a>
-            : <Link href={mode.key === 'ranked' ? '/omok/ranked' : '/omok/ai'}
-                className="arena-button">{mode.action}</Link>}
-        </article>)}
-      </section>
-      <div id="omok-casual-start"><OmokCasualLobby/></div>
-      <p className="arena-omok-status" role="status">오목 대전 기능은 서버 운영 마이그레이션 검증 후 관리자가 별도로 활성화합니다.</p>
-    </div>
-  </ArenaShell>;
+  const user = await requireUser();
+  const db = await createClient();
+  const [profile, casual, ai, ranking] = await Promise.all([
+    db.from('profiles').select('nickname').eq('id', user.id).maybeSingle(),
+    db.from('omok_matches').select('id,room_id,mode').eq('status', 'active')
+      .or(`black_id.eq.${user.id},white_id.eq.${user.id}`)
+      .order('created_at', { ascending: false }).limit(5),
+    db.from('omok_ai_matches').select('id').eq('owner_id', user.id)
+      .eq('status', 'active').order('created_at', { ascending: false }).limit(5),
+    db.rpc('omok_ranked_dashboard'),
+  ]);
+  const raw = ranking.data as { rating?: unknown; leaderboard?: unknown } | null;
+  const leaderboard = Array.isArray(raw?.leaderboard) ? raw.leaderboard.filter((entry): entry is {
+    position: number; nickname: string; rating: number;
+  } => !!entry && typeof entry === 'object' && typeof entry.position === 'number' &&
+    typeof entry.nickname === 'string' && typeof entry.rating === 'number') : [];
+  const data: OmokLobbyData = {
+    nickname: profile.data?.nickname ?? '닉네임 확인 필요',
+    rating: !ranking.error && typeof raw?.rating === 'number' ? raw.rating : null,
+    leaderboard,
+    rankingUnavailable: !!ranking.error || !raw,
+    activeCasual: casual.data ?? [],
+    activeAi: ai.data ?? [],
+    recoveryUnavailable: !!casual.error || !!ai.error,
+  };
+  return <OmokLobbyView data={data} account={<LogoutForm />}
+    friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}
+    cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>;
 }
