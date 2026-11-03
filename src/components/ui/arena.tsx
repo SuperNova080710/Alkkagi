@@ -30,13 +30,17 @@ export function ArenaShell({ children, current, account }: {
   </div>;
 }
 
-export function ArenaHero({ children, compact = false }: { children?: ReactNode; compact?: boolean }) {
-  return <section className={`arena-hero${compact ? ' arena-hero--compact' : ''}`} aria-label="알까기 아레나">
+export function ArenaHero({ children, compact = false, game = 'alkkagi' }: {
+  children?: ReactNode; compact?: boolean; game?: 'alkkagi' | 'omok';
+}) {
+  const isOmok = game === 'omok';
+  return <section className={`arena-hero${compact ? ' arena-hero--compact' : ''}`}
+    aria-label={isOmok ? '오목 아레나' : '알까기 아레나'}>
     <Image src="/art/hero.webp" alt="" fill sizes="(max-width: 1440px) 100vw, 1440px" preload className="arena-hero-art" />
     <div className="arena-hero-copy">
-      <p className="arena-eyebrow">손끝에서 시작되는 작은 승부</p>
-      <h1><span>ALKKAGI</span><span>ARENA</span></h1>
-      <p className="arena-hero-tagline">작은 알 하나, 큰 승부 한 판!</p>
+      <p className="arena-eyebrow">{isOmok ? '다섯 알이 만드는 한 판의 승부' : '손끝에서 시작되는 작은 승부'}</p>
+      <h1><span>{isOmok ? 'OMOK' : 'ALKKAGI'}</span><span>ARENA</span></h1>
+      <p className="arena-hero-tagline">{isOmok ? '돌 다섯 개를 먼저 이으세요!' : '작은 알 하나, 큰 승부 한 판!'}</p>
       {children}
     </div>
   </section>;
