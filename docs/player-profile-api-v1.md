@@ -1,5 +1,8 @@
 # Player Profile API v1 — backend ⇄ UI/UX integration contract
 
+> **2026-11-03 최신 인수:** 플레이어 검색·공개 설정 API #60, UI #91, XP #159 병합. 운영 SQL 003 및 008 적용 확인. 타인 비공개 경계·실계정 검색/프로필 E2E는 #194/#196에서 분리합니다. [현재 상태](current-status-2026-11-03.md). 아래 기록은 구현 당시의 테스트·작업 브랜치 기준입니다.
+
+
 **Status (2026-10-29):** Backend V1 **merged and deployed to Production** in [PR #60](https://github.com/SuperNova080710/Alkkagi/pull/60) (main commit `8f01c9bd41e80fa3202b33bdecfd5d1cf054ac82`); [CI #40812366995](https://github.com/SuperNova080710/Alkkagi/actions/runs/40812366995) passed and Vercel Production is READY. [Backend #59](https://github.com/SuperNova080710/Alkkagi/issues/59). UI integration belongs to [design #56](https://github.com/SuperNova080710/Alkkagi/issues/56) and is **not yet implemented by this backend PR**. This is the integration contract.
 
 ## File ownership / parallel development
