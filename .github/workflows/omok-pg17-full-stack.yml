@@ -1,0 +1,56 @@
+name: Omok v0.3 full PostgreSQL 17 integration
+
+on:
+  push:
+    branches: ['test/248-omok-full-pg17-integration']
+    paths:
+      - 'supabase/migrations/**'
+      - 'tests/omok-pg17-full-stack.sql'
+      - '.github/workflows/omok-pg17-full-stack.yml'
+  pull_request:
+    branches: [develop, main, 'feat/223-omok-xp-integration']
+    paths:
+      - 'supabase/migrations/**'
+      - 'tests/omok-pg17-full-stack.sql'
+      - '.github/workflows/omok-pg17-full-stack.yml'
+permissions:
+  contents: read
+jobs:
+  omok-pg17-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify disposable localhost PG17 and replay full migrations
+        shell: bash
+        env:
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 5432
+          test "$PGDATABASE" = postgres
+          version=$(psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')
+          test "$version" -ge 170000
+          test "$version" -lt 180000
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-full-stack.sql
