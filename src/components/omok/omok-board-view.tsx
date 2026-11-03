@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, type KeyboardEvent } from 'react';
+import './omok-board.css';
 
 const SIZE = 15;
 const AXIS = Array.from({ length: SIZE }, (_, index) => index);
@@ -98,7 +99,7 @@ export function OmokBoardView({
               data-omok-row={row} data-omok-col={col}
               data-omok-last={isLast ? 'true' : undefined}
               aria-label={`${row + 1}행 ${col + 1}열, ${stoneName(stone)}${isLast ? ', 마지막 착수' : ''}`}
-              aria-selected={isLast}
+              aria-current={isLast ? 'true' : undefined}
               aria-disabled={!canPlace(row, col)}
               tabIndex={cursor.row === row && cursor.col === col ? 0 : -1}
               onFocus={() => setCursor({ row, col })}
