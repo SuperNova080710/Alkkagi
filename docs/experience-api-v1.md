@@ -1,5 +1,8 @@
 # Experience & Levels V1 — 시스템·UI/UX 연동 계약
 
+> **2026-11-03 최신 인수:** XP/레벨 백엔드 PR #110 병합·SQL 008 2026-11-02 운영 적용 완료. 본인/공개 프로필 #159 및 로비 작은 XP 카드 #214(develop)/#215(RC) 구현 완료. 실제 플레이 후 원장 지급·공개 범위 E2E는 #196/#206. [현재 상태](current-status-2026-11-03.md). 아래 기록은 구현 당시의 테스트·작업 브랜치 기준입니다.
+
+
 GitHub: 상위 [#105](https://github.com/SuperNova080710/Alkkagi/issues/105) · DB [#106](https://github.com/SuperNova080710/Alkkagi/issues/106) · API [#107](https://github.com/SuperNova080710/Alkkagi/issues/107) · 검증 [#108](https://github.com/SuperNova080710/Alkkagi/issues/108).
 
 **상태:** 브랜치 `feat/backend-xp-levels-v1`에서 구현. `main`/운영 Supabase DB에는 아직 적용되지 않은 별도 PR 작업입니다. UI 컴포넌트/스타일·경기 물리엔진/기존 정산 RPC를 변경하지 않았습니다.

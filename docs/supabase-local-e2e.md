@@ -1,5 +1,8 @@
 # 무료 로컬 Supabase Auth·Realtime·RLS 통합 E2E
 
+> **최신 상태 (2026-11-03):** 로컬/일회용 Supabase Auth·Realtime·RLS 통합 CI PR #178 병합 완료. 운영 PostgreSQL SQL 004~009는 2026-11-02 적용됐지만, 관리형 Supabase 실제 두 계정 브라우저 E2E는 #196/#206에서 미완료입니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+
+
 날짜: 2026-10-30 · 상위 [#174](https://github.com/SuperNova080710/Alkkagi/issues/174) · 하위 #175(환경/CI), #176(사용자 E2E), #177(검증/인수).
 
 ## 목적과 안전 경계

@@ -1,5 +1,8 @@
 # Alkkagi 운영 2계정 브라우저 E2E — 실행 인수
 
+> **최신 정정 (2026-11-03):** 승인된 두 계정만 접근하는 QA 페이지 구현 PR #198이 develop에 병합됐습니다. SQL 004~009 운영 적용 완료. 그러나 서버 플래그·allowlist·안전한 Preview 배포·실제 브라우저 A/B/DM WebSocket·XP 원장 E2E는 #196/#206 미완료이며 사용자가 별도 승인해야 합니다. [현재 인수](current-status-2026-11-03.md). 아래 오래된 미병합·미적용/미구현 문구는 당시 기록으로 보존합니다.
+
+
 관련: [운영 DB #155](https://github.com/SuperNova080710/Alkkagi/issues/155), [실사용 검증 #196](https://github.com/SuperNova080710/Alkkagi/issues/196), [Draft PR #198](https://github.com/SuperNova080710/Alkkagi/pull/198).
 
 ## 상태와 실행 환경

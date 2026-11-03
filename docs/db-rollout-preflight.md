@@ -1,5 +1,8 @@
 # Production 004~009 마이그레이션 사전 점검 및 롤아웃 인계
 
+> **최신 상태 (2026-11-03):** 이 문서의 2026-10-30 '004~009 pending' 결과는 **적용 이전 스냅샷**입니다. 운영 Supabase PostgreSQL 17.11에 2026-11-02 004~009 **적용 완료** (#155/#196). **재실행 금지**. 실제 두 계정 E2E는 #196에서 미완료입니다. [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+
+
 작성일: 2026-10-30 KST · 상위 이슈 [#155](https://github.com/SuperNova080710/Alkkagi/issues/155), SQL [#156](https://github.com/SuperNova080710/Alkkagi/issues/156), 테스트 [#157](https://github.com/SuperNova080710/Alkkagi/issues/157), 인계 [#158](https://github.com/SuperNova080710/Alkkagi/issues/158). 릴리스 정책 [#144](https://github.com/SuperNova080710/Alkkagi/issues/144).
 
 > 이 문서는 **운영 적용을 지시하거나 허가하는 문서가 아닙니다**. 코드 병합, Vercel READY, 테스트 통과, Supabase DDL 적용 및 실계정 E2E는 구분합니다. 사용자 승인 없는 DB 쓰기·배포·기능 플래그 변경 금지.
