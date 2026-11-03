@@ -35,7 +35,7 @@ jobs:
       - name: Create CI-only client fixture (never committed or deployed)
         shell: bash
         run: |
-          mkdir -p src/app/__omok_ui_qa__
+          mkdir -p src/app/omok-browser-qa-fixture
           cat > src/app/omok-browser-qa-fixture/page.tsx <<'EOF'
           'use client';
           import { useEffect, useState } from 'react';
