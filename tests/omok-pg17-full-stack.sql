@@ -264,6 +264,9 @@ rollback;
 \echo 'PASS: full 001-006 migration and isolated invitation authorization tests'
 
 
+-- Separate the follow-up invitation acceptance assertions from stacked QA.
+-- The advanced suite expects a fresh friendship pair and must not inherit rows.
+begin;
 \echo 'Invite integration: accepted friend, private RPC, duplicate/blocked paths'
 insert into public.friend_links(requester_id,recipient_id,status)
 values ('11111111-1111-4111-8111-111111111111',
@@ -376,3 +379,4 @@ begin
  raise notice 'PASS: blocked recipient cannot be invited';
 end;
 $invite_done$;
+rollback;
