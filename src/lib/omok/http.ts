@@ -38,6 +38,8 @@ const statusByReason: Record<string, number> = {
   CELL_OCCUPIED: 409, REQUEST_CONFLICT: 409,
   ROOM_ACTIVE_LIMIT: 429, ROOM_RATE_LIMIT: 429,
   PROFILE_MISSING: 403, INVALID_HOST_SEAT: 403,
+  INVALID_MESSAGE: 400, CHAT_CLOSED: 409, CHAT_FULL: 409,
+  CHAT_RATE_LIMIT: 429, MATCH_ACTIVE: 409, REMATCH_EXPIRED: 409,
 };
 
 export function omokRpcError(error: { message?: string } | null): { error: string; status: number } {
@@ -45,4 +47,13 @@ export function omokRpcError(error: { message?: string } | null): { error: strin
   const found = Object.keys(statusByReason).find(key => reason === key || reason.includes(' ' + key));
   return found ? { error: found, status: statusByReason[found] } :
     { error: 'GAME_SERVICE_UNAVAILABLE', status: 503 };
+}
+
+export type OmokMessageInput = { body: string; requestId: string };
+export function parseOmokMessage(value: unknown): OmokMessageInput | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const raw = value as Record<string, unknown>;
+  if (!isOmokUuid(raw.requestId) || typeof raw.body !== 'string') return null;
+  const body = raw.body.trim();
+  return body.length >= 1 && body.length <= 280 ? { body, requestId: raw.requestId } : null;
 }
