@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/auth/user';
 import { ArenaShell } from '@/components/ui/arena';
 import { LogoutForm } from '@/components/auth/logout-form';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
+import { OmokCasualLobby } from '@/components/omok/omok-casual-lobby';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ const modes = [
   { key: 'ai', number: '03', title: 'AI 대전', description: '쉬움·보통·어려움 난이도로 연습해요.', action: 'AI 연습', color: 'blue' },
 ] as const;
 
-/** UI staging page: never exposes unmerged PvP/AI/ranked APIs as playable. */
+/** Omok entry is protected by a server-only feature flag; no production bypass. */
 export default async function OmokPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
   await requireUser();
@@ -24,7 +25,7 @@ export default async function OmokPage() {
           <p className="arena-section-kicker">OMOK ARENA · 15×15</p>
           <h1>오목 아레나</h1>
           <p>검은 돌이 먼저 시작합니다. 가로·세로·대각선으로 다섯 개 이상 연결하면 승리합니다.</p>
-          <span className="arena-omok-notice">오목 대전 서버 연결 준비 중 · 기존 알까기에는 영향이 없습니다.</span>
+          <span className="arena-omok-notice">오목 일반전 연결 · 랭크와 AI는 별도 화면 연결 전까지 비활성화됩니다.</span>
         </div>
         <div className="arena-omok-emblem" aria-hidden="true">
           <span/><span/><span/><span/><span/>
@@ -36,11 +37,14 @@ export default async function OmokPage() {
           <span className="arena-omok-mode-number" aria-hidden="true">{mode.number}</span>
           <h2>{mode.title}</h2>
           <p>{mode.description}</p>
-          <button type="button" className="arena-button" disabled
-            aria-label={mode.title + ' 준비 중'}>{mode.action} · 준비 중</button>
+          {mode.key === 'casual'
+            ? <a className="arena-button" href="#omok-casual-start">{mode.action}</a>
+            : <button type="button" className="arena-button" disabled
+              aria-label={mode.title + ' 준비 중'}>{mode.action} · 준비 중</button>}
         </article>)}
       </section>
-      <p className="arena-omok-status" role="status">서버 API·운영 DB·릴리스 검증이 완료되면 오목 대전 기능이 활성화됩니다.</p>
+      <div id="omok-casual-start"><OmokCasualLobby/></div>
+      <p className="arena-omok-status" role="status">오목 대전 기능은 서버 운영 마이그레이션 검증 후 관리자가 별도로 활성화합니다.</p>
     </div>
   </ArenaShell>;
 }
