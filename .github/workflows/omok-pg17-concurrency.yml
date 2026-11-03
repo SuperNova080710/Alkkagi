@@ -2,15 +2,17 @@ name: Omok PostgreSQL 17 isolated RPC and concurrency
 
 on:
   push:
-    branches: ['feat/220-omok-db-core']
+    branches: ['feat/220-omok-db-core', 'feat/221-omok-api']
     paths:
       - 'supabase/migrations/202611030001_omok_casual_core.sql'
+      - 'supabase/migrations/202611030002_omok_social_and_rematch.sql'
       - 'tests/omok-pg17-concurrency.sql'
       - '.github/workflows/omok-pg17-concurrency.yml'
   pull_request:
     branches: [develop, main]
     paths:
       - 'supabase/migrations/202611030001_omok_casual_core.sql'
+      - 'supabase/migrations/202611030002_omok_social_and_rematch.sql'
       - 'tests/omok-pg17-concurrency.sql'
       - '.github/workflows/omok-pg17-concurrency.yml'
 permissions:
