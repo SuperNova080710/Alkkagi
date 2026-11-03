@@ -81,7 +81,7 @@ $ai_xp$;
 \echo 'Social: accepted friendship, invited room, exactly-once acceptance'
 insert into public.friend_links(requester_id,recipient_id,status)
 values('11111111-1111-4111-8111-111111111111',
-       '22222222-2222-4222-8222-222222222222','accepted');
+       '22222222-2222-4222-8222-222222222222','accepted') on conflict do nothing;
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 select public.create_omok_room('JKLMNPQR') as friend_room \gset
@@ -151,10 +151,10 @@ $invite_checks$;
 -- A block must prevent inviting even if a friendship row remains accepted.
 insert into public.friend_links(requester_id,recipient_id,status)
 values('11111111-1111-4111-8111-111111111111',
-       '33333333-3333-4333-8333-333333333333','accepted');
+       '33333333-3333-4333-8333-333333333333','accepted') on conflict do nothing;
 insert into public.player_blocks(blocker_id,blocked_id)
 values('33333333-3333-4333-8333-333333333333',
-       '11111111-1111-4111-8111-111111111111');
+       '11111111-1111-4111-8111-111111111111') on conflict do nothing;
 set role authenticated;
 set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
 select public.create_omok_room('QRSTUVWX') as blocked_room \gset
