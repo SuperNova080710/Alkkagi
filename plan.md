@@ -161,7 +161,7 @@ P2·P3 제출 당시 기능·통계·증빙은 과거 기록 그대로 보존합
 
 - [Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217): 기존 알까기와 15×15 자유룰 **오목**을 구분. 공통 계정·친구·DM·XP는 검증된 계약에 한해 재사용하고 오목 경기/랭크 RP/AI/DB/RLS/Realtime는 독립 관리.
 - [#218 설계](https://github.com/SuperNova080710/Alkkagi/issues/218) → [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [#219 순수 오목 엔진](https://github.com/SuperNova080710/Alkkagi/issues/219) → [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)로 분리 검토. 아직 develop 병합/실사용 구현 완료 아님.
-- #220 별도 SQL/RLS → #221 실시간 일반전·초대 → #222 AI → #223 오목 전용 RP/매칭 → #224 멀티게임 로비·UI QA·v0.3 RC/릴리스.
+- #220 별도 SQL/RLS [Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232) → #221 PvP·채팅·재대결 [Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233) → #222 AI [Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)는 구현/격리 CI 보완까지 진행됐지만 미병합·운영 DB 미적용입니다. #223 오목 전용 RP/매칭 → #224 멀티게임 로비·UI QA·v0.3 RC/릴리스는 후속입니다.
 - **선행 원칙:** v0.2.0 [병합 PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production READY만으로 AI Preview #211·운영 두 계정 E2E #196·배포 후 QA 인수 #203/#206이 완료되었다고 간주하지 않습니다.
 - 신기능 작업은 develop 대상 개별 PR, 별도 릴리스 후보 승인, 운영 DB 마이그레이션 추가 시 기존 004~009 재실행 금지.
 
