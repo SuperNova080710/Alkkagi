@@ -7,6 +7,7 @@ on:
       - 'supabase/migrations/**'
       - 'tests/omok-pg17-full-stack.sql'
       - 'tests/omok-pg17-advanced.sql'
+      - 'tests/omok-pg17-ranked-timeout.sql'
       - '.github/workflows/omok-pg17-advanced.yml'
   pull_request:
     branches: [develop, 'test/248-omok-full-pg17-integration']
@@ -14,6 +15,7 @@ on:
       - 'supabase/migrations/**'
       - 'tests/omok-pg17-full-stack.sql'
       - 'tests/omok-pg17-advanced.sql'
+      - 'tests/omok-pg17-ranked-timeout.sql'
       - '.github/workflows/omok-pg17-advanced.yml'
 permissions:
   contents: read
@@ -57,3 +59,4 @@ jobs:
           test "$version" -lt 180000
           psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-full-stack.sql
           psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-advanced.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-ranked-timeout.sql
