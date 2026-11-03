@@ -174,8 +174,8 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 
 | 영역 | 현재 상태 | 미완료 |
 | --- | --- | --- |
-| Production 서비스 | `main` 기준 기존 v0.1.0 코드 `cd752f6` | 새로운 v0.2.0은 아직 Production 미출시 |
-| v0.2.0 RC | [Draft PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207), `release/v0.2.0` | 실제 두 계정 QA·Production 병합 승인·태그 발행 |
+| Production 서비스 | **v0.2.0 코드 `main` 병합 완료** (`dc5a2f4`, PR #207); Vercel **Production READY**, 실도메인 alias 확인 | 배포 후 기능별 HTTP/실사용 A/B·Realtime/AI·모바일 E2E는 별도 |
+| v0.2.0 릴리스 | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **`main` 병합 완료**, Vercel Production SHA 일치 READY | 실제 두 계정 QA/Preview AI 인증키 장애·Production Smoke 인수 및 정식 GitHub Release·태그 미확인 |
 | 운영 DB | PostgreSQL **17.11**, **2026-11-02 SQL 004~009 적용 완료** (#155) | SQL 재실행 금지. 실제 사용자 E2E/기능 플래그는 별도 |
 | 친구·DM·방 초대 | 백엔드 #76/#81/#90, UI #96/#143/#181 병합 | 실제 친구·DM WebSocket·초대/좌석 A/B 검증 |
 | XP·레벨·로비 카드 | #110/#159·로비 컴팩트 카드 #214(`develop`)/#215(`release`) 병합 | `EXPERIENCE_UI_ENABLED` 수용/실계정 경험치 지급 확인 |
@@ -186,6 +186,8 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | Google 검색 | 공개 가이드·사이트맵·noindex 정책 구현 | 실제 Search Console 소유권/색인 요청 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) |
 
 **기능 노출 게이트:** `FRIENDS_UI_ENABLED`, `MESSAGES_UI_ENABLED`, `ROOM_INVITES_UI_ENABLED`, `EXPERIENCE_UI_ENABLED`, `COSMETICS_UI_ENABLED`는 실제 배포 환경 설정과 DB 권한/E2E를 별도로 점검해야 합니다. QA 화면 `OPS_TWO_ACCOUNT_QA_ENABLED`는 정확한 A/B allowlist와 함께 승인 후에만 활성화합니다.
+
+**최신 릴리스 사실 (2026-11-03):** GitHub [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) 병합 및 Vercel의 Production 배포 `dc5a2f4` READY 확인([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)). 단 실제 HTTP/사용자 동선·AI 오류 #211 및 Google Search Console·공식 태그/GitHub Release는 별도로 확인해야 합니다.
 
 **릴리스 프로세스:** 기능/문서는 `develop` → `release/vX.Y.Z` RC/검증 → 사용자 승인 후 `main` Production 배포. 최신 `release/v0.2.0` [CHANGELOG](CHANGELOG.md) 및 [RC 체크리스트](https://github.com/SuperNova080710/Alkkagi/blob/release/v0.2.0/docs/release-v0.2.0-rc.md)를 참고하세요. Vercel Git 자동 배포 제약은 `vercel.json`과 [릴리스 운영 문서](docs/release-process.md)에서 관리합니다.
 
