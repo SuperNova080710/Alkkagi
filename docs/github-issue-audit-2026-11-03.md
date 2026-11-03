@@ -34,16 +34,18 @@
 | [#206](https://github.com/SuperNova080710/Alkkagi/issues/206) | [Release v0.2.0 / 3] 배포 후 A/B 실사용·UI 인수·승인된 Production 릴리스 | OPEN | 승인형 QA·Smoke·실제 태그 발행 |
 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) | [Ops v0.2.0] Preview AI 발사·기권 500 — 서버 Supabase 인증키 범위 분리 | OPEN | Preview AI 관리자키 범위 및 샷 500 |
 | [#216](https://github.com/SuperNova080710/Alkkagi/issues/216) | [Docs 11/03] 전체 이슈·PR·브랜치 상태 정리 및 운영 문서 현행화 | OPEN | 본 문서 PR #228/#229 리뷰/병합 |
-| [#217](https://github.com/SuperNova080710/Alkkagi/issues/217) | [v0.3.0 Epic] 알까기 + 오목 멀티게임 확장 및 릴리스 | OPEN | 원 이슈 확인 필요 |
-| [#218](https://github.com/SuperNova080710/Alkkagi/issues/218) | [v0.3.0 A] 멀티게임 아키텍처·릴리스 경계·라우팅 설계 | OPEN | 원 이슈 확인 필요 |
-| [#219](https://github.com/SuperNova080710/Alkkagi/issues/219) | [v0.3.0 B] 오목 15×15 자유룰 순수 엔진·테스트 | OPEN | 원 이슈 확인 필요 |
-| [#220](https://github.com/SuperNova080710/Alkkagi/issues/220) | [v0.3.0 C] 오목 Supabase 스키마·RPC·권한·경합 검증 | OPEN | 원 이슈 확인 필요 |
-| [#221](https://github.com/SuperNova080710/Alkkagi/issues/221) | [v0.3.0 D] 오목 실시간 일반전·초대·채팅·재대결 | OPEN | 원 이슈 확인 필요 |
-| [#222](https://github.com/SuperNova080710/Alkkagi/issues/222) | [v0.3.0 E] 오목 AI 연습 대전 | OPEN | 원 이슈 확인 필요 |
-| [#223](https://github.com/SuperNova080710/Alkkagi/issues/223) | [v0.3.0 F] 오목 독립 랭크 매칭·RP·리더보드 | OPEN | 원 이슈 확인 필요 |
-| [#224](https://github.com/SuperNova080710/Alkkagi/issues/224) | [v0.3.0 G] 멀티게임 로비·UI QA·RC 및 Production 인수 | OPEN | 원 이슈 확인 필요 |
+| [#217](https://github.com/SuperNova080710/Alkkagi/issues/217) | [v0.3.0 Epic] 알까기 + 오목 멀티게임 확장 및 릴리스 | OPEN | v0.3.0 오목 멀티게임 Epic/출시 승인 미완료 |
+| [#218](https://github.com/SuperNova080710/Alkkagi/issues/218) | [v0.3.0 A] 멀티게임 아키텍처·릴리스 경계·라우팅 설계 | OPEN | 오목/알까기 분리 아키텍처 Draft PR #231 검토 |
+| [#219](https://github.com/SuperNova080710/Alkkagi/issues/219) | [v0.3.0 B] 오목 15×15 자유룰 순수 엔진·테스트 | OPEN | 오목 15×15 순수 엔진 Draft PR #230 검토 |
+| [#220](https://github.com/SuperNova080710/Alkkagi/issues/220) | [v0.3.0 C] 오목 Supabase 스키마·RPC·권한·경합 검증 | OPEN | 오목 전용 DB/RLS/RPC 구현·검증 예정 |
+| [#221](https://github.com/SuperNova080710/Alkkagi/issues/221) | [v0.3.0 D] 오목 실시간 일반전·초대·채팅·재대결 | OPEN | 오목 2인 일반전·Realtime·복구 예정 |
+| [#222](https://github.com/SuperNova080710/Alkkagi/issues/222) | [v0.3.0 E] 오목 AI 연습 대전 | OPEN | 오목 AI 3단계 구현/실사용 예정 |
+| [#223](https://github.com/SuperNova080710/Alkkagi/issues/223) | [v0.3.0 F] 오목 독립 랭크 매칭·RP·리더보드 | OPEN | 오목 별도 RP·매칭·정산 구현 예정 |
+| [#224](https://github.com/SuperNova080710/Alkkagi/issues/224) | [v0.3.0 G] 멀티게임 로비·UI QA·RC 및 Production 인수 | OPEN | 멀티게임 UI/브라우저 QA·v0.3.0 RC/Production 승인 예정 |
 | [#225](https://github.com/SuperNova080710/Alkkagi/issues/225) | [Docs 216.1] develop 전체 최신 문서·운영/QA 인수 현행화 | OPEN | develop 문서 PR #228 리뷰/병합 |
 | [#227](https://github.com/SuperNova080710/Alkkagi/issues/227) | [Docs 216.3] v0.2.0 RC 브랜치 인수 문서 상태 정정 | OPEN | RC 인수 문서 PR #229 리뷰/병합 |
+
+**차기 범위:** #217~#224는 v0.3.0 오목 추가 로드맵으로, 단순히 브랜치가 생성됐다는 이유로 닫을 수 없습니다. #230/#231도 아직 Draft PR이며 실제 오목 서비스는 미배포입니다.
 
 **관리/승인 경계:** #196·#203·#206·#211의 Preview 관리자 키·운영 데이터 쓰기·main/Production 병합은 사용자 별도 승인 필요. #188/#192의 Required Check 강제는 GitHub 관리자 설정 확인 전 PASS로 단정하지 않습니다. #3의 ALEPH 플랫폼 실제 접수도 확인되지 않았습니다.
 
