@@ -58,16 +58,12 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
       chooseOmokAiMove(afterHuman,'white',game.difficulty,game.turn_no);
     // The service-role RPC uses a row lock and recomputes both results.
     // The client never chooses an AI move or supplies the board.
-    const {data,result,error:commitError}=await (async()=>{
-      const r=await createAdminClient().rpc('commit_omok_ai_turn',{
-        p_match_id:id,p_actor:user.id,p_request_id:move.requestId,
-        p_turn:move.turnNo,p_expected_board:game.board_state,
-        p_human_row:move.row,p_human_col:move.col,
-        p_ai_row:aiMove?.row??null,p_ai_col:aiMove?.col??null,
-      });
-      return {data:r.data,result:r.data,error:r.error};
-    })();
-    void result;
+    const {data,error:commitError}=await createAdminClient().rpc('commit_omok_ai_turn',{
+      p_match_id:id,p_actor:user.id,p_request_id:move.requestId,
+      p_turn:move.turnNo,p_expected_board:game.board_state,
+      p_human_row:move.row,p_human_col:move.col,
+      p_ai_row:aiMove?.row??null,p_ai_col:aiMove?.col??null,
+    });
     if(commitError){const failure=omokRpcError(commitError);
       return NextResponse.json({error:failure.error},{status:failure.status});}
     return NextResponse.json({data},{headers:{'Cache-Control':'no-store'}});
