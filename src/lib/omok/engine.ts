@@ -38,13 +38,13 @@ export function validOmokState(value: unknown): value is OmokState {
   const state = value as Partial<OmokState>;
   if (!validOmokBoard(state.board)) return false;
   if (state.next !== 'black' && state.next !== 'white') return false;
-  if (!Number.isInteger(state.moves) || state.moves! < 0 || state.moves! > OMOK_SIZE ** 2) return false;
+  if (typeof state.moves !== 'number' || !Number.isInteger(state.moves) || state.moves < 0 || state.moves > OMOK_SIZE ** 2) return false;
   if (state.status !== 'active' && state.status !== 'finished') return false;
   if (state.winner !== null && state.winner !== 'black' && state.winner !== 'white') return false;
   if (state.status === 'active' && state.winner !== null) return false;
   if (state.board.flat().filter(cell => cell !== null).length !== state.moves) return false;
   const black = state.board.flat().filter(cell => cell === 'black').length;
-  const white = state.moves! - black;
+  const white = state.moves - black;
   if (!(black === white || black === white + 1)) return false;
   if (state.next !== (black === white ? 'black' : 'white')) return false;
   if (state.winner !== null && (state.winner === 'black' ? black !== white + 1 : black !== white)) return false;
