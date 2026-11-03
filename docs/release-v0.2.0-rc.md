@@ -1,0 +1,111 @@
+# Alkkagi Arena · v0.2.0 릴리스 후보 인수
+
+작성: 2026-11-02 · 관리: [#203](https://github.com/SuperNova080710/Alkkagi/issues/203) · [#204](https://github.com/SuperNova080710/Alkkagi/issues/204) · [#205](https://github.com/SuperNova080710/Alkkagi/issues/205) · [#206](https://github.com/SuperNova080710/Alkkagi/issues/206)
+
+**최신 상태 (2026-11-03): [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)은 `main`에 병합 완료(merge `dc5a2f4`). Vercel Production 배포 `dc5a2f4`가 READY이고 `alkkagi-alpha.vercel.app`에 연결됐습니다. 실제 A/B·AI 샷/기권·Realtime·모바일 실사용 E2E와 공식 `v0.2.0` GitHub Release는 별도 확인이 필요합니다.**
+
+## v0.2.0 최종 출시 결과 (2026-11-03 · 현재 상태)
+
+> 아래 표가 이 문서의 과거 계획·미완료 체크리스트보다 우선합니다. 당시 계획은 사후 감사 추적을 위해 보존했습니다.
+
+| 릴리스 단계 | 현재 확인 | 근거·잔여 사항 |
+| --- | --- | --- |
+| 사용자 Production 배포 승인 | **승인되어 PR #207 main 병합** | 병합 결과와 별도 승인 기록에 따라 실행됨; 본 문서 PR에서 재승인·재배포 없음 |
+| release → main | **완료** | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207), merge `dc5a2f4` |
+| CI Required 5종 | **최종 RC HEAD `434ea6d`에서 5/5 SUCCESS** | [Quality](https://github.com/SuperNova080710/Alkkagi/actions/runs/41555064336) · [Release Guard](https://github.com/SuperNova080710/Alkkagi/actions/runs/41555064525) · [PG17](https://github.com/SuperNova080710/Alkkagi/actions/runs/41555064331) · [Supabase Local](https://github.com/SuperNova080710/Alkkagi/actions/runs/41555064334) · [PG17 Restore](https://github.com/SuperNova080710/Alkkagi/actions/runs/41555064373) |
+| Vercel Production | **READY** | `dc5a2f4`, `alkkagi-alpha.vercel.app` alias 확인 |
+| 운영 SQL 004~009 | **2026-11-02 적용 완료** | 재실행하지 않음 |
+| 기능 플래그 | **Vercel Production에 5종 등록**, 릴리스 Preview 브랜치에도 별도 등록 | 이름·대상 범위만 확인, **값·빌드 반영·기능 실제 동작 미검증** |
+| 관리자 키 | **현재 Production + 전체 Preview 대상 등록** | 당시 #211 Preview 500 발생 시에는 키 누락; 현재 설정이 해당 배포에 적용됐는지·AI 복구됐는지 **미검증**. 전체 Preview 노출 범위 별도 보안 검토 |
+| 실계정 A/B·Realtime·AI·모바일·200% | **미검증** | [#194](https://github.com/SuperNova080710/Alkkagi/issues/194), [#196](https://github.com/SuperNova080710/Alkkagi/issues/196), [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) |
+| 정식 `v0.2.0` tag/GitHub Release | **미확인** | 별도 승인·발행 단계 |
+
+**릴리스 기록의 현재 목적:** Production 출시 완료와 실사용 인수 미완료를 구분합니다. 아래의 사전 STOP/미승인 체크는 **출시 이전 계획의 시점 기록**이며 현행 Production이 미배포라는 의미가 아닙니다.
+
+## 릴리스 원본과 경계
+
+| 구분 | 값 |
+| --- | --- |
+| Release 브랜치 | `release/v0.2.0` |
+| 분기 원본 develop SHA | `b00bbcf7519ab826e860d2f3222de4d07a9bf6cd` |
+| 현재 운영 main SHA (분기 시점) | `cd752f6bd335a518302595e2187b54717c9ddaea` (역사적 기준, **현재 main=`dc5a2f4`**) |
+| Production | **v0.2.0 코드 병합/READY** (`dc5a2f4`, Vercel alias 확인); 실제 운영 기능 QA·공식 GitHub Release 미확인 |
+| 소스 버전 | `package.json`, `package-lock.json` 모두 `0.2.0` |
+| 운영 PostgreSQL | 17.11 · SQL 004~009 2026-11-02 적용 완료(재실행 금지) |
+| 운영 실사용 A/B·UI 200% | **NOT RUN** · 배포 이후 별도 진행 |
+| 릴리스 태그 / GitHub Release | **미발행** |
+| QA 페이지 | `/qa/two-account`, 기본 OFF·서버 활성화 플래그 및 고정 A/B allowlist 필요 |
+
+포함 코드에는 친구·DM·초대·XP·꾸미기 및 브라우저 QA, 최신 통합 CI가 있습니다. **코드 병합 ≠ 운영 기능 플래그 ON ≠ 실제 사용자 검증 완료**입니다. 구체 변경은 [CHANGELOG](../CHANGELOG.md), 운영 DB 상태는 [#155](https://github.com/SuperNova080710/Alkkagi/issues/155)와 [#196](https://github.com/SuperNova080710/Alkkagi/issues/196)를 봅니다.
+
+### 이전 RC 기록(출시 전 계획)
+
+## 단계 1 — GitHub CI, 배포 없이 진행
+
+- [ ] 정확한 RC 소스·package/lock 버전이 동일한지 확인하고 본 문서에 SHA 기록
+- [x] [`release/v0.2.0 → main` PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **병합 완료**, `main` SHA `dc5a2f4`; Vercel Production READY. 실제 사용자 A/B 인수는 별도
+- [ ] GitHub Ruleset `No-main-push` active / 최신 브랜치 강제 / Actions 소스 Required 5개 재확인
+- [x] 실제 RC PR #207의 최종 SHA `434ea6d`에서 아래 5개 job **전부** `success` 확인(상단 최종 결과 링크). `skipped`·`pending`·상충하는 SHA는 통과 아님
+  - `release-source-guard`
+  - `check` (lint, TS, Vitest, Next build)
+  - `pg17-disposable-integration`
+  - `local-supabase`
+  - `disposable-pg17-restore`
+- [ ] Workflow 변경(.github/workflows/**)의 검증·승인 통제 재확인. PR 코드로 workflow를 변조하면 release guard만으로 절대 보호되지 않음
+- [ ] 기존 `develop` Quality 성공: [#41396196721](https://github.com/SuperNova080710/Alkkagi/actions/runs/41396196721); 릴리스 PR의 실제 CI와 혼동하지 않기
+
+## 단계 2 — 별도 사용자 승인 후 *배포된 웹*에서 E2E
+
+사용자에게 로컬 Alkkagi 저장소/.env 파일이 없으므로 브라우저 테스트는 **배포 뒤** 진행합니다.
+
+- [ ] Vercel Free 한도 및 자동 배포 제한 실제 상태 점검. Preview가 Git push로 자동 생성됐다고 가정하지 않음. 수동 Preview는 가능하면 1회만 승인 후 생성
+- [ ] Preview의 Supabase 대상이 별도 테스트 DB인지 운영 DB인지 확인. 운영 DB 연결 시 Preview라도 **실운영 쓰기**이며 테스트 범위/동의가 필요
+- [ ] 승인된 환경에서만 서버 전용 `OPS_TWO_ACCOUNT_QA_ENABLED=true`, `OPS_TWO_ACCOUNT_QA_USER_IDS`의 정확한 **서로 다른 A/B UUID 2개** 설정. ID/토큰/키를 GitHub·PR에 기록하지 않음
+- [ ] 별도 브라우저 세션 A/B로 로그인. **Auth + 본인 프로필 + 비공개 데이터 RLS** 검증; 양쪽 XP baseline 확정
+- [ ] **친구 요청/수락 → B Realtime INSERT 구독 확인 → A DM 1건 → WebSocket 수신 ID = REST ID**, 실패 시 반복 발송 금지
+- [ ] 새 일반전 대기방 1개 → A의 친구 초대 1회 → B seat2 수락 → 실제 브라우저 게임 1판 완료 → 두 계정 XP 원장 1행씩·증분 대조. 일일 보상 상한이면 LIMITED, XP 지급 PASS 아님
+- [ ] 두 계정 기본 알 보유·장착, PC/모바일/실제 200% Zoom 화면, 불필요한 스크롤, 게임판 포인터·턴·결과 UI 확인
+- [ ] 비밀번호·JWT·사용자 UUID·DM 본문 공개 없이 PASS/FAIL, 브라우저/폭·콘솔·비식별 집계만 [#155](https://github.com/SuperNova080710/Alkkagi/issues/155), [#196](https://github.com/SuperNova080710/Alkkagi/issues/196), [#194](https://github.com/SuperNova080710/Alkkagi/issues/194)에 인수
+- [ ] 실운영 QA 완료 후 QA 활성화 플래그 OFF / 별도 재배포 필요 여부 확인
+
+## 단계 3 — Production 출시 (사용자 재승인 필수)
+
+- [ ] CI 5종 PASS, E2E 실제 PASS, 운영 RLS·재해복구 수용 및 브라우저 UX 확인
+- [ ] 기능 플래그의 실제 출시 ON/OFF 범위 확정: `FRIENDS_UI_ENABLED`, `MESSAGES_UI_ENABLED`, `ROOM_INVITES_UI_ENABLED`, `EXPERIENCE_UI_ENABLED`, `COSMETICS_UI_ENABLED`
+- [x] 사용자 승인 후 [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) `main` 병합 → Vercel Production READY (`dc5a2f4`)
+- [ ] 실제 HTTP/로그인/일반전/랭크/AI/Realtime Production Smoke (배포 READY와 별개)
+- [ ] 성공한 **실제 main 커밋**에 `v0.2.0` 태그/GitHub Release 발행 및 CHANGELOG 배포 날짜 확정
+- [ ] RC 수정 사항 `develop` 역반영, CI 확인, 사용 종료 브랜치/QA 플래그 정리
+
+## 즉시 STOP 조건
+
+Required CI 실패/스킵, 운영 DB RLS 차단/보안 위험, 관리자 키의 브라우저 노출, 배포 한도 초과, Preview-Production DB 혼동, QA 비승인 쓰기, SQL 재실행, 미검증 JWT/Realtime, 새 버전 Smoke 실패. 장애 시 **Vercel 이전 Production Deployment로 코드 롤백**을 검토하지만 DB 스키마·데이터는 자동 복구되지 않습니다. 기존 SQL 004~009를 재적용하거나 임의 데이터를 삭제하지 않습니다.
+
+## 인수 기록
+
+| 증빙 | 상태 |
+| --- | --- |
+| RC 원본 SHA | `b00bbcf7519ab826e860d2f3222de4d07a9bf6cd` |
+| 릴리스 메타데이터/문서 커밋 | 이 문서를 포함한 RC 브랜치의 커밋 로그 참조 |
+| RC Draft PR | [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) **main 병합 완료** (`dc5a2f4`) |
+| GitHub Required CI 5종 | **PR #207 최종 HEAD `434ea6d`의 5개 workflow SUCCESS 확인** (상단 실행 링크) |
+| Vercel QA 배포 URL | [2026-11-02 Preview](https://alkkagi-git-release-v020-mallang1.vercel.app) 기록(#211); **Production도 최신 `dc5a2f4` READY**. 실제 QA 별개 |
+| 운영 A/B E2E | NOT RUN |
+| 사용자 Production 승인 | 병합 커밋에 승인 후 통합 기록은 있으나 **이 문서 작업에서 별도 승인 행위 확인/실행 안 함**. 실제 QA·후속 사용자 인수는 별도 |
+
+## 최신 RC 추가 인수 (2026-11-03)
+
+- **release HEAD:** `434ea6dcb0c8ac2314e779c6775c2ee398189a5b`, PR [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) **main 병합**(`dc5a2f4`). `cd752f6`은 0.2.0 배포 이전 main 기준점입니다.
+- **UI 보완 병합:** [#210](https://github.com/SuperNova080710/Alkkagi/pull/210) RC 로비/프로필 기능 플래그별 준비 중 표시 정정. [#215](https://github.com/SuperNova080710/Alkkagi/pull/215) 메인 로비 내 정보 Lv/XP 미니카드 RC 반영. develop 역반영은 각각 #212/#214. 기능 공개/플래그 ON은 별도 승인입니다.
+- **실제 Preview 장애 [#211](https://github.com/SuperNova080710/Alkkagi/issues/211):** 장애 당시 AI 발사·기권 500 `Server game credentials missing`이며 그 배포에는 `SUPABASE_SECRET_KEY`가 없었습니다. **현재 Vercel 메타데이터에는 `SUPABASE_SECRET_KEY`가 Production과 전체 Preview 대상에 등록돼 있습니다**(값 미열람, 브랜치 제한 없음). 당시 원인과 현재 설정을 혼동하지 않으며, **해당 Preview 배포에 실제 반영됐는지와 AI 발사·기권 성공은 미확인**입니다. 관리자 키의 전체 Preview 범위는 운영 DB 쓰기 위험이 있으므로 보안 검토 및 별도 승인 뒤 범위 축소·테스트 DB 분리를 우선 검토합니다.
+- **운영 SQL 004~009:** 2026-11-02 Supabase PostgreSQL 17.11에 적용 완료, 재실행 금지. 그러나 실제 두 계정 친구→DM WebSocket INSERT→방 초대→일반전→XP/꾸미기 및 모바일/200% UI 전체 인수는 미완료([#196](https://github.com/SuperNova080710/Alkkagi/issues/196)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)·[#206](https://github.com/SuperNova080710/Alkkagi/issues/206)).
+- **후속 인수 STOP:** main 병합·Production READY는 확인됐습니다. 남은 항목은 안전한 Preview 환경/키 범위, 실제 두 계정 A/B·AI 샷/기권·Realtime/확대 UI 검증, Production Smoke, `v0.2.0` 태그 및 GitHub Release입니다. 미검증 사항을 완료로 소급하지 않습니다.
+- 전체 상태와 이슈 인수는 [develop 문서 PR #216 관련 인수](https://github.com/SuperNova080710/Alkkagi/blob/docs/216-full-issues-docs-sync-20261103/docs/current-status-2026-11-03.md)에서 관리하며, 이 파일의 2026-11-02 초기 표/체크 항목은 작성 당시 증빙으로 해석하세요.
+
+## PR #207 병합·Vercel Production 조회 결과 (2026-11-03)
+
+- GitHub PR #207 **2026-11-03 01:20:05 UTC main 병합**; merge commit `dc5a2f4311a0f851494ab635815cb00a7c2d9592`.
+- Vercel Production deployment `dpl_4mQ86h7Ed71BAQYT4YLc2Sci2wFr` **READY**, Git SHA `dc5a2f4`, `alkkagi-alpha.vercel.app` alias 연결 확인 ([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)).
+- GitHub Releases 조회 당시 **정식 Release 목록이 비어 있음**. `v0.2.0` 태그 발행과 실제 HTTP·멀티플레이·AI Preview 장애 해결/두 계정·200% E2E는 추가 확인 필요.
+- 위 본문의 ‘main 병합 금지/미배포/RC 검토 중’ 체크 문구는 **2026-11-02 최초 작성 시점의 사전 출시 계획**이며 현재 상태를 대신하지 않습니다. 실서비스 수용 이슈 #194/#196/#203/#206/#211은 검증 전까지 유지합니다.
+- 이 수정은 **RC 인수 문서 1개에 대한 사후 기록 보완**이며 새 배포·운영 DB/환경변수 변경을 수행하지 않았습니다.
