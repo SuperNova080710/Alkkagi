@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import {
-  OmokBoardView, isOmokBoardCells, type OmokBoardCells,
+  OmokBoardView, isOmokBoardCells,
 } from '../src/components/omok/omok-board-view';
 
 function empty(): (null | 'black' | 'white')[][] {
