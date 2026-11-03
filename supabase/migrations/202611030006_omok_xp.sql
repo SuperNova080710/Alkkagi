@@ -7,6 +7,46 @@ alter table public.xp_events add constraint xp_events_source_kind_check
   check(source_kind in('casual','ranked','ai',
     'omok_casual','omok_ranked','omok_ai'));
 
+-- Keep the legacy Alkkagi XP caps symmetric with Omok awards.
+create or replace function private.record_match_xp(
+  p_kind text,p_source uuid,p_user uuid,p_opponent uuid,
+  p_outcome text,p_reward integer
+) returns void language plpgsql security definer set search_path=''
+as $
+declare
+  start_utc timestamptz := date_trunc('day',clock_timestamp() at time zone 'UTC') at time zone 'UTC';
+  awarded integer:=p_reward;
+  inserted bigint;
+begin
+  -- Called exclusively by table transition triggers. Keep zero-XP events for
+  -- deduplication and audit, including capped matches.
+  if p_kind='ai' then
+    if (select count(*) from public.xp_events e
+        where e.user_id=p_user and e.source_kind in('ai','omok_ai')
+          and e.created_at>=start_utc)>=10 then awarded:=0; end if;
+  else
+    if (select count(*) from public.xp_events e
+        where e.user_id=p_user and e.source_kind in('casual','ranked','omok_casual','omok_ranked')
+          and e.created_at>=start_utc)>=20 then awarded:=0; end if;
+    if p_kind='casual' and
+       (select count(*) from public.xp_events e
+        where e.user_id=p_user and e.source_kind in('casual','omok_casual')
+          and e.opponent_id=p_opponent and e.created_at>=start_utc)>=5
+    then awarded:=0; end if;
+  end if;
+
+  insert into public.xp_events(user_id,source_kind,source_id,opponent_id,outcome,xp_amount)
+    values(p_user,p_kind,p_source,p_opponent,p_outcome,awarded)
+    on conflict(source_kind,source_id,user_id) do nothing returning id into inserted;
+  if inserted is not null and awarded>0 then
+    insert into public.player_progress(user_id,total_xp)
+      values(p_user,awarded)
+      on conflict(user_id) do update set total_xp=public.player_progress.total_xp+excluded.total_xp,
+        updated_at=now();
+  end if;
+end;
+$;
+
 create function private.record_omok_xp(
   p_kind text,p_source uuid,p_user uuid,p_opponent uuid,
   p_outcome text,p_reward integer
