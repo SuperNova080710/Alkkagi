@@ -1,5 +1,8 @@
 # Security S1 — Supabase 보안 경고와 RPC 남용 방어 (2026-10-29)
 
+> **2026-11-03 최신 상태:** 보안 PR #69 병합 및 운영 PG17.11에 SQL 004가 2026-11-02 적용됐습니다. 실제 RPC 전체 심층 감사·관리형 Auth 보안 설정 확인은 #62/#64/#65에서 계속 추적합니다. 기존 Advisor 경고·권한 표는 10월 29일 점검 스냅샷입니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 작업 이슈: [#62](https://github.com/SuperNova080710/Alkkagi/issues/62) · [#63](https://github.com/SuperNova080710/Alkkagi/issues/63) · [#64](https://github.com/SuperNova080710/Alkkagi/issues/64) · [#65](https://github.com/SuperNova080710/Alkkagi/issues/65). 기존 운영 점검 #16.
 
 **적용 구분:** 이 문서는 GitHub 작업 브랜치의 제안 변경을 설명합니다. PR 병합 전 `main`에는 제한 로직이 없으며, 이 문서나 PR 생성만으로 운영 DB에 적용되지 않습니다.
