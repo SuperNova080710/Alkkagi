@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OmokRoomPanel } from './omok-match-panels';
+import './omok-live.css';
 import { isRecord, isUuid, omokErrorText, omokRequest, parseRoom, type RoomSnapshot } from './omok-client-api';
 
 type Friend = { id: string; nickname: string };
