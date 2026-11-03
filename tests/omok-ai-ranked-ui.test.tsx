@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
+import { OmokClientError } from '../src/components/omok/omok-client-api';
 import { parseAiSnapshot, OmokAiLobby } from '../src/components/omok/omok-ai-client';
-import { parseQueueState, parseRankedDashboard, OmokRankedLobby } from '../src/components/omok/omok-ranked-client';
+import { parseQueueState, parseRankedDashboard, OmokRankedLobby, refreshRankedLobbyData } from '../src/components/omok/omok-ranked-client';
 import { OmokRankedMatchMeta } from '../src/components/omok/omok-ranked-match-meta';
 
 const { auth, notFound } = vi.hoisted(() => ({
@@ -67,6 +68,90 @@ describe('v0.3.0 independent Omok ranked UI (#244)', () => {
     expect(markup).toContain('오목 랭킹 TOP 0');
     expect(markup).not.toContain('1,000 RP');
   });
+  it('enters a matched game immediately even when the leaderboard is still pending then returns 503', async () => {
+    let failDashboard!: (reason: unknown) => void;
+    const dashboard = new Promise<unknown>((_, reject) => { failDashboard = reject; });
+    const replace = vi.fn();
+    const applyQueue = vi.fn((value: { status: string; matchId: string | null }) => {
+      if (value.status === 'matched' && value.matchId)
+        replace('/omok/ranked/matches/' + value.matchId);
+    });
+    const applyDashboard = vi.fn();
+    const reportQueueError = vi.fn();
+    const reportDashboardError = vi.fn();
+    const request = vi.fn((url: string): Promise<unknown> =>
+      url === '/api/omok/ranked/queue'
+        ? Promise.resolve({ status: 'matched', matchId: id })
+        : dashboard);
+    const refreshing = refreshRankedLobbyData({
+      isActive: () => true, applyQueue, applyDashboard,
+      reportQueueError, reportDashboardError,
+    }, request);
+    // A delayed leaderboard must not postpone the successful queue redirect.
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith('/omok/ranked/matches/' + id));
+    expect(applyQueue).toHaveBeenCalledWith({ status: 'matched', matchId: id });
+    expect(reportQueueError).toHaveBeenCalledWith('');
+    expect(applyDashboard).not.toHaveBeenCalled();
+    failDashboard(new OmokClientError('GAME_SERVICE_UNAVAILABLE', 503));
+    await refreshing;
+    expect(reportDashboardError).toHaveBeenCalledWith(expect.stringContaining('준비되지 않았습니다'));
+    expect(reportQueueError).not.toHaveBeenCalledWith(expect.stringContaining('준비되지 않았습니다'));
+    expect(request).toHaveBeenCalledWith('/api/omok/ranked/dashboard');
+  });
+
+  it('keeps leaderboard data available if queue polling fails and rejects malformed dashboard only locally', async () => {
+    const applyQueue = vi.fn();
+    const applyDashboard = vi.fn();
+    const reportQueueError = vi.fn();
+    const reportDashboardError = vi.fn();
+    await refreshRankedLobbyData({
+      isActive: () => true, applyQueue, applyDashboard,
+      reportQueueError, reportDashboardError,
+    }, async url => {
+      if (url.endsWith('/queue')) throw new OmokClientError('GAME_SERVICE_UNAVAILABLE', 503);
+      return { rating: 1040, leaderboard: [] };
+    });
+    expect(applyQueue).not.toHaveBeenCalled();
+    expect(reportQueueError).toHaveBeenCalledWith(expect.stringContaining('준비되지 않았습니다'));
+    expect(applyDashboard).toHaveBeenCalledWith({ rating: 1040, leaderboard: [] });
+    expect(reportDashboardError).toHaveBeenCalledWith('');
+
+    reportQueueError.mockClear();
+    reportDashboardError.mockClear();
+    applyQueue.mockClear();
+    applyDashboard.mockClear();
+    await refreshRankedLobbyData({
+      isActive: () => true, applyQueue, applyDashboard,
+      reportQueueError, reportDashboardError,
+    }, async url => url.endsWith('/queue')
+      ? { status: 'matched', matchId: id } : { rating: null, leaderboard: [] });
+    expect(applyQueue).toHaveBeenCalledWith({ status: 'matched', matchId: id });
+    expect(reportQueueError).toHaveBeenCalledWith('');
+    expect(applyDashboard).not.toHaveBeenCalled();
+    expect(reportDashboardError).toHaveBeenCalledWith(expect.any(String));
+  });
+
+  it('does not apply late ranking or queue results after leaving the lobby', async () => {
+    let active = true;
+    let release!: (value: unknown) => void;
+    const pending = new Promise<unknown>(resolve => { release = resolve; });
+    const applyQueue = vi.fn();
+    const applyDashboard = vi.fn();
+    const reportQueueError = vi.fn();
+    const reportDashboardError = vi.fn();
+    const refreshing = refreshRankedLobbyData({
+      isActive: () => active, applyQueue, applyDashboard,
+      reportQueueError, reportDashboardError,
+    }, async () => pending);
+    active = false;
+    release({ status: 'matched', matchId: id });
+    await refreshing;
+    expect(applyQueue).not.toHaveBeenCalled();
+    expect(applyDashboard).not.toHaveBeenCalled();
+    expect(reportQueueError).not.toHaveBeenCalled();
+    expect(reportDashboardError).not.toHaveBeenCalled();
+  });
+
   it('reads only own RLS-protected rating history and real deadline; no optimistic RP', () => {
     const markup = renderToStaticMarkup(<OmokRankedMatchMeta matchId={id} currentUserId={id}/>);
     expect(markup).toContain('정산 확인 중');
