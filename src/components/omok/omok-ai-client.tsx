@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { OmokBoardView, isOmokBoardCells, type OmokBoardCells, type OmokPosition } from './omok-board-view';
 import { isRecord, isUuid, omokErrorText, omokRequest, type OmokClientError } from './omok-client-api';
 import './omok-competitive.css';
+import './omok-live.css';
 
 export type AiDifficulty = 'easy' | 'normal' | 'hard';
 const difficulties: { id: AiDifficulty; title: string; hint: string }[] = [
