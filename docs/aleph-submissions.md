@@ -3,7 +3,7 @@
 ## P3 — 최종 제출 (2026-10-29 현재)
 - [최종 제출 양식 5개 항목 및 필수 URL](p3-final-submission-2026-10-29.md)
 - [최종 인수·검증 근거 및 P2 이후 PR](p3-final-acceptance-2026-10-29.md)
-- [현재 계획서 v11](../plan.md) (당시 P3 기준점은 제출 자료에 보존)
+- [현재 계획서 v12](../plan.md) (당시 P3 기준점은 제출 자료에 보존)
 - [닉네임 설정](p3-nicknames.md), [보드 시인성 개선](p3-visual-identity-tuning.md), [채팅·결과](p3-chat-results.md), [채팅 포커스·결과 모션](p3-chat-focus-result-motion.md)
 
 **발표 PPTX는 제출 화면에 반드시 별도 첨부해야 합니다.** 검증 증빙 PDF는 선택 첨부입니다. 파일 생성/다운로드와 ALEPH 플랫폼 접수는 별개이며, **아직 최종 제출 접수 완료라고 주장하지 않습니다.**
@@ -60,3 +60,9 @@ P2/P3 시점 제출·증빙 원본은 변경하지 않습니다.
 - [v0.2.0 Release Candidate 문서](https://github.com/SuperNova080710/Alkkagi/blob/release/v0.2.0/docs/release-v0.2.0-rc.md) · [GitHub Draft PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) · [Changelog](../CHANGELOG.md)
 - [실사용 A/B QA 인계](hosted-two-account-e2e.md) · [통합 UI QA](integrated-ui-qa-2026-11-02.md) · [Preview AI 장애 #211](https://github.com/SuperNova080710/Alkkagi/issues/211)
 - 과거 P2/P3 제출 기준 문서와 2026-10-29/30 스냅샷은 당시 근거로 보존하며 최신 Production 0.2.0 성공 증빙으로 사용하지 않습니다.
+
+## 2026-11-03 차기 v0.3.0 기획 분리
+
+- [오목 멀티게임 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217) 및 #218~#224 세부 작업. [설계 Draft #231](https://github.com/SuperNova080710/Alkkagi/pull/231)·[오목 엔진 Draft #230](https://github.com/SuperNova080710/Alkkagi/pull/230) 검토 중.
+- 현재 v0.2.0 RC/Production 인수 [#203](https://github.com/SuperNova080710/Alkkagi/issues/203)는 **별개**이며 미실행 사용자 QA/승인을 v0.3.0 확장으로 대체하지 않습니다.
+- [전체 153개 일반 이슈 전수 목록(조회 시점)](github-issue-audit-2026-11-03.md) · [현재 상태](current-status-2026-11-03.md).
