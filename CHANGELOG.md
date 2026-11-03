@@ -2,9 +2,9 @@
 
 Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production 배포**를 분리합니다. `main`/운영에 없는 변경을 출시 완료로 표시하지 않습니다. [릴리스 프로세스](docs/release-process.md) · [2026-11-03 상태](docs/current-status-2026-11-03.md).
 
-## [0.2.0] — Release Candidate (출시 전, 2026-11-03 기준)
+## [0.2.0] — main 코드 병합 및 Production READY (2026-11-03)
 
-> 이 항목은 `release/v0.2.0` **Draft PR [#207](https://github.com/SuperNova080710/Alkkagi/pull/207)**에 포함된 후보 변경입니다. `main` Production 배포, 실사용 E2E 및 정식 `v0.2.0` 태그/Release는 **아직 완료되지 않았습니다**. 실제 RC 기준 문서: [release 브랜치 CHANGELOG](https://github.com/SuperNova080710/Alkkagi/blob/release/v0.2.0/CHANGELOG.md).
+> [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)은 **`main`에 병합**(`dc5a2f4`)됐고 Vercel Production **READY·서비스 도메인 별칭**을 확인했습니다. 그러나 실제 사용자 A/B·Realtime·AI 및 모바일 E2E, Production Smoke, 공식 `v0.2.0` Git tag/GitHub Release는 **확인되지 않았습니다**. [배포 기록](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr).
 
 ### Added
 - 친구 요청·차단, 친구 1:1 DM/읽음/Realtime UI, 친구 대전방 초대·수락 및 3D 대기실 (#76/#81/#90/#96/#143/#181).
@@ -29,14 +29,14 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 
 ## [Unreleased]
 
-- RC 브라우저 QA 및 출시 승인 전 발견되는 버그 수정은 해당 `release/v0.2.0`과 `develop`에 동기화합니다. 실제 Production 배포·태그 생성 전에 릴리스 완료 날짜를 넣지 않습니다.
+- 0.2.0 Production 코드는 배포됐으나 실사용 QA·AI Preview 인증키 문제 및 공식 태그/Release 발행은 별도 인수합니다. 발견된 수정은 후속 버전/핫픽스로 관리합니다.
 
 ## Next — v0.3.0 제안 (개발 기획 중)
 
 - 오목 15×15 자유룰 두 번째 게임 확장 [Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217). 설계 Draft PR #231, 도메인 엔진 Draft PR #230의 구현·리뷰를 시작했습니다.
 - 오목 독립 DB/2인 실시간 경기/AI/랭크 RP/로비 및 E2E는 #220~#224의 **미구현 또는 검토 중인 범위**입니다. v0.2.0 출시 후보에 포함하지 않으며 실제 출시 버전으로 간주하지 않습니다.
 
-## 기존 Production 기준점
+## 이전 Production 기준점
 
-- `main` SHA `cd752f6bd335a518302595e2187b54717c9ddaea`, 기존 v0.1.0 계열. 역사적 배포가 확인됐다는 사실은 **공식 `v0.1.0` 태그/Release 발행**과 별도입니다.
+- 2026-11-03 v0.2.0 병합 **이전** `main` SHA `cd752f6bd335a518302595e2187b54717c9ddaea`, 기존 v0.1.0 계열. 역사적 배포가 확인됐다는 사실은 **공식 `v0.1.0` 태그/Release 발행**과 별도입니다.
 - 최초 버전 태그는 실제 배포 성공/인수를 확인한 뒤 생성합니다. 소급 태그 발행 금지.
