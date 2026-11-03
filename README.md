@@ -192,3 +192,7 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 **운영 안전:** SQL 004~009는 이미 실행됐으므로 재실행하지 않습니다. 승인되지 않은 Preview 키 확대·운영 DML·main 병합·태그 발행을 수행하지 않으며, 이전 P2/P3 검증 기록은 그대로 보존합니다.
 
 문서: [최신 인수](docs/current-status-2026-11-03.md) · [QA 인수](docs/hosted-two-account-e2e.md) · [전체 UI 검증](docs/integrated-ui-qa-2026-11-02.md) · [이전 2026-10-30 스냅샷](docs/current-status-2026-10-30.md).
+
+## 차기 개발 — v0.3.0 오목 멀티게임 (기획·Draft 단계)
+
+[오목 확장 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 #218~#224에서 15×15 자유룰 오목 엔진·DB/RLS·2인 일반전·AI·독립 랭크/XP 정책 및 멀티게임 로비를 기획/개발하고 있습니다. [설계 Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [순수 엔진 Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)은 아직 릴리스된 기능이 아닙니다. **v0.2.0 RC #207의 실사용 QA·Production 승인과 완전히 분리**합니다.
