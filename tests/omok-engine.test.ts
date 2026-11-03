@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   emptyOmokBoard, hasFive, initialOmokState, playOmokMove,
-  validOmokBoard, validOmokState, type OmokState, type Stone,
+  validOmokBoard, validOmokState, type OmokBoard, type OmokState, type Stone,
 } from '../src/lib/omok/engine';
 
 function sequence(moves: { row: number; col: number }[]) {
@@ -106,7 +106,7 @@ describe('freestyle Gomoku: pure rules engine', () => {
       '101111010110100', '101011001011000', '101111010011001',
     ];
     const last = { row: 7, col: 7 };
-    const board = fixture.map(row => row.split('').map(bit => bit === '0' ? 'black' as const : 'white' as const));
+    const board: OmokBoard = fixture.map(row => row.split('').map(bit => bit === '0' ? 'black' : 'white'));
     board[last.row][last.col] = null;
     const state: OmokState = { board, next: 'black', moves: 224, status: 'active', winner: null };
     expect(validOmokState(state)).toBe(true);
