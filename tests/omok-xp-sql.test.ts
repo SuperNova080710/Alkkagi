@@ -23,7 +23,7 @@ async function events(id:string) {
 async function newOmokMatch(mode:'casual'|'ranked') {
   const roomId=mode==='casual'?
     (await db.query<{id:string}>(
-      "insert into public.omok_rooms(code,owner_id,status) values(substr(upper(replace(gen_random_uuid()::text,'-','')),1,8),$1,'playing') returning id",[a]
+      "insert into public.omok_rooms(code,owner_id,status) values(substr(translate(upper(replace(gen_random_uuid()::text,'-','')),'01','AB'),1,8),$1,'playing') returning id",[a]
     )).rows[0].id:null;
   if(mode==='ranked') {
     await db.query('insert into public.omok_ratings(user_id) values($1),($2) on conflict do nothing',[a,b]);
