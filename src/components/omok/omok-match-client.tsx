@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { OmokChatPanel, OmokMatchPanel } from './omok-match-panels';
+import './omok-live.css';
 import {
   isRecord, isUuid, omokErrorText, omokRequest, parseMatch, parseMessages, parseRoom,
   type MatchSnapshot, type OmokChatRecord,
