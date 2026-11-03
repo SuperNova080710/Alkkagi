@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
+import { LobbyExperienceMini } from './lobby-experience-mini';
 
 export type LobbyData = {
   nickname: string;
@@ -13,9 +14,9 @@ export type LobbyData = {
 };
 
 /** Presentation boundary for backend integration and credential-free visual verification. */
-export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false }: {
+export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false }: {
   data: LobbyData; modes: ReactNode; account?: ReactNode;
-  friendsEnabled?: boolean; cosmeticsEnabled?: boolean;
+  friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
@@ -33,7 +34,7 @@ export function LobbyView({ data, modes, account, friendsEnabled = false, cosmet
       </div>
       <aside className="arena-sidebar" aria-label="내 정보와 랭킹">
         <ArenaPanel title="내 정보">
-          <div className="arena-player-summary"><span className="arena-avatar" aria-hidden="true">●</span><div><p className="arena-nickname">{data.nickname}</p><p className="arena-muted">{data.rating === null ? 'RP를 불러오지 못했어요' : `${data.rating.toLocaleString('ko-KR')} RP`}</p></div></div>
+          <div className="arena-player-summary"><span className="arena-avatar" aria-hidden="true">●</span><div className="arena-player-summary-copy"><p className="arena-nickname">{data.nickname}</p><p className="arena-muted">{data.rating === null ? 'RP를 불러오지 못했어요' : `${data.rating.toLocaleString('ko-KR')} RP`}</p>{experienceEnabled && <LobbyExperienceMini/>}</div></div>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
         <ArenaPanel title="랭킹 TOP 3">
