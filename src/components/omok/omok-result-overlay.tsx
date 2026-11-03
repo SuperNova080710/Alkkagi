@@ -59,7 +59,8 @@ export function OmokResultOverlay({
         {onReturn && <button className="rounded-xl border border-slate-500 px-4 py-2.5 text-sm font-semibold text-slate-100"
           type="button" onClick={onReturn}>로비로 돌아가기</button>}
         {onReplay && <button className="w-full rounded-xl bg-emerald-300 px-4 py-3 text-sm font-bold text-slate-950 disabled:opacity-50"
-          type="button" onClick={onReplay} disabled={pending || myRematchVote}>
+          type="button" aria-label={mode === 'casual' ? '재대결 신청' : undefined}
+          onClick={onReplay} disabled={pending || myRematchVote}>
           {pending ? '요청 중…' : replayLabel}
         </button>}
       </div>
