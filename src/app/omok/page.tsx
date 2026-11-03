@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth/user';
 import { ArenaShell } from '@/components/ui/arena';
+import { LogoutForm } from '@/components/auth/logout-form';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ const modes = [
 export default async function OmokPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
   await requireUser();
-  return <ArenaShell current="lobby">
+  return <ArenaShell current="lobby" account={<LogoutForm />}>
     <div className="arena-omok-overview">
       <GameSwitcher current="omok" />
       <header className="arena-omok-hero">
