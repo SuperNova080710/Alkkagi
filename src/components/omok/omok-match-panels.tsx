@@ -2,6 +2,8 @@
 
 import { useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { OmokBoardView, type OmokPosition, type OmokStone } from './omok-board-view';
+import { OmokResultOverlay } from './omok-result-overlay';
+import './omok-parity.css';
 import './omok-match-panels.css';
 
 export type OmokParticipant = { id: string; nickname: string; stone: OmokStone };
@@ -92,12 +94,17 @@ export type OmokMatchViewProps = {
   onForfeit?: () => void;
   onRematch?: () => void;
   onReturn?: () => void;
+  onRankedReplay?: () => void;
+  mode?: 'casual' | 'ranked';
+  chat?: ReactNode;
+  extra?: ReactNode;
 };
 
 export function OmokMatchPanel({
   board, players, currentUserId, turnUserId, status, lastMove, winnerId,
   finishReason, pending = false, reconnecting = false, error, rematchReadyCount = 0,
   myRematchVote = false, onPlace, onForfeit, onRematch, onReturn,
+  onRankedReplay, mode = 'casual', chat, extra,
 }: OmokMatchViewProps) {
   const me = players.find(p => p.id === currentUserId);
   const turn = players.find(p => p.id === turnUserId);
@@ -109,7 +116,7 @@ export function OmokMatchPanel({
 
   return <section className="arena-omok-panel arena-omok-match-panel" aria-label="오목 경기">
     <header className="arena-omok-panel-heading">
-      <div><p className="arena-section-kicker">OMOK · 15×15</p><h2>오목 일반전</h2></div>
+      <div><p className="arena-section-kicker">OMOK · 15×15</p><h2>{mode === 'ranked' ? '오목 랭크전' : '오목 일반전'}</h2></div>
       <span role="status" className="arena-omok-panel-pill">{finished ? '경기 종료' : reconnecting
         ? '연결 복구 중' : status === 'waiting' ? '경기 대기' : myTurn ? '내 차례' : '상대 차례'}</span>
     </header>
@@ -121,8 +128,16 @@ export function OmokMatchPanel({
       </li>)}
     </ol>
     <div className="arena-omok-match-layout">
-      <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'}
-        myTurn={myTurn} status={status} pending={pending || reconnecting} onPlace={onPlace}/>
+      <div className="arena-omok-board-stage">
+        <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'}
+          myTurn={myTurn} status={status} pending={pending || reconnecting} onPlace={onPlace}/>
+        {finished && <OmokResultOverlay
+          outcome={result ?? '무승부'} mode={mode} finishReason={finishReason}
+          pending={pending || reconnecting} error={error}
+          myRematchVote={myRematchVote} rematchReadyCount={rematchReadyCount}
+          onReplay={mode === 'ranked' ? onRankedReplay : onRematch}
+          onReturn={onReturn}/>}
+      </div>
       <aside className="arena-omok-match-side" aria-label="대국 진행">
         <h3>경기 현황</h3>
         <p role="status" aria-live="polite">{finished
@@ -134,17 +149,12 @@ export function OmokMatchPanel({
           : `${turn?.nickname || '상대'}님의 착수를 기다리고 있습니다.`}</p>
         {error && <p className="arena-omok-panel-error" role="alert">{error}</p>}
         {finished && onRematch && <p className="arena-omok-panel-hint">재대결 동의 {Math.min(2, Math.max(0, rematchReadyCount))}/2</p>}
-        <div className="arena-omok-panel-actions">
-          {finished ? <>
-            {onRematch && <ActionButton onClick={onRematch} disabled={pending || reconnecting || myRematchVote}>
-              {myRematchVote ? '상대 수락 대기 중' : '재대결 신청'}
-            </ActionButton>}
-            <ActionButton onClick={onReturn} secondary>로비로 돌아가기</ActionButton>
-          </> : <>
-            <ActionButton onClick={onForfeit} disabled={pending || reconnecting || status !== 'active'} secondary>기권</ActionButton>
-            <ActionButton onClick={onReturn} secondary>로비로 돌아가기</ActionButton>
-          </>}
-        </div>
+        {!finished && <div className="arena-omok-panel-actions">
+          <ActionButton onClick={onForfeit} disabled={pending || reconnecting || status !== 'active'} secondary>기권</ActionButton>
+          <ActionButton onClick={onReturn} secondary>로비로 돌아가기</ActionButton>
+        </div>}
+        {extra}
+        {chat}
       </aside>
     </div>
   </section>;
