@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p src/app/__omok_ui_qa__
-          cat > src/app/__omok_ui_qa__/page.tsx <<'EOF'
+          cat > src/app/omok-browser-qa-fixture/page.tsx <<'EOF'
           'use client';
           import { useEffect, useState } from 'react';
           import { OmokBoardView, type OmokPosition, type OmokStone } from '@/components/omok/omok-board-view';
