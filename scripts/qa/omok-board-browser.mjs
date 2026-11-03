@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const origin = 'http://127.0.0.1:3121';
-const path = '/__omok_ui_qa__';
+const path = '/omok-browser-qa-fixture';
 const outdir = resolve(process.env.QA_OUTPUT_DIR || 'artifacts/omok-board-qa');
 const sizes = [
   ['mobile-320x720',320,720,true],
