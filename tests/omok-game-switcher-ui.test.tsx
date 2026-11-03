@@ -66,7 +66,11 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     const html = renderToStaticMarkup(await OmokPage());
     expect(auth).toHaveBeenCalledOnce();
     expect(html).toContain('오목 아레나');
-    expect(html).toContain('OMOK ARENA · 15×15');
+    expect(html).toContain('오목 아레나 · 15×15');
+    expect(html).toContain('arena-hero--compact');
+    expect(html).toContain('arena-lobby-grid--multigame');
+    expect(html).toContain('arena-sidebar');
+    expect(html).toContain('arena-modes');
     expect(html).toContain('가로·세로·대각선');
     expect(html).toContain('aria-label="오목 대전 방식"');
     expect(html).toContain('href="/lobby"');
@@ -83,8 +87,11 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('href="/omok/ai"');
     expect(html).toContain('href="/omok/ranked"');
     expect(html).not.toContain('준비 중</button>');
-    expect(html).toContain('일반전·AI·랭크 화면 연결 완료');
-    expect(html).toContain('href="#omok-casual-start"');
+    expect(html).toContain('오목 랭크전 시작');
+    expect(html).toContain('AI 오목 연습');
+    expect(html).toContain('오목 일반전 시작하기');
+    expect(html).toContain('방 만들기 · 코드로 참가');
+    expect(html).toContain('aria-labelledby="omok-mode-dialog-title"');
     expect(html).toContain('새 방 만들기');
     expect(html).toContain('코드로 참가');
     expect(html).not.toContain('href="/omok/rooms/');
@@ -100,5 +107,9 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(section).toContain('grid-template-columns: 1fr');
     expect(section).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
     expect(section).not.toContain('.game-screen');
+    const scoped = readFileSync(new URL('../src/components/omok/omok-lobby-layout.css', import.meta.url), 'utf8');
+    expect(scoped).toContain('.arena-omok-lobby-page .arena-hero--compact');
+    expect(scoped).toContain('.arena-omok-lobby-page .arena-mode');
+    expect(scoped).not.toMatch(/body\\s*\\{[^}]*overflow:\\s*hidden/);
   });
 });
