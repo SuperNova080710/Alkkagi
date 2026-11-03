@@ -8,7 +8,7 @@
 
 - **GitHub 릴리스 PR #207 main 병합:** 2026-11-03 01:20:05 UTC, merge commit `dc5a2f4311a0f851494ab635815cb00a7c2d9592`.
 - **Vercel 실제 Production:** deployment `dpl_4mQ86h7Ed71BAQYT4YLc2Sci2wFr` **READY**, Git SHA `dc5a2f4`, 서비스 alias `alkkagi-alpha.vercel.app` 확인([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)).
-- **아직 확인되지 않은 항목:** A/B 두 사용자 Auth/RLS/DM WebSocket·XP/꾸미기·AI shot/forfeit, 모바일·200% 실제 브라우저, Production smoke 및 공식 `v0.2.0` tag/GitHub Release(2026-11-03 GitHub Release 목록 비어 있음). 기능 플래그 운영 실제 값도 별도 확인 필요. SQL 004~009는 11월 2일 이미 적용되어 재실행 금지.
+- **아직 확인되지 않은 항목:** A/B 두 사용자 Auth/RLS/DM WebSocket·XP/꾸미기·AI shot/forfeit, 모바일·200% 실제 브라우저, Production smoke 및 공식 `v0.2.0` tag/GitHub Release(2026-11-03 GitHub Release 목록 비어 있음). Vercel 메타데이터에는 친구·DM·방 초대·XP·꾸미기 플래그 5종이 Production에 등록돼 있고 release/v0.2.0 Preview 브랜치에도 별도 등록돼 있습니다. **값·실제 배포 반영·사용자 E2E는 확인하지 않았습니다.** SQL 004~009는 11월 2일 이미 적용되어 재실행 금지.
 - **차기 오목 v0.3.0**은 별도 미출시 범위이며 0.2.0 QA를 소급 완료시키지 않습니다.
 
 ## 1. 운영·릴리스 상태
@@ -20,7 +20,7 @@
 | v0.2.0 코드 릴리스 | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **병합 완료**, SHA `dc5a2f4`, Production READY. RC에 로비 XP UI #215 포함 | [#203](https://github.com/SuperNova080710/Alkkagi/issues/203)·[#206](https://github.com/SuperNova080710/Alkkagi/issues/206) 배포 후 실브라우저 QA/Smoke·정식 GitHub Release 확인 미완료 |
 | 릴리스 보호 | [#190](https://github.com/SuperNova080710/Alkkagi/pull/190) 4종 CI, [#193](https://github.com/SuperNova080710/Alkkagi/pull/193) release-source-guard 구현 병합. 비릴리스 main PR [#208](https://github.com/SuperNova080710/Alkkagi/pull/208)은 의도된 실패 검사용으로 미병합 종료 | 실제 `main` 보호 Required Checks 5종 등록/강제 검증은 [#188](https://github.com/SuperNova080710/Alkkagi/issues/188)·[#192](https://github.com/SuperNova080710/Alkkagi/issues/192) 및 RC에서 별도 확인 |
 | QA | 격리된 PG17·로컬 Supabase Auth/Realtime·백업복원 CI 구현 병합(#171/#178/#185), hosted QA 페이지 PR [#198](https://github.com/SuperNova080710/Alkkagi/pull/198) 병합 | **실제 운영/Preview 브라우저 두 계정 A/B E2E 미완료**([#196](https://github.com/SuperNova080710/Alkkagi/issues/196)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)) |
-| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211): RC Preview에서 AI 발사/기권 500; Preview 전용 `SUPABASE_SECRET_KEY` 미설정이 Runtime 로그에서 확인됨 | 운영 DB와 동일한 Preview에서 서비스 관리자 키 범위 확대는 **사용자 승인/환경 분리** 선행. 값·토큰을 이슈에 게시하지 말 것 |
+| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211): 장애 발생 당시 Preview에 관리자 키가 없어 AI 발사/기권 500. 현재 `SUPABASE_SECRET_KEY`가 **Production+전체 Preview 대상 등록**된 메타데이터 확인(값 열람 안 함) | 당시 원인과 현재 등록 범위는 구분. 실제 배포에 키 적용됐는지/AI 재검증 여부는 미확인. Preview 전체 대상 범위의 보안 리스크·테스트 DB 분리 검토 |
 | SEO | 기술 SEO #131 및 공개 가이드 #137 코드 병합 | 실제 Search Console 소유권·사이트맵 제출/색인 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) 별도 |
 | ALEPH 제출 | P2/P3 과거 인수 자료 보존 | 최종 P3 플랫폼 접수/승인은 [#3](https://github.com/SuperNova080710/Alkkagi/issues/3)에서 미확인 |
 
