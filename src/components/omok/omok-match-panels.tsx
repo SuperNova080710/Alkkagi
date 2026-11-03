@@ -3,8 +3,8 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { OmokBoardView, type OmokPosition, type OmokStone } from './omok-board-view';
 import { OmokResultOverlay } from './omok-result-overlay';
-import './omok-parity.css';
 import './omok-match-panels.css';
+import './omok-parity.css';
 
 export type OmokParticipant = { id: string; nickname: string; stone: OmokStone };
 export type OmokRoomViewProps = {
