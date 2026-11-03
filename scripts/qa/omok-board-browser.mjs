@@ -80,8 +80,8 @@ function dimensions() {
     alternativeButtonHeight:button?.getBoundingClientRect().height,
   };
 }
-async function press(cdp,sid,key,vk){
-  const opts={key,code:key,windowsVirtualKeyCode:vk,nativeVirtualKeyCode:vk};
+async function press(cdp,sid,key,vk,code=key){
+  const opts={key,code,windowsVirtualKeyCode:vk,nativeVirtualKeyCode:vk};
   await cdp.call('Input.dispatchKeyEvent',{type:'keyDown',...opts},sid);
   await cdp.call('Input.dispatchKeyEvent',{type:'keyUp',...opts},sid);
   await sleep(110);
@@ -144,6 +144,18 @@ async function main(){
       await press(cdp,sid,'Enter',13);
       const twice=await cdp.eval("document.getElementById('qa-moves').textContent",sid);
       if(twice!==first)failures.push('occupied cell submitted twice');
+      await press(cdp,sid,'ArrowUp',38);
+      const spaceFocus=await cdp.eval("({row:document.activeElement?.dataset.omokRow,col:document.activeElement?.dataset.omokCol})",sid);
+      if(spaceFocus?.row!=='6'||spaceFocus?.col!=='8')failures.push('ArrowUp focus invalid before Space');
+      const beforeSpaceScroll=await cdp.eval('window.scrollY',sid);
+      await press(cdp,sid,' ',32,'Space');
+      const space=await cdp.eval("document.getElementById('qa-moves').textContent",sid);
+      if(space!=='[{"row":7,"col":8},{"row":6,"col":8}]')failures.push('Space did not submit selected empty cell: '+space);
+      const afterSpaceScroll=await cdp.eval('window.scrollY',sid);
+      if(afterSpaceScroll!==beforeSpaceScroll)failures.push('Space scrolled document while placing a stone');
+      await press(cdp,sid,' ',32,'Space');
+      const spaceTwice=await cdp.eval("document.getElementById('qa-moves').textContent",sid);
+      if(spaceTwice!==space)failures.push('Space allowed occupied cell duplicate');
       await press(cdp,sid,'End',35);
       const ended=await cdp.eval("document.activeElement?.dataset.omokCol",sid);
       if(ended!=='14')failures.push('End not last column');
@@ -151,7 +163,9 @@ async function main(){
       const homed=await cdp.eval("document.activeElement?.dataset.omokCol",sid);
       if(homed!=='0')failures.push('Home not first column');
       results.push({name,dims,actions:{occupiedBlocked:occupied==='[]',focus,placed:first,
-        duplicateBlocked:twice===first,end:ended,home:homed},failures});
+        duplicateBlocked:twice===first,spacePlaced:space,
+        spaceDuplicateBlocked:spaceTwice===space,spacePreventedScroll:afterSpaceScroll===beforeSpaceScroll,
+        end:ended,home:homed},failures});
       console.log((failures.length?'FAIL ':'PASS ')+name+' widthOverflow='+dims.horizontalOverflow+'px; '+
         (failures.length?failures.join('; '):'keyboard/225 cells/44px PASS'));
     }
