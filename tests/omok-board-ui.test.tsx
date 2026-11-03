@@ -95,6 +95,9 @@ describe('v0.3 Omok 15×15 UI foundation (#237)', () => {
     for(const key of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End']) {
       expect(source).toContain("case '" + key + "'");
     }
+    expect(source).toContain("event.key === 'Enter'");
+    expect(source).toContain("event.key === ' '");
+    expect(source).toContain('if (canPlace(row, col)) onPlace?.({ row, col });');
     expect(source).toContain('event.preventDefault()');
     expect(source).toContain('tabIndex={cursor.row === row && cursor.col === col ? 0 : -1}');
     expect(source).toContain('onClick={() => { if (canPlace(row, col))');
