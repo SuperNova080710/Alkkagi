@@ -101,7 +101,7 @@ begin
  perform dblink_connect('xp_first',connection);
  perform dblink_connect('xp_second',connection);
  perform dblink_exec('xp_first','begin');
- select result into result from dblink('xp_first',
+ select t.result into result from dblink('xp_first',
    format('update public.omok_matches set status=''finished'','
       ||' winner_id=''11111111-1111-4111-8111-111111111111'','
       ||' finish_reason=''five'',finished_at=now() where id=%L::uuid returning status',p_first))
@@ -122,7 +122,7 @@ begin
  end loop;
  if not waiting then raise exception 'XP completion did not lock shared profiles'; end if;
  perform dblink_exec('xp_first','commit');
- select result into result from dblink_get_result('xp_second') as t(result text);
+ select t.result into result from dblink_get_result('xp_second') as t(result text);
  perform result from dblink_get_result('xp_second') as t(result text);
  perform dblink_exec('xp_second','commit');
  if result<>'finished' then raise exception 'Second XP finish failed'; end if;
