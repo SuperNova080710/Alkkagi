@@ -1,5 +1,8 @@
 # 친구 대전방 초대 UI · 일반전 3D 디자인 통일 V6
 
+> **2026-11-03 최신 상태:** 친구 초대 화면과 일반전 대기실 3D 통일 PR #181 및 역할별 SSR·44px 터치 영역 보완 PR #200 병합. SQL 005/007 운영 적용 완료. 실제 두 계정 Preview 검증은 #194/#206에서 남았습니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 작업 이슈: [#179](https://github.com/SuperNova080710/Alkkagi/issues/179). 서버 초대 계약: [docs/room-friend-invites-api-v1.md](room-friend-invites-api-v1.md) / 병합 PR #90.
 
 ## 사용자 동선
