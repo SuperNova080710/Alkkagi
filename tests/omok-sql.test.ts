@@ -141,6 +141,10 @@ describe('Omok SQL: authoritative casual games and RLS', () => {
       )).play_omok_move;
     }
     expect(last).toMatchObject({status:'finished',finishReason:'five',winnerId:alice,turnNo:10});
+    // The room remains playing for #221 two-party rematch voting. The finished
+    // match is immutable, and the core start RPC cannot create another one.
+    const roomStatus=await db.query<{status:string}>('select status from public.omok_rooms where id='+quote(roomId));
+    expect(roomStatus.rows[0].status).toBe('playing');
     await as(bob);
     await expect(call('play_omok_move',`${quote(matchId)},${quote(request(50))},10,0,5`))
       .rejects.toThrow('MATCH_FINISHED');
