@@ -182,7 +182,7 @@ ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원
 | 알·캐릭터 꾸미기 | #115/#167 인벤토리, #173 게임판 외형 병합 | 실제 장착/상대 공개 범위·AI 기본 스킨 확인 |
 | 반응형/통합 UI QA | #189/#197/#200/#202 병합, 플래그 안내 #210/#212 반영 | [#194](https://github.com/SuperNova080710/Alkkagi/issues/194) 실제 로그인/확대 화면 인수 |
 | 릴리스 CI·QA 도구 | #190/#193, PG17 #171, Local Supabase #178, 백업복원 #185, Hosted QA #198 병합 | 실제 릴리스 보호 정책·브라우저 QA·운영 승인 |
-| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) 런타임에서 관리자 키 미설정 확인 | Preview 전용 안전한 인증키 범위·테스트 DB 사용자 승인 후 수정 |
+| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) 과거 500 발생 시 관리자 키 누락 확인 | 현재 `SUPABASE_SECRET_KEY`는 Production+전체 Preview 대상에 **이름/설정 범위만 확인됨**. 실제 배포 반영 및 AI 발사·기권 성공은 미검증; 키 범위 제한·운영 DB 사용 승인 필요 |
 | Google 검색 | 공개 가이드·사이트맵·noindex 정책 구현 | 실제 Search Console 소유권/색인 요청 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) |
 
 **기능 노출 게이트:** `FRIENDS_UI_ENABLED`, `MESSAGES_UI_ENABLED`, `ROOM_INVITES_UI_ENABLED`, `EXPERIENCE_UI_ENABLED`, `COSMETICS_UI_ENABLED`는 실제 배포 환경 설정과 DB 권한/E2E를 별도로 점검해야 합니다. QA 화면 `OPS_TWO_ACCOUNT_QA_ENABLED`는 정확한 A/B allowlist와 함께 승인 후에만 활성화합니다.
