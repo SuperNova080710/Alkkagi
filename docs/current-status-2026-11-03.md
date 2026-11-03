@@ -32,6 +32,15 @@
 
 **기능 플래그 기본 정책:** 단순 코드 존재나 SQL 적용만으로 UI 활성화·운영 공개를 주장하지 않습니다. QA용 `OPS_TWO_ACCOUNT_QA_ENABLED`는 별도 서버측 A/B allowlist와 함께 설정하며, 승인 전에는 404로 유지합니다.
 
+## 2-1. 차기 v0.3.0 계획 — 오목 멀티게임 분리 (2026-11-03 추가)
+
+기존 v0.2.0 RC는 별도로 **동결/출시 승인 대기**이며, 새 기능은 [v0.3.0 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 **#218~#224**에서 `develop` 기준으로만 진행합니다.
+
+- **오목 15×15 자유룰**(5목 이상 승리, 흑 선공, 금수·무르기 없음)을 두 번째 게임으로 추가하는 목표. 알까기 물리·기존 RP/데이터를 변경하지 않고 새로운 오목 엔진/스키마/Realtime·UI/랭크/AI를 분리합니다.
+- 설계 [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231)과 순수 오목 엔진 [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)은 **현재 검토 중·미병합**입니다. 오목 실제 경기/랭크/AI는 지금 서비스에 구현·배포 완료된 기능이 아닙니다.
+- #220 DB/RLS·#221 2인 오목·#222 AI·#223 독립 RP·#224 로비 및 v0.3.0 RC/QA도 모두 후속 작업입니다.
+- `v0.2.0` Draft [#207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production 승인·Preview 실사용 E2E를 오목 개발 계획으로 대체하거나 생략하지 않습니다.
+
 ## 3. 품질 검사 단계별 경계
 
 - **자동화 구현/병합 확인:** PostgreSQL 17 SQL 004~009 일회용 적용 [#171](https://github.com/SuperNova080710/Alkkagi/pull/171); Docker 기반 Supabase Auth·JWT·Realtime [#178](https://github.com/SuperNova080710/Alkkagi/pull/178); 격리 `pg_dump → pg_restore` [#185](https://github.com/SuperNova080710/Alkkagi/pull/185); 릴리스 소스/CI 정책 #190/#193.
