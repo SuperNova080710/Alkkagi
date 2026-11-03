@@ -96,7 +96,7 @@ declare
  connection text:='host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres';
  guest text:='22222222-2222-4222-8222-222222222222';
  outsider text:='33333333-3333-4333-8333-333333333333';
- guest_result text; waiting boolean:=false; worker_pid int; i int;
+ guest_result text; third_error text; waiting boolean:=false; worker_pid int; i int;
 begin
  perform dblink_connect('invite_guest',connection);
  perform dblink_connect('invite_third',connection);
@@ -125,9 +125,12 @@ begin
  if not waiting then raise exception 'Parallel join did not serialize on room'; end if;
  perform dblink_exec('invite_guest','commit');
  perform result from dblink_get_result('invite_third',false) as t(result text);
- if dblink_error_message('invite_third') not like '%ROOM_FULL%'
-    and dblink_error_message('invite_third') not like '%ROOM_UNAVAILABLE%' then
-   raise exception 'Third join was not rejected: %',dblink_error_message('invite_third');
+ third_error:=dblink_error_message('invite_third');
+ -- libpq async state has a second empty completion result; drain before ROLLBACK.
+ perform result from dblink_get_result('invite_third',false) as t(result text);
+ if third_error not like '%ROOM_FULL%'
+    and third_error not like '%ROOM_UNAVAILABLE%' then
+   raise exception 'Third join was not rejected: %',third_error;
  end if;
  perform dblink_exec('invite_third','rollback');
  if (select count(*) from public.omok_room_players where room_id=p_room and seat=2)<>1
