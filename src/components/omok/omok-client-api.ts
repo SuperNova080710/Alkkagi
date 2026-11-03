@@ -66,6 +66,16 @@ export async function omokRequest<T>(url: string, options: {
   return payload.data as T;
 }
 
+/**
+ * A confirmed HTTP rejection cannot have committed the requested chat message.
+ * Keep its request ID only when the outcome is ambiguous (network failure,
+ * gateway/server error, request timeout, or an invalid success response).
+ */
+export function preserveOmokChatRetry(error: unknown): boolean {
+  return !(error instanceof OmokClientError &&
+    error.status >= 400 && error.status < 500 && error.status !== 408);
+}
+
 export type RoomSnapshot = {
   id: string; code: string; status: 'waiting' | 'playing' | 'closed';
   yourSeat: 1 | 2; matchId: string | null;
@@ -90,7 +100,7 @@ export function parseRoom(data: unknown): RoomSnapshot {
   };
 }
 export type MatchSnapshot = {
-  id: string; roomId: string | null; mode: 'casual' | 'ranked';
+  id: string; roomId: string | null;
   blackId: string; whiteId: string; turnUserId: string;
   turnNo: number; board: OmokBoardCells; status: 'active' | 'finished';
   winnerId: string | null; finishReason: string | null; lastMove: OmokPosition | null;
@@ -112,7 +122,6 @@ export function parseMatch(data: unknown): MatchSnapshot {
     ? { row: Number(last.row_no), col: Number(last.col_no) } : null;
   return {
     id: m.id, roomId: isUuid(m.room_id) ? m.room_id : null,
-    mode: m.mode === 'ranked' ? 'ranked' : 'casual',
     blackId: m.black_id, whiteId: m.white_id, turnUserId: m.turn_user_id,
     turnNo: m.turn_no, board: m.board_state as OmokBoardCells,
     status: m.status, winnerId: isUuid(m.winner_id) ? m.winner_id : null,
