@@ -154,10 +154,14 @@ select public.forfeit_omok_match(:'qa_match'::uuid);
 reset role;
 
 do $terminal$
+declare final_match uuid;
+declare final_room uuid;
 begin
-  if (select status from public.omok_matches where id=:'qa_match'::uuid)<>'finished' or
-     (select finish_reason from public.omok_matches where id=:'qa_match'::uuid)<>'forfeit' or
-     (select status from public.omok_rooms where id=:'qa_room'::uuid)<>'playing' then
+  select id into strict final_room from public.omok_rooms where code='ABCDEFGH';
+  select id into strict final_match from public.omok_matches where room_id=final_room;
+  if (select status from public.omok_matches where id=final_match)<>'finished' or
+     (select finish_reason from public.omok_matches where id=final_match)<>'forfeit' or
+     (select status from public.omok_rooms where id=final_room)<>'playing' then
     raise exception 'Core terminal match/room state violates same-room rematch contract';
   end if;
   raise notice 'PASS: finished game history retained; room playing for 002 rematch votes';
