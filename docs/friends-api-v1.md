@@ -1,5 +1,8 @@
 # Friends API V1 — 시스템 ⇄ UI/UX 연동 계약
 
+> **2026-11-03 최신 상태:** 친구 백엔드 #76/UI #96 병합, SQL 005 운영 적용 완료. 실제 친구 요청·수락·차단 A/B E2E와 기능 플래그/QA 사용자 승인 여부는 #196/#206에서 관리합니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 상위 이슈 [#72](https://github.com/SuperNova080710/Alkkagi/issues/72), DB [#73](https://github.com/SuperNova080710/Alkkagi/issues/73), API [#74](https://github.com/SuperNova080710/Alkkagi/issues/74), 검증 [#75](https://github.com/SuperNova080710/Alkkagi/issues/75). 미래 기능 백로그 [#57](https://github.com/SuperNova080710/Alkkagi/issues/57).
 
 **상태:** 시스템 기능은 작업 브랜치 `feat/backend-friends-v1`의 PR로만 제공. 병합 전에는 `main`의 UI에서 호출하지 마세요. 사용자 승인 없는 운영 Supabase migration 적용 없음.
