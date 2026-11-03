@@ -75,7 +75,7 @@ function dimensions() {
     cellCount:cells.length,
     tabStops:cells.filter(x=>x.tabIndex===0).length,
     lastMoveMarkers:document.querySelectorAll('[data-omok-last="true"]').length,
-    boardRect:rect?{left:rect.left,right:rect.right,width:rect.width,height:rect.height}:null,
+    boardRect:rect?{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height}:null,
     alternativeSelectHeight:select?.getBoundingClientRect().height,
     alternativeButtonHeight:button?.getBoundingClientRect().height,
   };
@@ -127,6 +127,8 @@ async function main(){
       if(dims.lastMoveMarkers!==1)failures.push('recent move marker missing');
       const br=dims.boardRect;
       if(!br||br.left< -1||br.right>width+1)failures.push('board outside viewport');
+      if(br&&br.bottom>height+1)failures.push('board extends below viewport '+br.bottom+' > '+height);
+      if(br&&br.width>510+1)failures.push('board exceeds 510px game-layout cap '+br.width);
       if(br&&Math.abs(br.width-br.height)>2)failures.push('board not square');
       if((dims.alternativeSelectHeight||0)<44||(dims.alternativeButtonHeight||0)<44)failures.push('alternative input under 44px');
       const png=await cdp.call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sid);
