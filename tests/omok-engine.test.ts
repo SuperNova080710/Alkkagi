@@ -96,24 +96,23 @@ describe('freestyle Gomoku: pure rules engine', () => {
   });
 
   it('detects a full-board draw with a legal final move', () => {
-    // A 15x15 board without any five-in-a-row at completion is possible
-    // with alternating 2x2 color bands; the middle intersection is last.
-    const board = emptyOmokBoard();
+    // Fixture generated with exactly 112 stones of each color before the
+    // final black turn, and no five-in-a-row in any direction.
+    const fixture = [
+      '010011000111100', '001101110011110', '111101000100110',
+      '100001110010000', '001010101010101', '101010001100111',
+      '010001110101100', '001100100111001', '101001111000010',
+      '011101100111000', '000011001100010', '111000111100101',
+      '101111010110100', '101011001011000', '101111010011001',
+    ];
     const last = { row: 7, col: 7 };
-    for (let row = 0; row < 15; row++) for (let col = 0; col < 15; col++) {
-      if (row === last.row && col === last.col) continue;
-      board[row][col] = (Math.floor(row / 2) + Math.floor(col / 2)) % 2 === 0 ? 'black' : 'white';
-    }
-    // Use a state consistent with the formal turn count; the checker rejects
-    // fabricated states whose colors cannot follow alternating moves.
-    const black = board.flat().filter(cell => cell === 'black').length;
-    const white = board.flat().filter(cell => cell === 'white').length;
-    if (black === white + 1) {
-      const state: OmokState = { board, next: 'white', moves: 224, status: 'active', winner: null };
-      expect(playOmokMove(state, 'white', last).result).toBe('draw');
-    } else {
-      expect(black).not.toBe(white + 1);
-    }
+    const board = fixture.map(row => row.split('').map(bit => bit === '0' ? 'black' as const : 'white' as const));
+    board[last.row][last.col] = null;
+    const state: OmokState = { board, next: 'black', moves: 224, status: 'active', winner: null };
+    expect(validOmokState(state)).toBe(true);
+    const result = playOmokMove(state, 'black', last);
+    expect(result.result).toBe('draw');
+    expect(result.state).toMatchObject({ status: 'finished', winner: null, moves: 225 });
   });
 
   it('has no renju forbidden-move restrictions and detects five on both sides', () => {
