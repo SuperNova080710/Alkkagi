@@ -1,5 +1,8 @@
 # Cosmetics V1 — 데이터 시스템·UI 연동 계약
 
+> **2026-11-03 최신 인수:** 꾸미기 SQL/API #115, UI 인벤토리 #167, 게임판 외형 #173 병합. SQL 009는 2026-11-02 적용 완료. 다른 사용자의 공개 권한·잠금/해금/장착 실계정 검증은 #194/#196. [현재 상태](current-status-2026-11-03.md). 아래 기록은 구현 당시의 테스트·작업 브랜치 기준입니다.
+
+
 작업: [상위 #111](https://github.com/SuperNova080710/Alkkagi/issues/111) · DB [#112](https://github.com/SuperNova080710/Alkkagi/issues/112) · API [#113](https://github.com/SuperNova080710/Alkkagi/issues/113) · 검증 [#114](https://github.com/SuperNova080710/Alkkagi/issues/114).
 
 **상태:** `feat/backend-cosmetics-v1`의 미병합 시스템 PR입니다. `main`/운영 Supabase의 테이블·RLS를 변경하지 않았습니다. UI 디자인·SVG/일러스트·CSS·게임 물리엔진 수정 없음.

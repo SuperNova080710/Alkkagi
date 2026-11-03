@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
 import { LobbyExperienceMini } from './lobby-experience-mini';
+import { GameSwitcher } from './game-switcher';
 
 export type LobbyData = {
   nickname: string;
@@ -14,15 +15,15 @@ export type LobbyData = {
 };
 
 /** Presentation boundary for backend integration and credential-free visual verification. */
-export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false }: {
+export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false, omokEnabled = false }: {
   data: LobbyData; modes: ReactNode; account?: ReactNode;
-  friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean;
+  friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean; omokEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
     <ArenaHero compact />
-    <div className="arena-lobby-grid">
-      <div className="arena-play-column">{modes}
+    <div className={`arena-lobby-grid${omokEnabled ? ' arena-lobby-grid--multigame' : ''}`}>
+      <div className="arena-play-column">{omokEnabled && <GameSwitcher current="alkkagi"/>}{modes}
         <ArenaPanel title="진행 중인 경기" className="arena-recovery">
           {data.recoveryUnavailable && <p role="status" className="arena-muted">진행 중인 경기 일부를 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.</p>}
           {!hasMatches && !data.recoveryUnavailable && <p className="arena-muted">진행 중인 경기가 없어요. 새로운 한 판을 시작해 보세요!</p>}

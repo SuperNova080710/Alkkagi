@@ -1,5 +1,8 @@
 # PostgreSQL 17 — 전체 마이그레이션 004~009 일회용 통합 검증
 
+> **최신 상태 (2026-11-03):** 일회용 PG17의 004~009 순차 적용/권한/XP/코스메틱 테스트 PR #171 병합 완료. 2026-11-02 Production PG17.11에도 적용 기록 있음. 단 일회용 DB 성공과 운영 브라우저·실시간 WebSocket E2E를 혼동하지 마세요 (#196). [통합 인수](current-status-2026-11-03.md). 아래 본문의 PR 미병합·운영 DB 미적용 문구는 **작성 당시의 기록**입니다.
+
+
 2026-10-30 | 이슈 [#166](https://github.com/SuperNova080710/Alkkagi/issues/166), SQL #168, CI #169, 인계 #170. 운영 읽기 전용 검사 [#155](https://github.com/SuperNova080710/Alkkagi/issues/155) / [Draft PR #161](https://github.com/SuperNova080710/Alkkagi/pull/161). 버전 릴리스 정책 #144.
 
 ## 동기와 의미

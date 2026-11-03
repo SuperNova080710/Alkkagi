@@ -1,5 +1,8 @@
 # Wide hero scroll review — PR #123
 
+> **최신 정정 (2026-11-03):** 1920×1080 히어로 이미지/타이포 PR #123/#125 병합, 이후 공개 Chromium viewport 회귀 #197 포함. fixture 기반 통과는 실제 로그인/Production 실기기 QA가 아니며 #194/#206에서 잔여 인수합니다. [현재 인수](current-status-2026-11-03.md). 아래 오래된 미병합·미적용/미구현 문구는 당시 기록으로 보존합니다.
+
+
 ## Why the initial change failed review
 
 The source artwork `public/art/hero.webp` is 1920×640 (3:1). The first patch set `max-height: min(48dvh, calc(100dvh - 530px))` for both `/` and `/lobby`. It improved image coverage but incorrectly assumed both routes had the same amount of non-hero content.
