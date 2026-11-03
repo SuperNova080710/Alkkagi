@@ -50,7 +50,8 @@ describe('v0.3 Omok 15×15 UI foundation (#237)', () => {
     expect(markup.match(/arena-omok-stone--white/g)).toHaveLength(1);
     expect(markup.match(/arena-omok-last-dot/g)).toHaveLength(1);
     expect(markup).toContain('data-omok-last="true"');
-    expect(markup).toContain('aria-selected="true"');
+    expect(markup).toContain('aria-current="true"');
+    expect(markup).not.toContain('aria-selected="true"');
   });
 
   it('is read-only without a server action or when not the active player', () => {
@@ -98,8 +99,11 @@ describe('v0.3 Omok 15×15 UI foundation (#237)', () => {
     expect(source).toContain('tabIndex={cursor.row === row && cursor.col === col ? 0 : -1}');
     expect(source).toContain('onClick={() => { if (canPlace(row, col))');
     expect(source).not.toContain('playOmokMove(');
-    const css = readFileSync(new URL('../src/app/arena.css', import.meta.url), 'utf8');
+    const css = readFileSync(new URL('../src/components/omok/omok-board.css', import.meta.url), 'utf8');
     const section = css.slice(css.indexOf('/* #237: isolated'));
+    expect(source).toContain("import './omok-board.css'");
+    expect(source).toContain("aria-current={isLast ? 'true' : undefined}");
+    expect(source).not.toContain('aria-selected={isLast}');
     expect(section).toContain('aspect-ratio: 1');
     expect(section).toContain('repeat(15, minmax(0, 1fr))');
     expect(section).toContain('min-height: 44px');
