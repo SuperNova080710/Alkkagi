@@ -78,6 +78,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     const refresh = () => { void load(); void loadChat(); };
     window.addEventListener('focus', refresh);
     window.addEventListener('online', refresh);
+    window.addEventListener('omok:refresh', refresh);
     const visible = () => { if (document.visibilityState === 'visible') refresh(); };
     document.addEventListener('visibilitychange', visible);
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -99,6 +100,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       window.clearInterval(poll);
       window.removeEventListener('focus', refresh);
       window.removeEventListener('online', refresh);
+      window.removeEventListener('omok:refresh', refresh);
       document.removeEventListener('visibilitychange', visible);
       if (db && channel) void db.removeChannel(channel);
     };
