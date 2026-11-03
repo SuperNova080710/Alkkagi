@@ -157,6 +157,7 @@ insert into public.omok_matches(mode,room_id,black_id,white_id,turn_user_id,boar
 update public.omok_matches set status='finished',
  winner_id='11111111-1111-4111-8111-111111111111',
  finish_reason='five',finished_at=now() where id=:'capped_match'::uuid;
+select set_config('qa.cap_match', :'capped_match', false);
 do $cap$
 begin
  if (select xp_amount from public.xp_events where
