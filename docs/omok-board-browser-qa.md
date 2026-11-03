@@ -17,7 +17,7 @@ PR #241 리뷰에서 요구한 실제 320px·키보드 수용 검증을 독립�
 | 960×540 | 1920×1080 화면을 200% 확대했을 때의 **CSS 폭 근사**. 실제 Chrome Zoom 200%가 아님 |
 | 1920×1080 | 동일 |
 
-각 크기에서 중앙 돌의 Enter 착수 차단, ArrowRight로 이동, 빈칸 Enter 1회 처리, 중복 Enter 차단, Home/End 좌표 이동까지 브라우저로 실행합니다. 가로 오버플로 1px 초과 또는 보드/버튼 구조 위반은 CI 실패로 처리합니다. 결과 JSON과 PNG 5장을 GitHub Actions artifact로 7일 보관합니다.
+각 크기에서 중앙 돌의 Enter 착수 차단, ArrowRight로 이동, 빈칸 Enter 1회 처리, 중복 Enter 차단, ArrowUp 이동 및 **Space 착수 1회·중복 방지·Space 페이지 스크롤 차단**, Home/End 좌표 이동까지 브라우저로 실행합니다. 최초 브라우저 테스트([실패 run #41572557115](https://github.com/SuperNova080710/Alkkagi/actions/runs/41572557115))에서 모든 5종 뷰포트의 Enter 착수 콜백 누락을 발견하여 [UI 버그 #253](https://github.com/SuperNova080710/Alkkagi/issues/253)으로 추적하고, `OmokBoardView`에서 Enter/Space를 명시적으로 처리하도록 수정했습니다. 이후 테스트 재실행 결과는 PR #252에 기록합니다. 가로 오버플로 1px 초과 또는 보드/버튼 구조 위반은 CI 실패로 처리합니다. 결과 JSON과 PNG 5장을 GitHub Actions artifact로 7일 보관합니다.
 
 ## 검증 경계
 
