@@ -34,6 +34,45 @@ export function parseRankedDashboard(data: unknown): RankedDashboard {
     losses: row.losses as number, draws: row.draws as number,
   })) };
 }
+// Queue and leaderboard are separate services. A slow or failed leaderboard
+// must never prevent an already matched player from entering their game.
+type RankedLobbyHandlers = {
+  isActive: () => boolean;
+  applyQueue: (queue: QueueState) => void;
+  applyDashboard: (dashboard: RankedDashboard) => void;
+  reportQueueError: (message: string) => void;
+  reportDashboardError: (message: string) => void;
+};
+
+export async function refreshRankedLobbyData(
+  handlers: RankedLobbyHandlers,
+  request: (url: string) => Promise<unknown> = omokRequest,
+): Promise<void> {
+  const queueJob = Promise.resolve()
+    .then(() => request('/api/omok/ranked/queue'))
+    .then(parseQueueState)
+    .then(value => {
+      if (!handlers.isActive()) return;
+      handlers.applyQueue(value);
+      handlers.reportQueueError('');
+    })
+    .catch(cause => {
+      if (handlers.isActive()) handlers.reportQueueError(omokErrorText(cause));
+    });
+  const leaderboardJob = Promise.resolve()
+    .then(() => request('/api/omok/ranked/dashboard'))
+    .then(parseRankedDashboard)
+    .then(value => {
+      if (!handlers.isActive()) return;
+      handlers.applyDashboard(value);
+      handlers.reportDashboardError('');
+    })
+    .catch(cause => {
+      if (handlers.isActive()) handlers.reportDashboardError(omokErrorText(cause));
+    });
+  await Promise.all([queueJob, leaderboardJob]);
+}
+
 export function OmokRankedLobby() {
   const router = useRouter();
   const [queue, setQueue] = useState<QueueState>({ status: 'idle', matchId: null });
@@ -41,6 +80,7 @@ export function OmokRankedLobby() {
   const [pending, setPending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [dashboardError, setDashboardError] = useState('');
   const queued = useRef(false);
   const busy = useRef(false);
   const alive = useRef(true);
@@ -54,14 +94,13 @@ export function OmokRankedLobby() {
 
   const refresh = useCallback(async () => {
     try {
-      const [queueData, dashData] = await Promise.all([
-        omokRequest<unknown>('/api/omok/ranked/queue'),
-        omokRequest<unknown>('/api/omok/ranked/dashboard'),
-      ]);
-      if (!alive.current) return;
-      applyQueue(parseQueueState(queueData));
-      setDashboard(parseRankedDashboard(dashData));
-      setError('');
+      await refreshRankedLobbyData({
+        isActive: () => alive.current,
+        applyQueue,
+        applyDashboard: setDashboard,
+        reportQueueError: setError,
+        reportDashboardError: setDashboardError,
+      });
     } catch (cause) {
       if (alive.current) setError(omokErrorText(cause));
     } finally { if (alive.current) setLoading(false); }
@@ -119,7 +158,7 @@ export function OmokRankedLobby() {
     </div><Link href="/omok" className="arena-button arena-button--outline">오목 로비</Link></header>
     {loading && <p role="status">오목 랭크 정보를 조회하는 중…</p>}
     <div className="arena-omok-ranked-summary">
-      <div><small>나의 오목 RP</small><strong>{dashboard ? dashboard.rating.toLocaleString() + ' RP' : '확인 중'}</strong></div>
+      <div><small>나의 오목 RP</small><strong>{dashboard ? dashboard.rating.toLocaleString() + ' RP' : dashboardError ? '조회 실패' : '확인 중'}</strong></div>
       <div><small>매칭 상태</small><strong role="status" aria-live="polite">
         {queue.status === 'queued' ? '상대 검색 중' : queue.status === 'matched' ? '매칭 완료' : '대기 안 함'}
       </strong></div>
@@ -144,6 +183,7 @@ export function OmokRankedLobby() {
     </p>}
     <section aria-labelledby="omok-ranked-board-title">
       <h2 id="omok-ranked-board-title">오목 랭킹 TOP {dashboard?.leaderboard.length ?? 0}</h2>
+      {dashboardError && <p role="alert" className="arena-omok-live-error">{dashboardError}</p>}
       <div className="arena-omok-ranked-table-scroll">
         <table className="arena-omok-ranked-table">
           <thead><tr><th scope="col">순위</th><th scope="col">플레이어</th><th scope="col">오목 RP</th>
@@ -154,7 +194,7 @@ export function OmokRankedLobby() {
           </tr>)}</tbody>
         </table>
       </div>
-      {!loading && dashboard?.leaderboard.length === 0 &&
+      {!loading && !dashboardError && dashboard?.leaderboard.length === 0 &&
         <p className="arena-omok-panel-hint">아직 오목 랭킹 기록이 없습니다.</p>}
     </section>
   </section>;
