@@ -60,3 +60,18 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-full-stack.sql
           psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-advanced.sql
           psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-ranked-timeout.sql
+
+  quality-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Lint, TypeScript, Vitest, and production build
+        run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
