@@ -33,7 +33,7 @@ export function OmokCasualLobby() {
     }
   }, []);
   useEffect(() => {
-    void loadInvites();
+    queueMicrotask(() => { void loadInvites(); });
     const interval = window.setInterval(() => {
       if (document.visibilityState === 'visible') void loadInvites();
     }, 20000);
