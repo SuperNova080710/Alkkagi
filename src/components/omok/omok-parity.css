@@ -57,15 +57,17 @@
 .arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
 .arena-omok-lobby-grid .arena-mode--omok {height:100%;}
 
-/* Keep the full 15x15 board visible in typical desktop viewports. Board is
-   square; no CSS transform/zoom and no document overflow:hidden trick. */
+/* Keep the 15x15 board within the FULL game page, including ArenaShell header,
+   footer, game back-link, player badges, status and coordinate input. A 480px
+   vertical reserve is calibrated against full-shell 1280x800/1440x900 Chrome QA.
+   No transform/zoom or body overflow:hidden; short/mobile viewports may scroll. */
 .arena-omok-board-stage {position:relative;min-width:0;display:grid;justify-items:center;align-content:start;}
 .arena-omok-match-layout {
   grid-template-columns:minmax(0,1fr) minmax(225px,300px);
   align-items:start;gap:clamp(10px,1.4vw,16px);
 }
 .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
-  width:min(100%,510px,max(250px,calc(100dvh - 360px)));
+  width:min(100%,510px,max(250px,calc(100dvh - 480px)));
   max-width:100%;margin-inline:auto;
 }
 .arena-omok-match-panel {padding:clamp(10px,1.3vw,16px);}
