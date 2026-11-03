@@ -1,0 +1,77 @@
+name: Omok advanced PG17 AI ranked invites integration
+
+on:
+  push:
+    branches: ['test/248-omok-pg17-advanced']
+    paths:
+      - 'supabase/migrations/**'
+      - 'tests/omok-pg17-full-stack.sql'
+      - 'tests/omok-pg17-advanced.sql'
+      - 'tests/omok-pg17-ranked-timeout.sql'
+      - '.github/workflows/omok-pg17-advanced.yml'
+  pull_request:
+    branches: [develop, 'test/248-omok-full-pg17-integration']
+    paths:
+      - 'supabase/migrations/**'
+      - 'tests/omok-pg17-full-stack.sql'
+      - 'tests/omok-pg17-advanced.sql'
+      - 'tests/omok-pg17-ranked-timeout.sql'
+      - '.github/workflows/omok-pg17-advanced.yml'
+permissions:
+  contents: read
+jobs:
+  omok-pg17-advanced:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Verify isolated PostgreSQL 17 and run both test suites
+        shell: bash
+        env:
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGPORT" = "5432"
+          test "$PGDATABASE" = "postgres"
+          version=$(psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')
+          test "$version" -ge 170000
+          test "$version" -lt 180000
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-full-stack.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-advanced.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-ranked-timeout.sql
+
+  quality-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Lint, TypeScript, Vitest, and production build
+        run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
