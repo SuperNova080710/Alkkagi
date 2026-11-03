@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import { OmokChatPanel, OmokMatchPanel } from './omok-match-panels';
+import { OmokRankedMatchMeta } from './omok-ranked-match-meta';
+import { parseQueueState } from './omok-ranked-client';
 import './omok-live.css';
 import {
   isRecord, isUuid, omokErrorText, omokRequest, parseMatch, parseMessages, parseRoom,
@@ -160,6 +162,21 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     } catch (e) { setError(omokErrorText(e)); await load(); }
     finally { lock.current = false; setPending(false); }
   }
+  async function rankedReplay() {
+    if (kind !== 'ranked' || lock.current || match?.status !== 'finished') return;
+    lock.current = true; setPending(true); setError('');
+    try {
+      const response = parseQueueState(await omokRequest<unknown>('/api/omok/ranked/queue', {
+        method: 'POST', body: { intent: 'join' },
+      }));
+      router.push(response.status === 'matched' && response.matchId
+        ? '/omok/ranked/matches/' + response.matchId : '/omok/ranked');
+    } catch (cause) {
+      setError(omokErrorText(cause));
+    } finally {
+      lock.current = false; setPending(false);
+    }
+  }
   async function sendChat(body: string): Promise<boolean> {
     if (chatRequest.current && chatRequest.current.body !== body) {
       setChatError('이전 메시지의 전송 결과가 불확실합니다. 같은 메시지를 먼저 재시도해 주세요.');
@@ -198,9 +215,19 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       status={match.status} winnerId={match.winnerId} finishReason={match.finishReason}
       error={error} pending={pending || !!retryMove} reconnecting={reconnecting}
       rematchReadyCount={readyCount} myRematchVote={myRematchVote}
-      onPlace={propose} onForfeit={forfeit}
+      mode={kind} onPlace={propose} onForfeit={forfeit}
       onRematch={kind === 'casual' && match.roomId ? rematch : undefined}
-      onReturn={() => router.push(kind === 'ranked' ? '/omok/ranked' : '/omok')}/>
+      onRankedReplay={kind === 'ranked' ? rankedReplay : undefined}
+      onReturn={() => router.push(kind === 'ranked' ? '/omok/ranked' : '/omok')}
+      extra={kind === 'ranked'
+        ? <OmokRankedMatchMeta matchId={matchId} currentUserId={currentUserId}/>
+        : undefined}
+      chat={<OmokChatPanel messages={messages.map(m => ({
+        id: m.id, senderId: m.sender_id,
+        senderName: names[m.sender_id] || '플레이어', body: m.body,
+      }))} currentUserId={currentUserId} error={chatError}
+        onSend={sendChat} disabled={reconnecting}/>}
+    />
     {retryMove && <div role="alert" className="arena-omok-live-panel">
       <p>착수 결과가 불확실합니다. 같은 요청 번호로 재시도하거나 최신 서버 상태를 확인해 주세요.</p>
       <button type="button" className="arena-button" disabled={pending}
@@ -208,13 +235,6 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       <button type="button" className="arena-button arena-button--outline"
         onClick={() => void load()}>서버 상태 다시 조회</button>
     </div>}
-    <OmokChatPanel messages={messages.map(m => ({
-      id: m.id, senderId: m.sender_id,
-      senderName: names[m.sender_id] || '플레이어', body: m.body,
-    }))} currentUserId={currentUserId} error={chatError}
-      onSend={sendChat} disabled={reconnecting}/>
-    {kind === 'ranked' && <p className="arena-omok-panel-hint">
-      오목 랭크 점수는 정산 후 랭크 화면에서 확인할 수 있습니다. 기존 알까기 RP와 별개입니다.
-    </p>}
+
   </div>;
 }
