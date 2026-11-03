@@ -45,7 +45,7 @@ v0.2.0 코드는 **main 병합·Vercel Production READY**이나 배포 후 실�
 
 - **오목 15×15 자유룰**(5목 이상 승리, 흑 선공, 금수·무르기 없음)을 두 번째 게임으로 추가하는 목표. 알까기 물리·기존 RP/데이터를 변경하지 않고 새로운 오목 엔진/스키마/Realtime·UI/랭크/AI를 분리합니다.
 - 설계 [Draft PR #231](https://github.com/SuperNova080710/Alkkagi/pull/231)과 순수 오목 엔진 [Draft PR #230](https://github.com/SuperNova080710/Alkkagi/pull/230)은 **현재 검토 중·미병합**입니다. 오목 실제 경기/랭크/AI는 지금 서비스에 구현·배포 완료된 기능이 아닙니다.
-- #220 DB/RLS·#221 2인 오목·#222 AI·#223 독립 RP·#224 로비 및 v0.3.0 RC/QA도 모두 후속 작업입니다.
+- #220 DB·RLS [Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232), #221 2인 오목·채팅·재대결 [Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233), #222 AI [Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)가 별도 브랜치에서 구현되어 **격리 PG17 동시성/Quality CI를 통과했지만 미병합·미배포·운영 마이그레이션 미적용**입니다. #223 오목 독립 RP 및 #224 로비·v0.3.0 RC/QA는 후속입니다.
 - `v0.2.0` [병합 PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)의 Production READY는 실사용 E2E를 대체하지 않습니다. 오목 개발로 기존 0.2.0 QA를 생략하지 않습니다.
 
 ## 3. 품질 검사 단계별 경계
