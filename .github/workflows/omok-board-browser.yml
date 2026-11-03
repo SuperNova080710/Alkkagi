@@ -1,0 +1,89 @@
+name: Omok board real-browser QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/omok-board-browser.yml'
+      - 'scripts/qa/omok-board-browser.mjs'
+      - 'src/components/omok/**'
+      - 'src/app/arena.css'
+      - 'src/app/globals.css'
+      - 'src/app/omok/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omok-ui-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  keyboard-and-viewport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Confirm installed Chromium
+        run: command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Create CI-only client fixture (never committed or deployed)
+        shell: bash
+        run: |
+          mkdir -p src/app/__omok_ui_qa__
+          cat > src/app/__omok_ui_qa__/page.tsx <<'EOF'
+          'use client';
+          import { useEffect, useState } from 'react';
+          import { OmokBoardView, type OmokPosition, type OmokStone } from '@/components/omok/omok-board-view';
+
+          type Cell = OmokStone | null;
+          function initial(): Cell[][] {
+            const board: Cell[][] = Array.from({ length: 15 }, () => Array<Cell>(15).fill(null));
+            board[7][7] = 'black';
+            return board;
+          }
+          export default function OmokQaPage() {
+            const [board, setBoard] = useState<Cell[][]>(initial);
+            const [moves, setMoves] = useState<OmokPosition[]>([]);
+            const [lastMove, setLastMove] = useState<OmokPosition>({ row: 7, col: 7 });
+            useEffect(() => {
+              document.documentElement.dataset.omokQaReady = 'true';
+              return () => { delete document.documentElement.dataset.omokQaReady; };
+            }, []);
+            function place(move: OmokPosition) {
+              if (board[move.row]?.[move.col] !== null) return;
+              setMoves(prev => [...prev, move]);
+              setBoard(prev => prev.map((row, rowNo) =>
+                rowNo === move.row ? row.map((cell, colNo) => colNo === move.col ? 'white' : cell) : row));
+              setLastMove(move);
+            }
+            return <main style={{ padding: 12, minWidth: 0 }}>
+              <h1>오목 보드 브라우저 UI 검사 전용</h1>
+              <OmokBoardView board={board} lastMove={lastMove} stoneToPlace="white"
+                myTurn onPlace={place} />
+              <output id="qa-moves" aria-label="테스트 착수 기록">{JSON.stringify(moves)}</output>
+            </main>;
+          }
+          EOF
+      - name: Build Next.js production fixture
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - name: Verify 15x15 board / Arrow / Enter / Home / End in real Chrome
+        run: node scripts/qa/omok-board-browser.mjs
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          QA_OUTPUT_DIR: artifacts/omok-board-qa
+      - name: Upload non-sensitive browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omok-ui-browser-${{ github.run_id }}
+          path: artifacts/omok-board-qa/
+          retention-days: 7
+          if-no-files-found: warn
