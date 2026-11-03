@@ -2044,3 +2044,35 @@
 .arena-received-invites .arena-received-heading .arena-button {
   white-space: normal;
 }
+
+/* #213: compact XP inside the existing lobby "내 정보" card. */
+.arena-player-summary-copy { min-width: 0; flex: 1 1 auto; }
+.arena-lobby-xp-mini { min-width: 0; margin-top: 6px; }
+.arena-lobby-xp-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.arena-lobby-xp-heading strong { color: var(--arena-forest); font-weight: 900; font-size: 12px; }
+.arena-lobby-xp-heading span { color: var(--arena-muted); overflow-wrap: anywhere; }
+.arena-lobby-xp-progress { display: flex; align-items: center; gap: 6px; min-width: 0; margin-top: 4px; }
+.arena-lobby-xp-progress progress {
+  flex: 1 1 auto;
+  min-width: 18px;
+  width: 100%;
+  height: 8px;
+  border: 1px solid #b6c5a5;
+  border-radius: 999px;
+  overflow: hidden;
+  appearance: none;
+  background: #e7e3d6;
+}
+.arena-lobby-xp-progress progress::-webkit-progress-bar { background: #e7e3d6; border-radius: 999px; }
+.arena-lobby-xp-progress progress::-webkit-progress-value { background: linear-gradient(90deg, #58a96b, #f5cb65); border-radius: 999px; }
+.arena-lobby-xp-progress progress::-moz-progress-bar { background: linear-gradient(90deg, #58a96b, #f5cb65); border-radius: 999px; }
+.arena-lobby-xp-progress > span { flex: 0 0 auto; color: var(--arena-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+.arena-lobby-xp-state { margin-top: 6px; font-size: 11px; line-height: 1.4; color: var(--arena-muted); }
