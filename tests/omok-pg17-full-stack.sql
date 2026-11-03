@@ -38,11 +38,12 @@ insert into auth.users(id) values
 \i supabase/migrations/202610290008_xp_levels_v1.sql
 \i supabase/migrations/202610290009_cosmetics_v1.sql
 
-\echo 'Replay v0.3.0 Omok migrations 001,002,003,004,006'
+\echo 'Replay v0.3.0 Omok migrations 001–006 in order'
 \i supabase/migrations/202611030001_omok_casual_core.sql
 \i supabase/migrations/202611030002_omok_social_and_rematch.sql
 \i supabase/migrations/202611030003_omok_ai_matches.sql
 \i supabase/migrations/202611030004_omok_ranked.sql
+\i supabase/migrations/202611030005_omok_friend_invites.sql
 \i supabase/migrations/202611030006_omok_xp.sql
 
 \echo 'Assert no client table writes, participant-only RLS and allowed RPCs'
@@ -54,7 +55,7 @@ begin
  end if;
  foreach tab in array array[
    'omok_rooms','omok_room_players','omok_matches','omok_moves',
-   'omok_match_messages','omok_rematch_votes','omok_ai_matches',
+   'omok_match_messages','omok_rematch_votes','omok_ai_matches','omok_friend_invites',
    'omok_ratings','omok_ranked_queue','omok_rating_history'
  ] loop
    if to_regclass('public.'||tab) is null then raise exception 'MISSING_TABLE: %',tab; end if;
