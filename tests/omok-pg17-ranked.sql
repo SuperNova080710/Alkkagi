@@ -112,8 +112,7 @@ declare
  current_turn uuid; expiry text; late_error text; worker_pid int;
  waiting boolean:=false; i int;
 begin
- update public.omok_matches set turn_deadline=clock_timestamp()-interval '1 second'
-  where id=p_match and status='active';
+ -- Caller expires the row in a committed transaction before this lock-race.
  select turn_user_id into strict current_turn from public.omok_matches where id=p_match;
  perform dblink_connect('ranked_expire',connection);
  perform dblink_connect('ranked_move',connection);
@@ -161,5 +160,8 @@ begin
  raise notice 'PASS: timeout and move race settled one Elo result';
 end;
 $race$;
+-- Committed independently: do not keep an outer match-row lock while dblink actors contend.
+update public.omok_matches set turn_deadline=clock_timestamp()-interval '1 second'
+  where id=:'match_id'::uuid and status='active';
 select public.verify_omok_ranked_timeout_race(:'match_id'::uuid);
 select 'PASS: Omok ranked PostgreSQL17 concurrent queue, timeout, ACL, Elo isolation' as result;
