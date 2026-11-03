@@ -1,0 +1,42 @@
+/* #244: Omok AI and ranked surfaces; existing Alkkagi CSS untouched. */
+.arena-omok-difficulty {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 18px;padding:0;border:0;min-width:0;}
+.arena-omok-difficulty legend {font-size:16px;font-weight:900;color:#274b36;margin-bottom:12px;}
+.arena-omok-difficulty label {
+  display:grid;gap:8px;align-content:start;min-width:0;min-height:130px;
+  padding:14px;border-radius:14px;border:2px solid #c4c9b4;
+  background:#fff9eb;cursor:pointer;
+}
+.arena-omok-difficulty label.is-selected {border-color:#4b8463;background:#eaf3e2;}
+.arena-omok-difficulty label:focus-within {outline:2px solid #256f9b;outline-offset:2px;}
+.arena-omok-difficulty strong {font-size:18px;}
+.arena-omok-difficulty span {font-size:12px;color:#566c5c;line-height:1.5;}
+.arena-omok-confirm {
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  border:1px solid #adc6a8;border-radius:12px;background:#f2f6e9;padding:12px;
+}
+.arena-omok-confirm p {flex:1 1 100%;font-size:14px;}
+.arena-omok-confirm button {min-height:44px;}
+.arena-omok-ranked-summary {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.arena-omok-ranked-summary > div {
+  display:grid;min-width:0;gap:6px;align-content:center;
+  border-radius:13px;background:#fff9e9;border:1px solid #d9cfaf;padding:16px;
+}
+.arena-omok-ranked-summary small {font-size:12px;color:#53675a;}
+.arena-omok-ranked-summary strong {font-size:clamp(17px,2vw,24px);font-weight:900;overflow-wrap:anywhere;}
+.arena-omok-ranked-table-scroll {overflow-x:auto;max-width:100%;border:1px solid #d7d6bd;border-radius:13px;}
+.arena-omok-ranked-table {width:100%;border-collapse:collapse;min-width:420px;text-align:left;font-variant-numeric:tabular-nums;}
+.arena-omok-ranked-table th,.arena-omok-ranked-table td {padding:10px 12px;border-bottom:1px solid #e4e5d6;white-space:nowrap;}
+.arena-omok-ranked-table th {background:#e9f0df;font-size:12px;color:#375c43;}
+.arena-omok-ranked-table td:nth-child(2) {max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.arena-omok-ranked-table tbody tr:last-child td {border-bottom:0;}
+.arena-omok-ranked-meta {margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.arena-omok-ranked-meta strong {font-size:19px;font-weight:900;}
+.arena-omok-ranked-meta .arena-button {min-height:44px;}
+@media (max-width:580px) {
+  .arena-omok-difficulty {grid-template-columns:minmax(0,1fr);}
+  .arena-omok-difficulty label {min-height:0;}
+  .arena-omok-ranked-summary {grid-template-columns:minmax(0,1fr);}
+}
+@media (prefers-reduced-motion:reduce) {
+  .arena-omok-difficulty label {transition:none;}
+}
