@@ -178,9 +178,14 @@ async function main(){
     if(report.failed)process.exitCode=1;
   }finally{
     if(cdp)cdp.ws.close();
-    for(const child of children.reverse())if(child.exitCode===null)child.kill('SIGTERM');
-    await sleep(120);
-    await rm(dir,{recursive:true,force:true});
+    // Wait for Chrome to release its profile before deleting cache files.
+    for(const child of children.reverse()){
+      if(child.exitCode!==null || child.signalCode!==null)continue;
+      const exited=new Promise(resolve=>child.once('exit',resolve));
+      child.kill('SIGTERM');
+      await Promise.race([exited,sleep(1500)]);
+    }
+    await rm(dir,{recursive:true,force:true,maxRetries:12,retryDelay:250});
   }
 }
 main().catch(e=>{console.error('Omok browser QA error:',e.stack||String(e));process.exitCode=1;});

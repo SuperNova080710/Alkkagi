@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth/user';
 import { ArenaShell } from '@/components/ui/arena';
@@ -25,7 +26,7 @@ export default async function OmokPage() {
           <p className="arena-section-kicker">OMOK ARENA · 15×15</p>
           <h1>오목 아레나</h1>
           <p>검은 돌이 먼저 시작합니다. 가로·세로·대각선으로 다섯 개 이상 연결하면 승리합니다.</p>
-          <span className="arena-omok-notice">오목 일반전 연결 · 랭크와 AI는 별도 화면 연결 전까지 비활성화됩니다.</span>
+          <span className="arena-omok-notice">일반전·AI·랭크 화면 연결 완료 · 실제 이용 가능 여부는 서버 준비 상태에 따라 달라집니다.</span>
         </div>
         <div className="arena-omok-emblem" aria-hidden="true">
           <span/><span/><span/><span/><span/>
@@ -39,8 +40,8 @@ export default async function OmokPage() {
           <p>{mode.description}</p>
           {mode.key === 'casual'
             ? <a className="arena-button" href="#omok-casual-start">{mode.action}</a>
-            : <button type="button" className="arena-button" disabled
-              aria-label={mode.title + ' 준비 중'}>{mode.action} · 준비 중</button>}
+            : <Link href={mode.key === 'ranked' ? '/omok/ranked' : '/omok/ai'}
+                className="arena-button">{mode.action}</Link>}
         </article>)}
       </section>
       <div id="omok-casual-start"><OmokCasualLobby/></div>
