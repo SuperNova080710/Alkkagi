@@ -111,7 +111,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
     try {
       const result = parseAiSnapshot(await omokRequest<unknown>('/api/omok/ai/' + matchId));
       if (sequence.current !== serial) return;
-      setSnapshot(result); setReconnecting(false);
+      setSnapshot(result); setReconnecting(false); setError('');
       if (pendingMove.current && result.turnNo !== pendingMove.current.turnNo) {
         pendingMove.current = null; setRetry(null);
       }
