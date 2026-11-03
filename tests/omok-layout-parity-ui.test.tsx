@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { OmokMatchPanel, type OmokParticipant } from '../src/components/omok/omok-match-panels';
 import { OmokResultOverlay } from '../src/components/omok/omok-result-overlay';
 import { OmokLobbyModes } from '../src/components/omok/omok-lobby-modes';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 
 const me: OmokParticipant = { id: 'me', nickname: '나', stone: 'black' };
 const other: OmokParticipant = { id: 'other', nickname: '친구', stone: 'white' };
