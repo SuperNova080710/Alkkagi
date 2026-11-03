@@ -8,7 +8,7 @@ export function isUuid(value: unknown): value is string {
 
 export function normalizeOmokRoomCode(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const code = value.trim().replace(/[\\s-]/g, '').toUpperCase();
+  const code = value.trim().replace(/[\s-]/g, '').toUpperCase();
   return codeRe.test(code) ? code : null;
 }
 
