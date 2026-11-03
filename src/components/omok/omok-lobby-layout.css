@@ -1,0 +1,45 @@
+/* v0.3 Omok reuses the Alkkagi lobby shell; scope sizing to Omok only. */
+.arena-omok-lobby-page { min-width: 0; }
+.arena-omok-lobby-page .arena-lobby-grid { gap: 12px; margin-top: 12px; }
+.arena-omok-lobby-page .arena-play-column,
+.arena-omok-lobby-page .arena-sidebar { gap: 12px; min-width: 0; }
+.arena-omok-lobby-page .arena-hero--compact {
+  min-height: clamp(150px, 21dvh, 215px);
+  margin-top: 12px;
+}
+.arena-omok-lobby-page .arena-hero--compact .arena-hero-copy { padding: 12px; }
+.arena-omok-lobby-page .arena-hero--compact h1 {
+  font-size: clamp(42px, 5vw, 66px);
+  margin: 5px 0 8px;
+}
+.arena-omok-lobby-page .arena-mode {
+  min-height: clamp(208px, 28dvh, 278px);
+}
+.arena-omok-lobby-page .arena-mode-heading { padding: 13px 14px; }
+.arena-omok-lobby-page .arena-mode-heading h2 { font-size: clamp(22px, 2.2vw, 31px); }
+.arena-omok-lobby-page .arena-mode-heading p { margin-top: 5px; }
+.arena-omok-lobby-page .arena-mode-actions { padding: 10px 6px 6px; }
+.arena-omok-lobby-page .arena-panel { padding: 15px 18px; }
+.arena-omok-lobby-page .arena-panel h2 { margin-bottom: 10px; }
+.arena-omok-lobby-page .arena-omok-overview-panel p + p { margin-top: 6px; }
+.arena-omok-lobby-page .arena-future { padding: 10px 14px; }
+.arena-omok-entry-dialog .arena-omok-live-panel {
+  margin-top: 12px;
+  box-shadow: none;
+}
+.arena-omok-entry-dialog .arena-omok-live-actions { margin-bottom: 14px; }
+@media (min-width: 1024px) and (min-height: 720px) {
+  .arena:has(.arena-omok-lobby-page) .arena-footer { padding: 12px 8px; }
+}
+@media (max-width: 1023px) {
+  .arena-omok-lobby-page .arena-mode { min-height: 0; }
+}
+@media (max-width: 639px) {
+  .arena-omok-lobby-page .arena-hero--compact { min-height: 190px; }
+  .arena-omok-lobby-page .arena-hero--compact h1 { font-size: 46px; }
+  .arena-omok-lobby-page .arena-mode {
+    min-height: 154px;
+  }
+  .arena-omok-lobby-page .arena-mode-heading { padding: 4px 0; }
+  .arena-omok-entry-dialog { padding: 16px; }
+}
