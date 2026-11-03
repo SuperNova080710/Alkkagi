@@ -69,7 +69,8 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   }, [matchId]);
 
   useEffect(() => {
-    void load(); void loadChat();
+    const sequenceRef = sequence;
+    queueMicrotask(() => { void load(); void loadChat(); });
     const poll = window.setInterval(() => {
       if (document.visibilityState === 'visible') { void load(); void loadChat(); }
     }, 4000);
@@ -93,7 +94,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       }, () => { void loadChat(); })
       .subscribe(state => { if (state === 'SUBSCRIBED') refresh(); });
     return () => {
-      sequence.current++;
+      sequenceRef.current++;
       window.clearInterval(poll);
       window.removeEventListener('focus', refresh);
       window.removeEventListener('online', refresh);
