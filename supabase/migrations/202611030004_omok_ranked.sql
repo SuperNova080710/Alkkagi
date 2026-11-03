@@ -66,6 +66,12 @@ create policy omok_history_self on public.omok_rating_history for select to auth
 create function private.omok_refresh_turn_deadline()
 returns trigger language plpgsql security definer set search_path='' as $$
 begin
+  -- A winning move is still late if it arrives after the deadline.
+  if tg_op='UPDATE' and new.mode='ranked'
+    and new.turn_no is distinct from old.turn_no
+    and old.turn_deadline<=clock_timestamp() then
+    raise exception 'TURN_EXPIRED';
+  end if;
   if new.mode<>'ranked' or new.status<>'active' then
     new.turn_deadline:=null;
   elsif tg_op='INSERT' then
