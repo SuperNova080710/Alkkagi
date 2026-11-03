@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { ArenaPanel } from '@/components/ui/arena';
+import { ReceivedRoomInvites } from '@/components/rooms/received-room-invites';
 import { dmConversationPath } from '@/components/messages/message-api';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import { FriendApiError, friendActionRequest, friendErrorMessage, friendMutation, type FriendAction } from './friend-api';
@@ -15,7 +16,7 @@ const details = {
   block: '친구 관계와 대기 요청이 해제되고 서로 새 친구 요청을 보낼 수 없게 됩니다. 기존 거절 요청의 대기 시간은 유지됩니다.',
   unblock: '차단만 해제합니다. 이전 친구 관계와 요청은 자동 복구되지 않습니다.',
 };
-export function FriendsView({ messagesEnabled = false }: { messagesEnabled?: boolean } = {}) {
+export function FriendsView({ messagesEnabled = false, roomInvitesEnabled = false }: { messagesEnabled?: boolean; roomInvitesEnabled?: boolean } = {}) {
   const { data, error: loadError, loading, retry } = usePlayerResource<FriendsData>('/api/friends');
   const [action, setAction] = useState<FriendAction | null>(null);
   const [pending, setPending] = useState(false);
@@ -42,6 +43,7 @@ export function FriendsView({ messagesEnabled = false }: { messagesEnabled?: boo
     <div className="arena-friends-toolbar"><Link href="/players" className="arena-button">플레이어 찾아보기 ›</Link>{messagesEnabled && <Link href="/messages" className="arena-button arena-button--outline">메신저 ›</Link>}<button className="arena-button arena-button--outline" disabled={loading || pending} onClick={() => { setMessage(''); retry(); }}>목록 새로고침</button></div>
     <p role="status" className="arena-directory-status">{loading ? '친구 목록을 불러오고 있어요…' : message}</p>
     {loadError && <div className="arena-directory-feedback"><p role="alert">친구 목록을 불러오지 못했습니다. 기능 준비 중이거나 일시적인 오류일 수 있습니다.</p><button className="arena-button" onClick={retry}>다시 시도</button></div>}
+    {roomInvitesEnabled && <ReceivedRoomInvites/>}
     {data && <div className="arena-friends-grid">
       <ArenaPanel title={`친구 (${data.friends.length})`}><ul className="arena-friends-list">{data.friends.map(person => <li key={person.id}><Link className="arena-friend-name" href={`/players/${person.id}`}>{person.nickname}</Link><div className="arena-friend-actions">{messagesEnabled && <Link href={dmConversationPath(person.id)}>메시지</Link>}<button onClick={() => choose({ kind: 'remove', ...person })}>친구 해제</button><button onClick={() => choose({ kind: 'block', ...person })}>차단</button></div></li>)}</ul>{!data.friends.length && <p className="arena-muted">아직 친구가 없습니다. 플레이어를 찾아 요청을 보내 보세요.</p>}</ArenaPanel>
       <ArenaPanel title={`받은 요청 (${data.incoming.length})`}><ul className="arena-friends-list">{data.incoming.map(request => <li key={request.id}><Link className="arena-friend-name" href={`/players/${request.userId}`}>{request.nickname}</Link><div className="arena-friend-actions"><button onClick={() => choose({ kind: 'accept', id: request.id, nickname: request.nickname })}>수락</button><button onClick={() => choose({ kind: 'reject', id: request.id, nickname: request.nickname })}>거절</button></div></li>)}</ul>{!data.incoming.length && <p className="arena-muted">받은 친구 요청이 없습니다.</p>}</ArenaPanel>

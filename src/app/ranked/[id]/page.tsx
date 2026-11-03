@@ -37,6 +37,7 @@ export default async function RankedMatchPage({params}:{params:Promise<{id:strin
    <span className="rounded-lg bg-amber-900/40 px-4 py-2 text-sm font-semibold text-amber-200">랭크 포인트 대전</span>
   </div>
   <GameBoard key={match.id} match={{...match,board_state:match.board_state}} userId={user.id}
-   roomId={id} players={players} rematchReadyCount={0} myRematchVote={false} shots={shots} messages={messages} rating={ratingData} mode="ranked"/>
+   roomId={id} players={players} rematchReadyCount={0} myRematchVote={false} shots={shots} messages={messages} rating={ratingData} mode="ranked"
+ cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>
  </main></div>;
 }

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const { maybeSingle, eq } = vi.hoisted(() => ({ maybeSingle: vi.fn(), eq: vi.fn() }));
@@ -10,6 +10,7 @@ vi.mock('@/components/profile/nickname-form', () => ({ NicknameForm: ({ initial 
 import ProfilePage from '../src/app/profile/page';
 
 describe('signed-in profile recovery', () => {
+  afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => { vi.clearAllMocks(); eq.mockReturnValue({ maybeSingle }); });
 
   it('retries the protected profile page instead of sending a valid session to login', async () => {
@@ -41,4 +42,21 @@ describe('signed-in profile recovery', () => {
     expect(html).toContain('action="/profile"');
     expect(html).toContain('href="/lobby"');
   });
+  it('does not call enabled XP and cosmetics features pending', async () => {
+    maybeSingle.mockResolvedValue({ data: { nickname: '테스트', rating: 1100 }, error: null });
+    vi.stubEnv('EXPERIENCE_UI_ENABLED', 'true');
+    vi.stubEnv('COSMETICS_UI_ENABLED', 'true');
+    const enabled = renderToStaticMarkup(await ProfilePage());
+    expect(enabled).not.toContain('앞으로 만날 기능');
+    expect(enabled).not.toContain('알과 캐릭터 꾸미기</p>');
+    vi.stubEnv('COSMETICS_UI_ENABLED', 'false');
+    const partial = renderToStaticMarkup(await ProfilePage());
+    expect(partial).toContain('앞으로 만날 기능');
+    expect(partial).toContain('알과 캐릭터 꾸미기</p>');
+    expect(partial).not.toContain('경험치와 레벨 ·');
+    vi.stubEnv('EXPERIENCE_UI_ENABLED', 'false');
+    const disabled = renderToStaticMarkup(await ProfilePage());
+    expect(disabled).toContain('경험치와 레벨 · 알과 캐릭터 꾸미기');
+  });
+
 });

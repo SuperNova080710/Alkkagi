@@ -1,4 +1,6 @@
 import { getTurnMessage, type DisplayPlayer, type IdentityMatch } from '@/lib/game/player-identity';
+import { CosmeticPreview } from '@/components/cosmetics/cosmetic-preview';
+import type { MatchCosmeticLooks } from './use-match-cosmetics';
 
 type Props = {
  match: IdentityMatch;
@@ -8,10 +10,12 @@ type Props = {
  animating: boolean;
  pending: boolean;
  remaining: number | null;
+ cosmetics?: MatchCosmeticLooks;
+ cosmeticsEnabled?: boolean;
 };
 
 export function GameIdentityHeading({
- match, viewerId, players, mode, animating, pending, remaining,
+ match, viewerId, players, mode, animating, pending, remaining, cosmetics, cosmeticsEnabled = false,
 }: Props) {
  const message = getTurnMessage(match, viewerId, players, { animating, pending, remaining });
  return <div className="game-screen-heading flex items-center justify-between gap-3">
@@ -30,6 +34,9 @@ export function GameIdentityHeading({
       (player.isMe ? 'game-player-card--mine' : 'border-slate-700 bg-slate-900/80')}
      aria-label={`${player.isMe ? '내 알' : '상대 알'}: ${player.nickname}, ${player.colorName}, ${seat}, ${player.startSide} 시작, ${player.remaining}개 남음, ${turnBadge}`}>
      <div className="flex items-center gap-1.5 text-xs font-bold">
+      {cosmeticsEnabled && <span className="game-avatar-cosmetic" aria-hidden="true">
+       <CosmeticPreview code={cosmetics?.[player.id]?.avatarCode ?? 'avatar-classic'} slot="avatar" compact/>
+      </span>}
       <span className="game-player-dot shrink-0" style={{ backgroundColor: player.color }}/>
       <span className="truncate">{player.isMe ? '내 알' : '상대 알'} · {player.colorName} · {seat}</span>
      </div>

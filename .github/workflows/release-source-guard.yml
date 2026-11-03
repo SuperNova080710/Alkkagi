@@ -1,0 +1,44 @@
+name: Release source guard
+
+# Required on main: do NOT add path filters or a job-level if condition.
+# A skipped required job is considered successful by GitHub.
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  release-source-guard:
+    name: release-source-guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # Never checkout or execute PR code; untrusted GitHub strings go via env.
+      - name: Validate pull request source for main
+        shell: bash
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          TARGET_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$PR_BASE" == 'develop' ]]; then
+            echo 'PASS: develop integration PR (release source restriction not applicable)'
+            exit 0
+          fi
+          if [[ "$PR_BASE" != 'main' ]]; then
+            echo "::error::Unexpected pull request target: $PR_BASE"
+            exit 1
+          fi
+          if [[ -z "$TARGET_REPOSITORY" || "$PR_HEAD_REPOSITORY" != "$TARGET_REPOSITORY" ]]; then
+            echo '::error::Release pull request must originate in this repository'
+            exit 1
+          fi
+          if [[ ! "$PR_HEAD" =~ ^release/v(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$ ]]; then
+            echo '::error::Only release/vMAJOR.MINOR.PATCH branches may target main'
+            exit 1
+          fi
+          echo "PASS: approved main PR branch pattern ($PR_HEAD)"

@@ -1,0 +1,128 @@
+name: PostgreSQL 17 backup and restore drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'Optional full 40-character SHA from develop or release/v* (empty = selected ref HEAD)'
+        type: string
+        required: false
+  push:
+    branches: ['feat/ops-pg17-restore-drill', 'chore/ci-release-gates']
+    paths:
+      - '.github/workflows/pg17-backup-restore.yml'
+      - 'tests/pg17-migration-rollout.sql'
+      - 'tests/pg17-backup-source.sql'
+      - 'tests/pg17-backup-restore-assertions.sql'
+      - 'supabase/migrations/**'
+  pull_request:
+    branches: [develop, main]
+    # No paths filter: an app-only release/v* -> main PR MUST run all gates.
+    # The job if-condition below skips unrelated PRs without starting Docker.
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-pg17-restore:
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' &&
+          ((github.base_ref == 'main' && startsWith(github.head_ref, 'release/v')) ||
+           (github.base_ref == 'develop' && startsWith(github.head_ref, 'chore/ci-'))))
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      # Manual dispatch: obtain policy from the trusted default branch first.
+      # The user-provided target_sha is NEVER checked out or executed here.
+      - name: Checkout trusted policy from main
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: .release-policy
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate manual SHA using trusted policy before target checkout
+        if: github.event_name == 'workflow_dispatch'
+        id: validate
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          RELEASE_REF: ${{ github.ref_name }}
+          RELEASE_EVENT_SHA: ${{ github.sha }}
+          RELEASE_TARGET_SHA: ${{ inputs.target_sha }}
+        working-directory: .release-policy
+        run: bash scripts/ci/validate-release-target.sh
+      - name: Remove trusted policy staging checkout
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: rm -rf -- .release-policy
+      - name: Checkout verified target or PR merge commit
+        uses: actions/checkout@v4
+        with:
+          # Never derive a checkout ref directly from unverified user input.
+          ref: ${{ steps.validate.outputs.target_sha || github.sha }}
+          fetch-depth: 0
+      - name: Verify isolated PostgreSQL 17 and restore a custom-format archive
+        shell: bash
+        env:
+          PGHOST: '127.0.0.1'
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: |
+          set -euo pipefail
+          # Never use production connection strings, GitHub environment secrets,
+          # external endpoints, or any database other than these disposable DBs.
+          test "${PGHOST}" = '127.0.0.1'
+          test "${PGPORT}" = '5432'
+          test "${PGUSER}" = postgres
+          test "${PGDATABASE}" = postgres
+          source_db=alkkagi_source
+          restore_db=alkkagi_restored
+          test "${source_db}" != "${restore_db}"
+          test "$PWD" = "$GITHUB_WORKSPACE"
+          archive="$(mktemp -p "$RUNNER_TEMP" alkkagi-restore-XXXXXXXX.dump)"
+          trap 'rm -f "$archive"' EXIT
+
+          # Use the PostgreSQL 17 client FROM the same image as the service:
+          # Ubuntu's distro pg_dump 16 cannot dump a PostgreSQL 17 server.
+          client=(docker run --rm -i --network host
+            -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD
+            -v "$PWD:/workspace:ro" -w /workspace postgres:17)
+          version="$("${client[@]}" psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')"
+          echo "Disposable PostgreSQL server version: $version"
+          test "$version" -ge 170000
+          test "$version" -lt 180000
+          "${client[@]}" pg_dump --version | grep -Eq 'PostgreSQL.*17[.]'
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -c "create database ${source_db}"
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -c "create database ${restore_db}"
+
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$source_db" -f tests/pg17-migration-rollout.sql
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$source_db" -f tests/pg17-backup-source.sql
+          "${client[@]}" pg_dump --format=custom --compress=6 -d "$source_db" > "$archive"
+          test -s "$archive"
+          # Do not publish or upload the archive; it stays only in RUNNER_TEMP.
+          "${client[@]}" pg_restore --list < "$archive" > /dev/null
+          "${client[@]}" pg_restore --exit-on-error --single-transaction -d "$restore_db" < "$archive"
+          "${client[@]}" psql -X -v ON_ERROR_STOP=1 -d "$restore_db" -f tests/pg17-backup-restore-assertions.sql
+          echo 'PASS R5: disposable PG17 archive restores state, grants, policies, triggers, Realtime and RPC behavior'
