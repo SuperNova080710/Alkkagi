@@ -5,7 +5,7 @@ PR #241 리뷰에서 요구한 실제 320px·키보드 수용 검증을 독립�
 
 ## 실행 구조
 - [`.github/workflows/omok-board-browser.yml`](../.github/workflows/omok-board-browser.yml)가 GitHub-hosted runner에서 Node 24/사전 설치된 Chrome을 사용합니다.
-- 빌드 직전에만 `src/app/__omok_ui_qa__/page.tsx`를 작업 디렉터리에 생성합니다. **이 라우트는 Git 커밋에 없으며 Vercel Preview/Production의 실제 소스에도 들어가지 않습니다.**
+- 빌드 직전에만 `src/app/omok-browser-qa-fixture/page.tsx`를 작업 디렉터리에 생성합니다. **이 라우트는 Git 커밋에 없으며 Vercel Preview/Production의 실제 소스에도 들어가지 않습니다.**
 - CI 전용 React Client fixture는 15×15 보드, 중앙 흑돌, 가장 최근 착수 좌표 및 가짜 `onPlace` 이벤트 기록을 제공합니다. 이 이벤트 기록은 브라우저 UI 동작을 관찰하기 위한 것으로 **게임 규칙/서버 정산/낙관적 경기 동작 구현이 아닙니다.**
 - `scripts/qa/omok-board-browser.mjs`는 실제 production `next start` 및 Chrome DevTools Protocol로 아래를 검사합니다.
 
