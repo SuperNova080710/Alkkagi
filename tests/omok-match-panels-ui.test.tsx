@@ -27,7 +27,10 @@ describe('Omok pre-integration presentation panels (#254)', () => {
     expect(html).toContain('참가자 <span>1/2</span>');
     expect(html).toContain('친구 기다리는 중');
     expect(html).toContain('arena-room-seats');
-    expect(html).toContain('arena-waiting--v2');
+    expect(html).toContain('arena-omok-waiting');
+    expect(html).not.toContain('class="arena-waiting--v2 arena-omok-waiting"');
+    expect(html).toContain('arena-invite');
+    expect(html).toContain('arena-button arena-button--gold');
     expect(html).toContain('선공 · 흑돌');
     expect(html).toContain('후공 · 백돌');
     expect(html).toMatch(/disabled=""[^>]*>경기 시작/);
