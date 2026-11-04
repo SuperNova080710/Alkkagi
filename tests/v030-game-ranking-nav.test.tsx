@@ -32,8 +32,8 @@ describe('v0.3 game-aware ranking navigation (#282)', () => {
     vi.stubEnv('OMOK_UI_ENABLED', 'true');
     const html = renderToStaticMarkup(<RankedView nickname="플레이어" dashboard={null}
       queue={<p>대기열</p>}/>);
-    expect(html).toContain('aria-label="게임 선택"');
-    expect(html).toContain('href="/omok"');
+    expect(html).toContain('aria-label="랭킹 게임 선택"');
+    expect(html).toContain('href="/omok/ranked"');
     vi.stubEnv('OMOK_UI_ENABLED', 'false');
     expect(renderToStaticMarkup(<RankedView nickname="플레이어" dashboard={null}
       queue={<p>대기열</p>}/>)).not.toContain('aria-label="게임 선택"');
@@ -53,7 +53,7 @@ describe('v0.3 game-aware ranking navigation (#282)', () => {
       expect(source).toContain('game="omok"');
     }
     const ranked = readFileSync(new URL('../src/app/omok/ranked/page.tsx', import.meta.url), 'utf8');
-    expect(ranked).toContain('<GameSwitcher current="omok"/>');
+    expect(ranked).toContain('<GameSwitcher current="omok" section="ranked"/>');
     expect(ranked).toContain('OMOK_UI_ENABLED');
   });
 });
