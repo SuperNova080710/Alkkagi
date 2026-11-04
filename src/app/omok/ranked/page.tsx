@@ -9,6 +9,6 @@ export default async function OmokRankedPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
   await requireUser();
   return <ArenaShell current="ranked" game="omok" account={<LogoutForm/>}>
-    <div className="arena-omok-overview"><GameSwitcher current="omok"/><OmokRankedLobby/></div>
+    <div className="arena-omok-overview"><GameSwitcher current="omok" section="ranked"/><OmokRankedLobby/></div>
   </ArenaShell>;
 }
