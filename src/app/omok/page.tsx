@@ -1,47 +1,41 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth/user';
-import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
+import { createClient } from '@/lib/supabase/server';
 import { LogoutForm } from '@/components/auth/logout-form';
-import { GameSwitcher } from '@/components/lobby/game-switcher';
-import { OmokLobbyModes } from '@/components/omok/omok-lobby-modes';
-import { OmokLobbyRanking } from '@/components/omok/omok-lobby-ranking';
-import '@/components/omok/omok-lobby-layout.css';
+import { OmokLobbyView, type OmokLobbyData } from '@/components/omok/omok-lobby-view';
+import '@/components/omok/omok-parity.css';
 
 export const dynamic = 'force-dynamic';
 
-/** Omok uses the same hero, three-mode cards, and two-column lobby as Alkkagi. */
+/** Omok UI stays behind the same server-side feature gate; never enables DB features. */
 export default async function OmokPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
-  await requireUser();
-
-  return <ArenaShell current="lobby" account={<LogoutForm />}>
-    <div className="arena-omok-lobby-page">
-      <ArenaHero compact game="omok" />
-      <div className="arena-lobby-grid arena-lobby-grid--multigame">
-        <div className="arena-play-column">
-          <GameSwitcher current="omok" />
-          <OmokLobbyModes />
-          <ArenaPanel title="오목 아레나 · 15×15" className="arena-omok-overview-panel">
-            <p className="arena-muted">검은 돌부터 시작합니다. 가로·세로·대각선으로 다섯 개 이상 연결하면 승리합니다.</p>
-            <p className="arena-muted">일반전은 방을 만들거나 코드로 참여하고, AI·랭크전은 위 버튼에서 바로 시작할 수 있습니다.</p>
-          </ArenaPanel>
-        </div>
-        <aside className="arena-sidebar" aria-label="내 정보와 오목 랭킹">
-          <ArenaPanel title="내 정보">
-            <OmokLobbyRanking />
-            <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
-          </ArenaPanel>
-          <ArenaPanel title="오목 랭킹">
-            <p className="arena-muted">오목 RP는 기존 알까기 RP와 별도로 관리됩니다.</p>
-            <Link href="/omok/ranked" className="arena-text-link">랭킹 및 매칭 보기 <span aria-hidden="true">›</span></Link>
-          </ArenaPanel>
-          <div className="arena-future">
-            <Link href="/friends">친구 <small>친구 관리하기 ›</small></Link>
-            <Link href="/lobby">알까기 <small>알까기 로비로 ›</small></Link>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </ArenaShell>;
+  const user = await requireUser();
+  const db = await createClient();
+  const [profile, casual, ai, ranking] = await Promise.all([
+    db.from('profiles').select('nickname').eq('id', user.id).maybeSingle(),
+    db.from('omok_matches').select('id,room_id,mode').eq('status', 'active')
+      .or(`black_id.eq.${user.id},white_id.eq.${user.id}`)
+      .order('created_at', { ascending: false }).limit(5),
+    db.from('omok_ai_matches').select('id').eq('owner_id', user.id)
+      .eq('status', 'active').order('created_at', { ascending: false }).limit(5),
+    db.rpc('omok_ranked_dashboard'),
+  ]);
+  const raw = ranking.data as { rating?: unknown; leaderboard?: unknown } | null;
+  const leaderboard = Array.isArray(raw?.leaderboard) ? raw.leaderboard.filter((entry): entry is {
+    position: number; nickname: string; rating: number;
+  } => !!entry && typeof entry === 'object' && typeof entry.position === 'number' &&
+    typeof entry.nickname === 'string' && typeof entry.rating === 'number') : [];
+  const data: OmokLobbyData = {
+    nickname: profile.data?.nickname ?? '닉네임 확인 필요',
+    rating: !ranking.error && typeof raw?.rating === 'number' ? raw.rating : null,
+    leaderboard,
+    rankingUnavailable: !!ranking.error || !raw,
+    activeCasual: casual.data ?? [],
+    activeAi: ai.data ?? [],
+    recoveryUnavailable: !!casual.error || !!ai.error,
+  };
+  return <OmokLobbyView data={data} account={<LogoutForm />}
+    friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}
+    cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>;
 }
