@@ -107,7 +107,10 @@ function compare(a,b,width,height){
   check('hero',a.hero,b.hero);
   check('hero title',a.heading,b.heading);
   check('game switcher',a.switcher,b.switcher);
-  check('mode grid',a.modes,b.modes);
+  // The transparent grid container may flex-grow differently to accommodate
+  // the game-specific recovery/sidebar copy below. Only its placement and
+  // width are meaningful; all three visible card/button rectangles are strict.
+  check('mode grid',a.modes,b.modes,['left','top','width']);
   for(let i=0;i<3;i++){
     check('card '+i,a.cards[i],b.cards[i]);
     check('action '+i,a.buttons[i],b.buttons[i]);
