@@ -72,6 +72,14 @@ function metrics(){
     page:document.location.pathname,
     hero:rect(q('.arena-hero')),
     heading:rect(q('.arena-hero h1')),
+    heroCopy:rect(q('.arena-hero-copy')),
+    eyebrow:rect(q('.arena-eyebrow')),
+    tagline:rect(q('.arena-hero-tagline')),
+    titleStyle:q('.arena-hero h1') ? {
+      font:getComputedStyle(q('.arena-hero h1')).fontSize,
+      lineHeight:getComputedStyle(q('.arena-hero h1')).lineHeight,
+      width:getComputedStyle(q('.arena-hero h1')).width,
+    }:null,
     modes:rect(q('.arena-modes')),
     switcher:rect(q('.arena-game-switcher')),
     cards:[...document.querySelectorAll('.arena-modes > .arena-mode')].map(rect),
@@ -153,6 +161,10 @@ async function main(){
       const failures=compare(measured[0],measured[1],width,height);
       results.push({name,width,height,alkkagi:measured[0],omok:measured[1],failures});
       console.log((failures.length?'FAIL ':'PASS ')+name+': '+(failures.join('; ')||'hero+3 cards match within 1.5px'));
+      if(failures.length)console.log('DIAGNOSTIC '+name+' '+JSON.stringify(measured.map(m=>({
+        game:m.page,hero:m.hero,heroCopy:m.heroCopy,eyebrow:m.eyebrow,heading:m.heading,
+        tagline:m.tagline,titleStyle:m.titleStyle,modes:m.modes,scroll:m.doc
+      }))));
     }
     const report={createdAt:new Date().toISOString(),
       policy:'Exact source components, same viewport, hero/cards/buttons DOMRects within 1.5px. Mobile scrolling allowed; standard desktop vertical<=1px.',
