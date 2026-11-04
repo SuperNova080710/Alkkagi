@@ -1,6 +1,6 @@
 {
   "name": "alkkagi",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "브라우저에서 친구와 1:1로 알까기를 즐기고, 랜덤 랭크 매칭과 순위표에서 경쟁하는 온라인 게임 프로젝트입니다.",
   "scripts": {
     "dev": "next dev",
