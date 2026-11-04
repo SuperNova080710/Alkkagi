@@ -44,22 +44,22 @@ export function OmokRoomPanel({
       setCopyFeedback('복사할 수 없습니다. 코드를 직접 선택해 복사해 주세요.');
     }
   }
-  return <section className="arena-waiting--v2 arena-omok-waiting" aria-label="오목 대기실">
+  return <div className="arena-omok-waiting" role="region" aria-label="오목 대기실">
     <header className="game-page-header arena-room-heading">
       <div><p className="arena-section-kicker">CASUAL MATCH · OMOK ARENA</p>
         <h1>친구와 한 판</h1>
         <p className="arena-room-lead">친구를 초대해 흑돌과 백돌로 대결해 보세요.</p>
       </div>
-      <div className="arena-omok-wait-code" aria-label="초대 코드">
+      <div className="arena-invite">
         <p>초대 코드</p>
         <strong aria-label="방 코드">{validCode ? code : '확인 중'}</strong>
         <button type="button" className="arena-button arena-button--outline"
           disabled={!validCode} onClick={() => void copyCode()}>코드 복사</button>
+        <p role="status" aria-live="polite" className="arena-muted">
+          {copyFeedback || '친구에게 코드를 보내 주세요.'}
+        </p>
       </div>
     </header>
-    <p role="status" aria-live="polite" className="arena-omok-wait-copy-status">
-      {copyFeedback || '코드를 공유하거나 친구를 초대해 주세요.'}
-    </p>
     <div className="arena-room-wait-layout">
       <section className="arena-panel arena-room-stage" aria-labelledby="omok-room-stage-heading">
         <div className="arena-room-stage-head">
@@ -72,7 +72,7 @@ export function OmokRoomPanel({
             const mine = player?.id === currentUserId;
             return <li key={seat} className={mine ? 'is-mine' : ''}>
               <span className={'arena-room-seat-number arena-omok-wait-stone arena-omok-wait-stone--'+
-                (seat === 1 ? 'black' : 'white')} aria-hidden="true">{seat === 1 ? '●' : '○'}</span>
+                (seat === 1 ? 'black' : 'white')} aria-hidden="true">{seat === 1 ? '01' : '02'}</span>
               <div>
                 <span className="arena-room-seat-role">{seat === 1 ? '선공 · 흑돌' : '후공 · 백돌'}</span>
                 <strong>{player?.nickname || '친구 기다리는 중'}</strong>
@@ -89,9 +89,10 @@ export function OmokRoomPanel({
         </p>
         {error && <p className="arena-omok-panel-error" role="alert">{error}</p>}
         {isHost && <div className="arena-room-main-action">
-          <ActionButton onClick={onStart} disabled={!ready || pending}>
+          <button type="button" className="arena-button arena-button--gold"
+            onClick={onStart} disabled={!ready || pending || !onStart}>
             {pending ? '처리 중…' : '경기 시작'}
-          </ActionButton>
+          </button>
         </div>}
         <div className="arena-room-leave">
           <ActionButton onClick={onLeave} disabled={pending} secondary>
@@ -101,7 +102,7 @@ export function OmokRoomPanel({
       </section>
       {invitePanel && <aside className="arena-room-side" aria-label="상대 추가">{invitePanel}</aside>}
     </div>
-  </section>;
+  </div>;
 }
 
 export type OmokMatchViewProps = {
