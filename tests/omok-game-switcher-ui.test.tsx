@@ -87,7 +87,8 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     const html = renderToStaticMarkup(await OmokPage());
     expect(auth).toHaveBeenCalledOnce();
     expect(html).toContain('오목 아레나');
-    expect(html).toContain('OMOK ARENA · 15×15');
+    expect(html).toContain('15×15 오목');
+    expect(html).toContain('arena-omok-rules');
     expect(html).toContain('가로·세로·대각선');
     expect(html).toContain('aria-label="오목 대전 방식"');
     expect(html).toContain('href="/lobby"');
