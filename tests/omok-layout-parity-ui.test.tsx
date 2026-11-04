@@ -32,7 +32,8 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     expect(html).toContain('새 방 만들기');
     expect(html).toContain('코드로 참가');
     expect(html).toContain('href="/omok/ranked"');
-    expect(html).toContain('href="/omok/ai"');
+    expect(html).not.toContain('href="/omok/ai"');
+    expect(html).toContain('AI 연습 시작');
     expect(html).not.toContain('href="#omok-casual-start"');
   });
 
