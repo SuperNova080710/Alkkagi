@@ -1,0 +1,78 @@
+name: Omok / Alkkagi same-size lobby Chromium QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [release/v0.3.0, develop]
+    paths:
+      - '.github/workflows/omok-lobby-parity-browser.yml'
+      - 'scripts/qa/omok-lobby-parity.mjs'
+      - 'src/components/lobby/**'
+      - 'src/components/omok/**'
+      - 'src/components/ui/arena.tsx'
+      - 'src/app/arena.css'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omok-lobby-parity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare-lobbies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Confirm Chromium available
+        run: command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Build CI-only matching lobbies
+        shell: bash
+        run: |
+          mkdir -p src/app/omok-lobby-parity-qa/alkkagi src/app/omok-lobby-parity-qa/omok
+          cat > src/app/omok-lobby-parity-qa/alkkagi/page.tsx <<'EOF'
+          import { ArenaModeCard } from '@/components/ui/arena';
+          import { LobbyView, type LobbyData } from '@/components/lobby/lobby-view';
+          const data: LobbyData = { nickname:'테스트', rating:1100, leaderboard:[],
+            rankingUnavailable:false, activeCasual:[], activeAi:[], recoveryUnavailable:false };
+          export default function Page() {
+            return <LobbyView data={data} omokEnabled
+              modes={<div className="arena-modes">
+                {(['casual','ranked','ai'] as const).map(mode=>
+                  <ArenaModeCard key={mode} mode={mode}>
+                    <a className="arena-button" href="/lobby">{mode} 시작 ›</a>
+                  </ArenaModeCard>)}
+              </div>} account={<button type="button">로그아웃</button>}/>;
+          }
+          EOF
+          cat > src/app/omok-lobby-parity-qa/omok/page.tsx <<'EOF'
+          import { OmokLobbyView, type OmokLobbyData } from '@/components/omok/omok-lobby-view';
+          const data: OmokLobbyData = { nickname:'테스트', rating:1100, leaderboard:[],
+            rankingUnavailable:false, activeCasual:[], activeAi:[], recoveryUnavailable:false };
+          export default function Page() {
+            return <OmokLobbyView data={data} account={<button type="button">로그아웃</button>}/>;
+          }
+          EOF
+      - name: Build Next.js production fixtures
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - name: Compare hero/card DOMRects in real Chromium
+        run: node scripts/qa/omok-lobby-parity.mjs
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          QA_OUTPUT_DIR: artifacts/omok-lobby-parity
+      - name: Upload viewport measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omok-lobby-parity-${{ github.run_id }}
+          path: artifacts/omok-lobby-parity/
+          retention-days: 7
+          if-no-files-found: warn

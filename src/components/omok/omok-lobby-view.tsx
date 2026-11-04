@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import '@/components/lobby/lobby-size-parity.css';
+// Direct rendering (including QA) must load Omok art positioning just like /omok.
+import './omok-parity.css';
 import type { ReactNode } from 'react';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
 import { OmokLobbyModes } from './omok-lobby-modes';
+import { LobbyIdentitySummary } from '@/components/lobby/lobby-identity-summary';
 
 export type OmokLobbyData = {
   nickname: string;
@@ -15,21 +19,19 @@ export type OmokLobbyData = {
 };
 
 /** Same 3:1 lobby layout as Alkkagi, with Omok-specific data/links. */
-export function OmokLobbyView({ data, account, friendsEnabled = false, cosmeticsEnabled = false }: {
+export function OmokLobbyView({ data, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false }: {
   data: OmokLobbyData; account?: ReactNode; friendsEnabled?: boolean; cosmeticsEnabled?: boolean;
+  experienceEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
-    <ArenaHero compact game="omok">
-      <p className="arena-omok-hero-quicknote">
-        OMOK ARENA · 15×15 · 검은 돌부터 시작하며 가로·세로·대각선으로 다섯 개 이상 연결하면 승리합니다.
-      </p>
-    </ArenaHero>
+    <ArenaHero compact game="omok"/>
     <div className="arena-lobby-grid arena-lobby-grid--multigame arena-omok-lobby-grid">
       <div className="arena-play-column">
         <GameSwitcher current="omok"/>
         <OmokLobbyModes/>
         <ArenaPanel title="진행 중인 경기" className="arena-recovery">
+          <p className="arena-muted arena-omok-rules">15×15 오목 · 흑돌 선공 · 가로·세로·대각선 다섯 목을 먼저 만드세요.</p>
           {data.recoveryUnavailable &&
             <p role="status" className="arena-muted">오목 진행 중인 경기를 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.</p>}
           {!hasMatches && !data.recoveryUnavailable &&
@@ -48,15 +50,8 @@ export function OmokLobbyView({ data, account, friendsEnabled = false, cosmetics
       </div>
       <aside className="arena-sidebar" aria-label="오목 내 정보와 랭킹">
         <ArenaPanel title="내 정보">
-          <div className="arena-player-summary">
-            <span className="arena-avatar arena-avatar--omok" aria-hidden="true">●</span>
-            <div className="arena-player-summary-copy">
-              <p className="arena-nickname">{data.nickname}</p>
-              <p className="arena-muted">{data.rating === null
-                ? '오목 RP를 불러오지 못했어요'
-                : `${data.rating.toLocaleString('ko-KR')} 오목 RP`}</p>
-            </div>
-          </div>
+          <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game="omok"
+            experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
         <ArenaPanel title="오목 랭킹 TOP 3">

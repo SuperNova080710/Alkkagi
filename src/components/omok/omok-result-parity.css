@@ -1,0 +1,45 @@
+/* #263: Same semantic colors and surface tokens as .arena-match .game-result-card. */
+.arena-omok-board-stage .game-result-overlay.arena-omok-result-overlay {
+  background: #1d2119b3;
+  padding: 12px;
+}
+.arena-omok-result-overlay .game-result-card {
+  color: #504a3d;
+  background: var(--arena-cream);
+  border: 3px solid #dfbf76;
+  border-radius: 20px;
+  box-shadow: var(--arena-shadow);
+}
+.arena-omok-result-overlay .text-slate-400 { color: #6a6051; }
+.arena-omok-result-overlay .text-slate-300,
+.arena-omok-result-overlay .text-slate-100 { color: #504a3d; }
+.arena-omok-result-overlay .text-emerald-300 { color: #17613e; }
+.arena-omok-result-overlay .text-rose-300 { color: #a12e42; }
+.arena-omok-result-overlay .text-amber-200 { color: #79500b; }
+.arena-omok-result-overlay .game-result-card button { min-height: 44px; }
+.arena-omok-result-overlay .game-result-card button.bg-emerald-300 {
+  background: #17613e;
+  color: white;
+  border-radius: 12px;
+}
+.arena-omok-result-overlay .game-result-card button.border-slate-500 {
+  border-color: #cdbb9f;
+  background: #fffdf6;
+  color: #504a3d;
+  border-radius: 12px;
+}
+.arena-omok-result-overlay .game-result-card button:focus-visible {
+  outline: 3px solid #096485;
+  outline-offset: 2px;
+}
+.arena-omok-result-overlay .game-result-card button:disabled { opacity: .55; }
+@media(max-width:639px), (max-height:520px) {
+  /* Follow Alkkagi's narrow screen rule: never trap the result below a small board. */
+  .arena-omok-board-stage .game-result-overlay.arena-omok-result-overlay {
+    position: relative; inset: auto; margin-top: 8px; background: transparent;
+  }
+  .arena-omok-board-stage .arena-omok-result-overlay .game-result-card {max-height:none;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .arena-omok-result-overlay .game-result-card { animation: none; transition:none; }
+}
