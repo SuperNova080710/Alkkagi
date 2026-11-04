@@ -80,6 +80,4 @@ export function ArenaModeCard({ mode, children, game = 'alkkagi' }: {
   </article>;
 }
 
-export function ArenaPanel({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
-  return <section className={`arena-panel ${className}`}><h2>{title}</h2>{children}</section>;
-}
+export { ArenaPanel } from './arena-panel';
