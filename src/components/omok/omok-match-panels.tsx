@@ -143,7 +143,8 @@ export function OmokMatchPanel({
     ? winnerId === null || !winnerId ? '무승부' : winnerId === currentUserId ? '승리' : '패배'
     : null;
 
-  return <section className="arena-omok-panel arena-omok-match-panel" aria-label="오목 경기">
+  return <section className={'arena-omok-panel arena-omok-match-panel' +
+    (mode === 'ranked' ? ' arena-omok-match-panel--ranked' : '')} aria-label="오목 경기">
     <header className="arena-omok-panel-heading">
       <div><p className="arena-section-kicker">OMOK · 15×15</p><h2>{mode === 'ranked' ? '오목 랭크전' : '오목 일반전'}</h2></div>
       <span role="status" className="arena-omok-panel-pill">{finished ? '경기 종료' : reconnecting
@@ -183,7 +184,7 @@ export function OmokMatchPanel({
           <ActionButton onClick={onReturn} secondary>로비로 돌아가기</ActionButton>
         </div>}
         {extra}
-        {chat}
+        {mode === 'casual' ? chat : null}
       </aside>
     </div>
   </section>;
