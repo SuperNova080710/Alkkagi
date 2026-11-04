@@ -102,6 +102,9 @@ export function OmokCasualLobby() {
         </button>
       </form>
     </div>
+    <p className="arena-muted arena-omok-rules">
+      15×15 오목 · 흑돌 선공 · 가로·세로·대각선으로 돌 다섯 개를 먼저 연결하면 승리합니다.
+    </p>
     {error && <p role="alert" className="arena-invite-error">{error}</p>}
     {(inviteError || invites.length > 0) && <section className="arena-omok-live-panel arena-omok-dialog-invites"
       aria-label="받은 오목 초대">
