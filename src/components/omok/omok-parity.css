@@ -24,10 +24,6 @@
   background:radial-gradient(circle at 30% 23%,#fff,#d4cbb6 85%);
 }
 .arena-hero--omok .arena-hero-copy {text-shadow:0 2px 8px #091b16;}
-.arena-hero--omok .arena-omok-hero-quicknote {
-  max-width:min(92vw,650px);margin:6px auto 0;
-  color:#fff2d2;font-size:clamp(10px,1vw,12px);font-weight:700;line-height:1.35;
-}
 .arena-mode--omok .arena-mode-omok-art {
   position:absolute;inset:0;
   background:
@@ -55,7 +51,11 @@
 .arena-omok-entry-dialog .arena-omok-live-panel {margin-top:0;box-shadow:none;}
 .arena-omok-entry-dialog .arena-omok-live-panel .arena-omok-live-heading {gap:6px;}
 .arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
-.arena-omok-lobby-grid .arena-mode--omok {height:100%;}
+.arena-omok-lobby-grid .arena-mode--omok {
+  /* Keep height intrinsic like the Alkkagi ArenaModeCard. */
+  min-height: inherit;
+}
+.arena-omok-rules { font-size: 12px; line-height: 1.4; margin-bottom: 6px; }
 
 /* Keep the 15x15 board within the FULL game page, including ArenaShell header,
    footer, game back-link, player badges, status and coordinate input. A 480px
