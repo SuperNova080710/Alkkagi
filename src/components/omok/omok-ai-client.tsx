@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OmokBoardView, isOmokBoardCells, type OmokBoardCells, type OmokPosition } from './omok-board-view';
 import { OmokResultOverlay } from './omok-result-overlay';
+import { OmokAiModalEntry } from './omok-ai-modal-entry';
 import './omok-parity.css';
 import { isRecord, isUuid, omokErrorText, omokRequest, type OmokClientError } from './omok-client-api';
 import './omok-competitive.css';
@@ -107,6 +108,8 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
   const sequence = useRef(0);
   const lock = useRef(false);
   const pendingMove = useRef<Proposed | null>(null);
+  const replayDialog = useRef<HTMLDialogElement>(null);
+  const [replayPending, setReplayPending] = useState(false);
 
   const refresh = useCallback(async () => {
     const serial = ++sequence.current;
@@ -175,17 +178,9 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
     } catch (cause) { await refresh(); setError(omokErrorText(cause)); }
     finally { lock.current = false; setPending(false); }
   }
-  async function again() {
-    if (!snapshot || lock.current) return;
-    lock.current = true; setPending(true); setError('');
-    try {
-      const result = await omokRequest<unknown>('/api/omok/ai', {
-        method: 'POST', body: { difficulty: snapshot.difficulty },
-      });
-      if (!isRecord(result) || !isUuid(result.matchId)) throw Error('AI_CREATE_INVALID');
-      router.push('/omok/ai/' + result.matchId);
-    } catch (cause) { setError(omokErrorText(cause)); }
-    finally { lock.current = false; setPending(false); }
+  function chooseReplayDifficulty() {
+    if (!snapshot || snapshot.status !== 'finished' || lock.current) return;
+    replayDialog.current?.showModal();
   }
   if (loading && !snapshot) return <p role="status" className="arena-omok-live-panel">AI 대국 정보를 불러오는 중…</p>;
   if (!snapshot) return <section className="arena-omok-live-panel">
@@ -211,7 +206,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
         {finished && <OmokResultOverlay
           outcome={snapshot.winner === 'human' ? '승리' : snapshot.winner === 'ai' ? '패배' : '무승부'}
           mode="ai" finishReason={snapshot.finishReason} pending={pending}
-          error={error} onReplay={() => void again()} onReturn={() => router.push('/omok/ai')}/>}
+          error={error} onReplay={chooseReplayDifficulty} onReturn={() => router.push('/omok')}/>}
       </div>
       <aside className="arena-omok-match-side" aria-label="AI 대국 상태">
         <h3>경기 현황</h3>
@@ -235,5 +230,16 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
         </div>}
       </aside>
     </div>
+    {finished && <dialog ref={replayDialog} className="arena-dialog"
+      aria-labelledby="omok-ai-replay-title"
+      onCancel={event => { if (replayPending) event.preventDefault(); }}>
+      <div className="arena-dialog-heading">
+        <h2 id="omok-ai-replay-title">AI 대전 · 난이도 선택</h2>
+        <button className="arena-close" aria-label="닫기" type="button" disabled={replayPending}
+          onClick={() => { if (!replayPending) replayDialog.current?.close(); }}>×</button>
+      </div>
+      <OmokAiModalEntry key={snapshot.id} initialDifficulty={snapshot.difficulty}
+        onPendingChange={setReplayPending}/>
+    </dialog>}
   </section>;
 }

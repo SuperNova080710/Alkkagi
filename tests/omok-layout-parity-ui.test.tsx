@@ -65,10 +65,14 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     expect(ai).toContain('MATCH RESULT');
     expect(ai).toContain('패배');
     expect(ai).toContain('기권');
-    expect(ai).toContain('같은 난이도로 다시하기');
+    expect(ai).toContain('다시하기 · 난이도 선택');
     expect(ai).not.toContain('RP 변동');
     const source = readFileSync(new URL('../src/components/omok/omok-ai-client.tsx', import.meta.url), 'utf8');
     expect(source).toContain('<OmokResultOverlay');
+    expect(source).toContain('onReplay={chooseReplayDifficulty}');
+    expect(source).toContain('replayDialog.current?.showModal()');
+    expect(source).toContain('initialDifficulty={snapshot.difficulty}');
+    expect(source).not.toContain('async function again()');
     expect(source).toContain("snapshot.winner === 'human'");
     expect(source).not.toContain('calculateWinner');
   });
