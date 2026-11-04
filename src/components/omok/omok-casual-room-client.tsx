@@ -62,8 +62,8 @@ function OmokFriendInvitePicker({ roomId }: { roomId: string }) {
   </section>;
 }
 
-export function OmokCasualRoomClient({ roomId, currentUserId }: {
-  roomId: string; currentUserId: string;
+export function OmokCasualRoomClient({ roomId, currentUserId, invitesEnabled = false }: {
+  roomId: string; currentUserId: string; invitesEnabled?: boolean;
 }) {
   const router = useRouter();
   const [room, setRoom] = useState<RoomSnapshot | null>(null);
@@ -140,7 +140,7 @@ export function OmokCasualRoomClient({ roomId, currentUserId }: {
       hostId={host} currentUserId={currentUserId} pending={pending} error={error}
       onStart={room.status === 'waiting' ? () => void action('start') : undefined}
       onLeave={room.status === 'waiting' ? () => void action('leave') : undefined}/>
-    {room.status === 'waiting' && room.players.length === 1 && host === currentUserId &&
+    {invitesEnabled && room.status === 'waiting' && room.players.length === 1 && host === currentUserId &&
       <OmokFriendInvitePicker roomId={roomId}/>}
     {room.status !== 'waiting' && <div role="status" className="arena-omok-live-panel">
       대기실이 종료되었거나 이미 경기가 시작되었습니다.
