@@ -5,6 +5,7 @@ import { OmokBoardView, type OmokPosition, type OmokStone } from './omok-board-v
 import { OmokResultOverlay } from './omok-result-overlay';
 import './omok-match-panels.css';
 import './omok-parity.css';
+import './omok-waiting-parity.css';
 
 export type OmokParticipant = { id: string; nickname: string; stone: OmokStone };
 export type OmokRoomViewProps = {
@@ -16,6 +17,7 @@ export type OmokRoomViewProps = {
   error?: string | null;
   onStart?: () => void;
   onLeave?: () => void;
+  invitePanel?: ReactNode;
 };
 
 function ActionButton({ children, onClick, disabled = false, secondary = false }: {
@@ -26,7 +28,8 @@ function ActionButton({ children, onClick, disabled = false, secondary = false }
 }
 
 export function OmokRoomPanel({
-  code, players, currentUserId, hostId, pending = false, error, onStart, onLeave,
+  code, players, currentUserId, hostId, pending = false, error,
+  onStart, onLeave, invitePanel,
 }: OmokRoomViewProps) {
   const [copyFeedback, setCopyFeedback] = useState('');
   const isHost = currentUserId === hostId;
@@ -41,37 +44,62 @@ export function OmokRoomPanel({
       setCopyFeedback('복사할 수 없습니다. 코드를 직접 선택해 복사해 주세요.');
     }
   }
-
-  return <section className="arena-omok-panel" aria-label="오목 대기실">
-    <header className="arena-omok-panel-heading">
-      <div><p className="arena-section-kicker">OMOK · CASUAL</p><h2>일반전 대기실</h2></div>
-      <span className="arena-omok-panel-pill" role="status">참가자 {players.length}/2</span>
+  return <section className="arena-waiting--v2 arena-omok-waiting" aria-label="오목 대기실">
+    <header className="game-page-header arena-room-heading">
+      <div><p className="arena-section-kicker">CASUAL MATCH · OMOK ARENA</p>
+        <h1>친구와 한 판</h1>
+        <p className="arena-room-lead">친구를 초대해 흑돌과 백돌로 대결해 보세요.</p>
+      </div>
+      <div className="arena-omok-wait-code" aria-label="초대 코드">
+        <p>초대 코드</p>
+        <strong aria-label="방 코드">{validCode ? code : '확인 중'}</strong>
+        <button type="button" className="arena-button arena-button--outline"
+          disabled={!validCode} onClick={() => void copyCode()}>코드 복사</button>
+      </div>
     </header>
-    <div className="arena-omok-room-code">
-      <div><span>초대 코드</span><strong aria-label="방 코드">{validCode ? code : '확인 중'}</strong></div>
-      <ActionButton onClick={validCode ? () => void copyCode() : undefined} secondary>코드 복사</ActionButton>
-    </div>
-    <p role="status" aria-live="polite" className="arena-omok-panel-hint">
-      {copyFeedback || '상대방에게 코드를 공유해 주세요.'}
+    <p role="status" aria-live="polite" className="arena-omok-wait-copy-status">
+      {copyFeedback || '코드를 공유하거나 친구를 초대해 주세요.'}
     </p>
-    <ol className="arena-omok-players" aria-label="참가자">
-      {players.slice(0, 2).map((player, index) =>
-        <li key={player.id}>
-          <span className={'arena-omok-player-stone arena-omok-player-stone--' + player.stone} aria-hidden="true"/>
-          <span className="arena-omok-player-name">{player.nickname || '플레이어'}{player.id === currentUserId ? ' (나)' : ''}</span>
-          <small>{player.id === hostId ? '방장' : '참가자'}</small>
-          <span className="arena-omok-player-seat">자리 {index + 1}</span>
-        </li>,
-      )}
-      {players.length < 2 && <li className="arena-omok-empty-seat"><span aria-hidden="true">○</span>상대 입장 대기 중</li>}
-    </ol>
-    <p className="arena-omok-panel-hint" role="status">{ready
-      ? isHost ? '두 명이 모였습니다. 방장이 시작할 수 있습니다.' : '방장의 경기 시작을 기다리고 있습니다.'
-      : '두 명이 입장하면 경기를 시작할 수 있습니다.'}</p>
-    {error && <p className="arena-omok-panel-error" role="alert">{error}</p>}
-    <div className="arena-omok-panel-actions">
-      {isHost && <ActionButton onClick={onStart} disabled={!ready || pending}>{pending ? '처리 중…' : '경기 시작'}</ActionButton>}
-      <ActionButton onClick={onLeave} disabled={pending} secondary>방 나가기</ActionButton>
+    <div className="arena-room-wait-layout">
+      <section className="arena-panel arena-room-stage" aria-labelledby="omok-room-stage-heading">
+        <div className="arena-room-stage-head">
+          <h2 id="omok-room-stage-heading">참가자 <span>{players.length}/2</span></h2>
+          <span className="arena-room-status" role="status">{ready ? '시작 준비 완료' : '대기 중'}</span>
+        </div>
+        <ol className="arena-room-seats" aria-label="참가자">
+          {[1, 2].map((seat) => {
+            const player = players[seat - 1];
+            const mine = player?.id === currentUserId;
+            return <li key={seat} className={mine ? 'is-mine' : ''}>
+              <span className={'arena-room-seat-number arena-omok-wait-stone arena-omok-wait-stone--'+
+                (seat === 1 ? 'black' : 'white')} aria-hidden="true">{seat === 1 ? '●' : '○'}</span>
+              <div>
+                <span className="arena-room-seat-role">{seat === 1 ? '선공 · 흑돌' : '후공 · 백돌'}</span>
+                <strong>{player?.nickname || '친구 기다리는 중'}</strong>
+                {mine && <span className="arena-room-self">나</span>}
+                {player?.id === hostId && <span className="arena-room-self">방장</span>}
+              </div>
+            </li>;
+          })}
+        </ol>
+        <p className="arena-room-wait-note" role="status">
+          {ready ? isHost ? '두 명이 모였습니다. 방장이 경기를 시작할 수 있습니다.'
+            : '방장의 경기 시작을 기다리고 있습니다.'
+            : '두 명이 입장하면 경기를 시작할 수 있습니다.'}
+        </p>
+        {error && <p className="arena-omok-panel-error" role="alert">{error}</p>}
+        {isHost && <div className="arena-room-main-action">
+          <ActionButton onClick={onStart} disabled={!ready || pending}>
+            {pending ? '처리 중…' : '경기 시작'}
+          </ActionButton>
+        </div>}
+        <div className="arena-room-leave">
+          <ActionButton onClick={onLeave} disabled={pending} secondary>
+            {isHost ? '방 닫기' : '방 나가기'}
+          </ActionButton>
+        </div>
+      </section>
+      {invitePanel && <aside className="arena-room-side" aria-label="상대 추가">{invitePanel}</aside>}
     </div>
   </section>;
 }
