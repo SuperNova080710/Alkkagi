@@ -63,7 +63,7 @@ describe('v0.3.0 Preview visual feedback: lobby recovery / dialog / waiting room
     expect(html).toContain('arena-room-code-input');
     expect(html).toContain('arena-button arena-button--gold');
     expect(html).toContain('arena-button arena-button--blue');
-    expect(html).toContain('15×15 오목');
+    expect(html).not.toContain('arena-omok-rules');
     const css = readFileSync(new URL('../src/components/omok/omok-parity.css', import.meta.url), 'utf8');
     expect(css).not.toContain('.arena-omok-entry-dialog');
   });
