@@ -87,7 +87,7 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     const panel = readFileSync(new URL('../src/components/omok/omok-match-panels.tsx', import.meta.url), 'utf8');
     expect(panel).toContain('arena-omok-board-stage');
     expect(panel).toContain('{extra}');
-    expect(panel).toContain('{chat}');
+    expect(panel).toContain("{mode === 'casual' ? chat : null}");
     const rankedPage = readFileSync(
       new URL('../src/app/omok/ranked/matches/[id]/page.tsx', import.meta.url), 'utf8');
     expect(rankedPage).not.toContain('<OmokRankedMatchMeta');
