@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { isRecord, isUuid, omokErrorText, omokRequest } from './omok-client-api';
 import './omok-competitive.css';
 
-type Difficulty = 'easy' | 'normal' | 'hard';
+export type Difficulty = 'easy' | 'normal' | 'hard';
 const options: { value: Difficulty; label: string; hint: string }[] = [
   { value: 'easy', label: '쉬움', hint: '기본 규칙과 착수를 연습합니다.' },
   { value: 'normal', label: '보통', hint: '공격과 방어를 함께 연습합니다.' },
@@ -23,11 +23,12 @@ export async function createOmokAiMatch(
 }
 
 /** Starts the existing server-backed AI match without an intermediate room. */
-export function OmokAiModalEntry({ onPendingChange }: {
+export function OmokAiModalEntry({ onPendingChange, initialDifficulty = 'normal' }: {
   onPendingChange?: (pending: boolean) => void;
+  initialDifficulty?: Difficulty;
 }) {
   const router = useRouter();
-  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const lock = useRef(false);
