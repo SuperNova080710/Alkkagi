@@ -68,7 +68,7 @@ export function OmokRoomPanel({
         </div>
         <ol className="arena-room-seats" aria-label="참가자">
           {[1, 2].map((seat) => {
-            const player = players[seat - 1];
+            const player = players.find(p => p.stone === (seat === 1 ? 'black' : 'white'));
             const mine = player?.id === currentUserId;
             return <li key={seat} className={mine ? 'is-mine' : ''}>
               <span className={'arena-room-seat-number arena-omok-wait-stone arena-omok-wait-stone--'+
