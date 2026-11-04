@@ -201,7 +201,9 @@ describe('protected AI/ranked pages and UI boundaries', () => {
     const css = readFileSync(new URL('../src/components/omok/omok-competitive.css',import.meta.url),'utf8');
     expect(css).toContain('max-width:580px');
     expect(css).toContain('min-height:44px');
-    expect(css).toContain('overflow-x:auto');
+    expect(css).toContain('overflow-x:hidden');
+    expect(css).toContain('overflow-y:auto');
+    expect(css).not.toContain('min-width:560px');
     expect(css).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
   });
 });
