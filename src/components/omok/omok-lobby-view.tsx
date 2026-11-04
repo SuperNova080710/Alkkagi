@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
+import { LobbyIdentitySummary } from '@/components/lobby/lobby-identity-summary';
 import { OmokLobbyModes } from './omok-lobby-modes';
 
 export type OmokLobbyData = {
@@ -15,8 +16,9 @@ export type OmokLobbyData = {
 };
 
 /** Same 3:1 lobby layout as Alkkagi, with Omok-specific data/links. */
-export function OmokLobbyView({ data, account, friendsEnabled = false, cosmeticsEnabled = false }: {
+export function OmokLobbyView({ data, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false }: {
   data: OmokLobbyData; account?: ReactNode; friendsEnabled?: boolean; cosmeticsEnabled?: boolean;
+  experienceEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
@@ -48,15 +50,8 @@ export function OmokLobbyView({ data, account, friendsEnabled = false, cosmetics
       </div>
       <aside className="arena-sidebar" aria-label="오목 내 정보와 랭킹">
         <ArenaPanel title="내 정보">
-          <div className="arena-player-summary">
-            <span className="arena-avatar arena-avatar--omok" aria-hidden="true">●</span>
-            <div className="arena-player-summary-copy">
-              <p className="arena-nickname">{data.nickname}</p>
-              <p className="arena-muted">{data.rating === null
-                ? '오목 RP를 불러오지 못했어요'
-                : `${data.rating.toLocaleString('ko-KR')} 오목 RP`}</p>
-            </div>
-          </div>
+          <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game="omok"
+            experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
         <ArenaPanel title="오목 랭킹 TOP 3">

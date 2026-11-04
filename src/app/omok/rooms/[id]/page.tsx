@@ -13,7 +13,9 @@ export default async function OmokRoomPage({ params }: { params: Promise<{ id: s
   return <ArenaShell current="lobby" account={<LogoutForm/>}>
     <div className="arena-omok-overview arena-omok-live-stack">
       <Link href="/omok" className="arena-button arena-button--outline">← 오목 로비</Link>
-      <OmokCasualRoomClient roomId={id} currentUserId={user.id}/>
+      <OmokCasualRoomClient roomId={id} currentUserId={user.id}
+        invitesEnabled={process.env.FRIENDS_UI_ENABLED === 'true' &&
+          process.env.ROOM_INVITES_UI_ENABLED === 'true'}/>
     </div>
   </ArenaShell>;
 }

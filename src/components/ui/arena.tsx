@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 export function ArenaShell({ children, current, account }: {
   children: ReactNode;
-  current?: 'lobby' | 'ranked' | 'profile' | 'players' | 'friends' | 'cosmetics';
+  current?: 'lobby' | 'ranked' | 'profile' | 'players' | 'friends' | 'messages' | 'cosmetics';
   account?: ReactNode;
 }) {
   return <div className="arena">
@@ -19,6 +19,8 @@ export function ArenaShell({ children, current, account }: {
           <Link href="/ranked" aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
           <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
           <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
+          {process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true' &&
+            <Link href="/messages" aria-current={current === 'messages' ? 'page' : undefined}>메신저</Link>}
           <Link href="/profile" aria-current={current === 'profile' ? 'page' : undefined}>내 프로필</Link>
           {process.env.COSMETICS_UI_ENABLED === 'true' && <Link href="/cosmetics" aria-current={current === 'cosmetics' ? 'page' : undefined}>꾸미기</Link>}
         </nav>

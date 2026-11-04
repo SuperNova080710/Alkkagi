@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
-import { LobbyExperienceMini } from './lobby-experience-mini';
+import { LobbyIdentitySummary } from './lobby-identity-summary';
 import { GameSwitcher } from './game-switcher';
 
 export type LobbyData = {
@@ -35,7 +35,8 @@ export function LobbyView({ data, modes, account, friendsEnabled = false, cosmet
       </div>
       <aside className="arena-sidebar" aria-label="내 정보와 랭킹">
         <ArenaPanel title="내 정보">
-          <div className="arena-player-summary"><span className="arena-avatar" aria-hidden="true">●</span><div className="arena-player-summary-copy"><p className="arena-nickname">{data.nickname}</p><p className="arena-muted">{data.rating === null ? 'RP를 불러오지 못했어요' : `${data.rating.toLocaleString('ko-KR')} RP`}</p>{experienceEnabled && <LobbyExperienceMini/>}</div></div>
+          <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game="alkkagi"
+            experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
         <ArenaPanel title="랭킹 TOP 3">
