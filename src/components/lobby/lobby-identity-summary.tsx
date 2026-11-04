@@ -1,5 +1,6 @@
 'use client';
 
+import './lobby-identity-summary.css';
 import { LobbyExperienceMini } from '@/components/lobby/lobby-experience-mini';
 import { CosmeticPreview } from '@/components/cosmetics/cosmetic-preview';
 import { isCosmeticInventory } from '@/components/cosmetics/cosmetic-api';
