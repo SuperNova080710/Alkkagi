@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function OmokAiPage() {
   if (process.env.OMOK_UI_ENABLED !== 'true') notFound();
   await requireUser();
-  return <ArenaShell current="lobby" account={<LogoutForm/>}>
+  return <ArenaShell current="lobby" game="omok" account={<LogoutForm/>}>
     <div className="arena-omok-overview"><OmokAiLobby/></div>
   </ArenaShell>;
 }
