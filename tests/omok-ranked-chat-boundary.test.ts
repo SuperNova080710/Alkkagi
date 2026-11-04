@@ -5,7 +5,7 @@ const gate = vi.hoisted(() => ({
   mode: 'ranked' as 'ranked' | 'casual',
   member: true,
   rpc: vi.fn(async () => ({ data: { id: 'bbbbbbbb-0000-4000-8000-bbbbbbbbbbbb' }, error: null })),
-  verified: vi.fn(async () => ({ id: 'aaaaaaaa-0000-4000-8000-aaaaaaaaaaaa' })),
+  verified: vi.fn(async (): Promise<{ id: string } | null> => ({ id: 'aaaaaaaa-0000-4000-8000-aaaaaaaaaaaa' })),
   messageQueries: vi.fn(),
 }));
 
