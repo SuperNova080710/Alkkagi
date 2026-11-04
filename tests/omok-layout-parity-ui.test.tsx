@@ -79,7 +79,7 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
 
   it('keeps chat and real ranked settlement beside the board, not below it', () => {
     const client = readFileSync(new URL('../src/components/omok/omok-match-client.tsx', import.meta.url), 'utf8');
-    expect(client).toContain('chat={<OmokChatPanel');
+    expect(client).toContain('chat={chatEnabled ? <OmokChatPanel');
     expect(client).toContain('<OmokRankedMatchMeta');
     expect(client).toContain('onRankedReplay=');
     expect(client).toContain('parseQueueState');
