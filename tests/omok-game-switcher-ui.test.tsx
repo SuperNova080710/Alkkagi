@@ -102,7 +102,8 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('일반전');
     expect(html).toContain('AI 대전');
     expect(html).toContain('랭크전');
-    expect(html).toContain('href="/omok/ai"');
+    expect(html).not.toContain('href="/omok/ai"');
+    expect(html).toContain('AI 연습 시작');
     expect(html).toContain('href="/omok/ranked"');
     expect(html).not.toContain('준비 중</button>');
     expect(html).toContain('arena-lobby-grid arena-lobby-grid--multigame');
