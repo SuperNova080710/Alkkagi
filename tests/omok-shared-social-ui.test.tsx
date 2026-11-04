@@ -11,6 +11,9 @@ describe('#269 shared social navigation and safe Omok invitation', () => {
     expect(html).toContain('href="/friends"');
     expect(html).toContain('href="/messages"');
     expect(html).toContain('href="/profile"');
+    const messages = renderToStaticMarkup(<ArenaShell current="messages">메신저</ArenaShell>);
+    expect(messages).toContain('href="/messages" aria-current="page"');
+    expect(messages).not.toContain('href="/friends" aria-current="page"');
   });
   it('hides messenger when either feature gate is disabled', () => {
     vi.stubEnv('FRIENDS_UI_ENABLED', 'false');
