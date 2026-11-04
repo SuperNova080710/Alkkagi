@@ -6,8 +6,8 @@
   padding: 0;
   color: var(--arena-ink);
 }
-.arena-omok-waiting .game-page-header { margin-top: 0; }
-.arena-omok-waiting .arena-room-wait-layout { margin-top: 10px; }
+.arena-omok-waiting .game-page-header { margin-top: 8px; }
+.arena-omok-waiting .arena-room-wait-layout { margin-top: 16px; }
 .arena-omok-waiting .arena-room-stage { min-width: 0; }
 .arena-omok-waiting .arena-room-seats li { min-width: 0; }
 .arena-omok-waiting .arena-room-seat-number.arena-omok-wait-stone--black {
@@ -18,16 +18,8 @@
   color: #37332a; background: radial-gradient(circle at 30% 22%,#fff,#d8c9ad 80%);
   border-color: #fff; box-shadow: 0 3px 0 #8c806b;
 }
-.arena-omok-wait-code {display:grid; grid-template-columns:minmax(0,1fr) auto;align-items:center;
-  gap:4px 12px;max-width:100%;min-width:0;border:1px solid var(--arena-line);
-  background:#fff9ec;border-radius:14px;padding:8px 12px;}
-.arena-omok-wait-code p {grid-column:1/-1;font-size:12px;font-weight:800;color:var(--arena-muted);}
-.arena-omok-wait-code strong {min-width:0;font-weight:900;font-size:clamp(16px,2vw,25px);letter-spacing:.08em;overflow-wrap:anywhere;user-select:all;}
-.arena-omok-wait-code .arena-button {min-height:44px;}
-.arena-omok-wait-copy-status {color:var(--arena-muted);font-size:12px;margin:6px 0;}
 .arena-omok-waiting .arena-room-main-action .arena-button {width:100%;min-height:44px;}
 .arena-omok-waiting .arena-room-leave .arena-button {min-height:44px;}
-.arena-omok-waiting .arena-room-side .arena-omok-live-panel {margin:0;padding:16px;box-shadow:none;background:transparent;border:0;}
 .arena-omok-waiting .arena-room-side .arena-omok-live-actions {min-width:0;}
 @media(max-width:760px){.arena-omok-waiting .arena-room-wait-layout {grid-template-columns:minmax(0,1fr);}
   .arena-omok-waiting .arena-room-seats{grid-template-columns:repeat(2,minmax(0,1fr));}}
@@ -36,5 +28,4 @@
   .arena-omok-waiting .arena-room-stage {padding:14px;}
   .arena-omok-waiting .arena-room-seats {grid-template-columns:minmax(0,1fr);}
   .arena-omok-waiting .arena-room-seats li {min-height:78px;}
-  .arena-omok-wait-code {width:100%;}
 }
