@@ -2,11 +2,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-export function ArenaShell({ children, current, account }: {
+export function ArenaShell({ children, current, account, game = 'alkkagi' }: {
   children: ReactNode;
   current?: 'lobby' | 'ranked' | 'profile' | 'players' | 'friends' | 'messages' | 'cosmetics';
   account?: ReactNode;
+  game?: 'alkkagi' | 'omok';
 }) {
+  const omokEnabled = process.env.OMOK_UI_ENABLED === 'true';
+  const currentGame = game === 'omok' && omokEnabled ? 'omok' : 'alkkagi';
+  const lobbyHref = currentGame === 'omok' ? '/omok' : '/lobby';
+  const rankedHref = currentGame === 'omok' ? '/omok/ranked' : '/ranked';
   return <div className="arena">
     <a className="arena-skip" href="#arena-content">본문으로 이동</a>
     <div className="arena-wrap">
@@ -15,8 +20,8 @@ export function ArenaShell({ children, current, account }: {
           <span>ALKKAGI</span><span>ARENA</span>
         </Link>
         <nav aria-label="주요 메뉴" className="arena-nav">
-          <Link href="/lobby" aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
-          <Link href="/ranked" aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
+          <Link href={lobbyHref} aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
+          <Link href={rankedHref} aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
           <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
           <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
           {process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true' &&
