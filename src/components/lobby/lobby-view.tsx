@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import './lobby-size-parity.css';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
 import { LobbyExperienceMini } from './lobby-experience-mini';
