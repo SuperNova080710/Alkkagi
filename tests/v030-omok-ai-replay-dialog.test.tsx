@@ -11,7 +11,7 @@ describe('#289 replay AI match with editable difficulty', () => {
     const html = renderToStaticMarkup(<OmokAiModalEntry initialDifficulty={difficulty}/>);
     expect(html).toContain('AI 난이도 선택');
     expect(html).toContain('AI 대전 시작');
-    const checkedInput = html.match(/<input[^>]+checked=""/g) ?? [];
+    const checkedInput = html.match(/<input[^>]+checked=""[^>]*>/g) ?? [];
     expect(checkedInput).toHaveLength(1);
     expect(checkedInput[0]).toContain('value="' + difficulty + '"');
   });
