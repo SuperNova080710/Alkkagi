@@ -24,7 +24,7 @@ describe('Omok pre-integration presentation panels (#254)', () => {
     const html = room([me]);
     expect(html).toContain('오목 대기실');
     expect(html).toContain('ABCD12');
-    expect(html).toContain('참가자 1/2');
+    expect(html).toContain('참가자 <span>1/2</span>');
     expect(html).toContain('친구 기다리는 중');
     expect(html).toContain('arena-room-seats');
     expect(html).toContain('arena-waiting--v2');
@@ -37,7 +37,7 @@ describe('Omok pre-integration presentation panels (#254)', () => {
 
   it('shows both players and lets host propose start with ready room', () => {
     const html = room([me, other]);
-    expect(html).toContain('참가자 2/2');
+    expect(html).toContain('참가자 <span>2/2</span>');
     expect(html).toContain('두 번째 참가자');
     expect(html).toContain('두 명이 모였습니다');
     expect(html).not.toMatch(/disabled=""[^>]*>경기 시작/);
