@@ -38,7 +38,7 @@ export function OmokResultOverlay({
   const replayLabel = mode === 'casual'
     ? myRematchVote ? '상대 수락 대기 중' : '재도전 · 다시하기'
     : mode === 'ranked' ? '재도전 · 새 랭크 매칭'
-      : '같은 난이도로 다시하기';
+      : '다시하기 · 난이도 선택';
   return <div className="game-result-overlay arena-omok-result-overlay absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-slate-950/70 p-3"
     aria-label="오목 경기 결과">
     <div ref={card} tabIndex={-1}
