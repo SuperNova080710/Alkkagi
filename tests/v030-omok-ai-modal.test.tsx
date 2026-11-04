@@ -26,7 +26,8 @@ describe('v0.3 Omok AI direct-start dialog (#284)', () => {
   it('creates the existing server-backed match with the selected difficulty', async () => {
     const request = vi.fn(async () => ({ matchId }));
     await expect(createOmokAiMatch('hard', request)).resolves.toBe(matchId);
-    expect(request).toHaveBeenCalledExactlyOnceWith('/api/omok/ai', {
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith('/api/omok/ai', {
       method: 'POST', body: { difficulty: 'hard' },
     });
   });
