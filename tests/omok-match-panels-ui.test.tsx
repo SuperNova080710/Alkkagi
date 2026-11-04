@@ -40,6 +40,14 @@ describe('Omok pre-integration presentation panels (#254)', () => {
     expect(html).toContain('참가자 <span>2/2</span>');
     expect(html).toContain('두 번째 참가자');
     expect(html).toContain('두 명이 모였습니다');
+    const reverse = room([other, me]);
+    const firstSeat = reverse.indexOf('선공 · 흑돌');
+    const meName = reverse.indexOf('긴 닉네임 사용자', firstSeat);
+    const secondSeat = reverse.indexOf('후공 · 백돌');
+    expect(firstSeat).toBeGreaterThan(-1);
+    expect(meName).toBeGreaterThan(firstSeat);
+    expect(meName).toBeLessThan(secondSeat);
+    expect(reverse.indexOf('두 번째 참가자', secondSeat)).toBeGreaterThan(secondSeat);
     expect(html).not.toMatch(/disabled=""[^>]*>경기 시작/);
     const guest = renderToStaticMarkup(<OmokRoomPanel code="ABCD12"
       players={[me, other]} hostId="me" currentUserId="other" onLeave={() => {}}/>);
