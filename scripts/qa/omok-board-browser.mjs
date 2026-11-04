@@ -14,6 +14,8 @@ const sizes = [
   ['mobile-390x844',390,844,true],
   ['tablet-768x1024',768,1024,false],
   ['zoom-width-equivalent-960x540',960,540,false],
+  ['desktop-1280x800',1280,800,false],
+  ['desktop-1440x900',1440,900,false],
   ['desktop-1920x1080',1920,1080,false],
 ];
 async function until(fn, ms=25000) {
@@ -67,15 +69,28 @@ function dimensions() {
   const select=document.querySelector('.arena-omok-coordinate-entry select');
   const button=document.querySelector('.arena-omok-coordinate-entry button');
   const rect=board?.getBoundingClientRect();
+  const header=document.querySelector('.arena-header');
+  const footer=document.querySelector('.arena-footer');
+  const back=document.querySelector('.arena-omok-overview > .arena-button');
+  const match=document.querySelector('.arena-omok-match-panel');
+  const shell=document.querySelector('.arena-wrap');
   return {
     viewport:[root.clientWidth,root.clientHeight],
     horizontalOverflow:Math.max(0,Math.max(root.scrollWidth,body.scrollWidth)-root.clientWidth),
     verticalOverflow:Math.max(0,Math.max(root.scrollHeight,body.scrollHeight)-root.clientHeight),
+    shellReady:!!(header&&footer&&back&&match&&shell),
+    chrome: {
+      headerHeight:header?.getBoundingClientRect().height,
+      footerHeight:footer?.getBoundingClientRect().height,
+      backHeight:back?.getBoundingClientRect().height,
+      panelBottom:match?.getBoundingClientRect().bottom,
+      footerBottom:footer?.getBoundingClientRect().bottom,
+    },
     rowCount:grid?.querySelectorAll('[role="row"]').length,
     cellCount:cells.length,
     tabStops:cells.filter(x=>x.tabIndex===0).length,
     lastMoveMarkers:document.querySelectorAll('[data-omok-last="true"]').length,
-    boardRect:rect?{left:rect.left,right:rect.right,width:rect.width,height:rect.height}:null,
+    boardRect:rect?{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,width:rect.width,height:rect.height}:null,
     alternativeSelectHeight:select?.getBoundingClientRect().height,
     alternativeButtonHeight:button?.getBoundingClientRect().height,
   };
@@ -122,11 +137,21 @@ async function main(){
       const dims=await cdp.eval('('+dimensions.toString()+')()',sid);
       const failures=[];
       if(dims.horizontalOverflow>1)failures.push('horizontal overflow '+dims.horizontalOverflow);
+      if(!dims.shellReady)failures.push('actual ArenaShell/header/footer/back-link missing');
+      const standardDesktop=width>=1200 && height>=768;
+      if(standardDesktop && dims.verticalOverflow>1)failures.push(
+        'full match page vertical overflow '+dims.verticalOverflow+
+        'px including ArenaShell header/footer');
       if(dims.rowCount!==15||dims.cellCount!==225)failures.push('board is not 15x15');
       if(dims.tabStops!==1)failures.push('incorrect keyboard Tab stops');
       if(dims.lastMoveMarkers!==1)failures.push('recent move marker missing');
       const br=dims.boardRect;
       if(!br||br.left< -1||br.right>width+1)failures.push('board outside viewport');
+      if(standardDesktop && br && br.bottom>height+1)failures.push(
+        'board extends below viewport '+br.bottom+' > '+height);
+      // Phones and short/high-zoom viewports must remain scrollable rather than
+      // hiding overflowing controls/footers or shrinking 225 cells to unusable size.
+      if(br&&br.width>510+1)failures.push('board exceeds 510px game-layout cap '+br.width);
       if(br&&Math.abs(br.width-br.height)>2)failures.push('board not square');
       if((dims.alternativeSelectHeight||0)<44||(dims.alternativeButtonHeight||0)<44)failures.push('alternative input under 44px');
       const png=await cdp.call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sid);
@@ -166,12 +191,14 @@ async function main(){
         duplicateBlocked:twice===first,spacePlaced:space,
         spaceDuplicateBlocked:spaceTwice===space,spacePreventedScroll:afterSpaceScroll===beforeSpaceScroll,
         end:ended,home:homed},failures});
-      console.log((failures.length?'FAIL ':'PASS ')+name+' widthOverflow='+dims.horizontalOverflow+'px; '+
+      console.log((failures.length?'FAIL ':'PASS ')+name+
+        ' widthOverflow='+dims.horizontalOverflow+'px verticalOverflow='+dims.verticalOverflow+'px; '+
         (failures.length?failures.join('; '):'keyboard/225 cells/44px PASS'));
     }
     const report={generatedAt:new Date().toISOString(),
       fixture:'Generated only in GitHub Actions; no permanent route',
       zoomNote:'960x540 is a CSS layout equivalent, NOT real Chrome 200% browser Zoom.',
+      verticalPolicy:'Standard desktop width>=1200 and height>=768 requires <=1px full-shell vertical overflow. Mobile and short/zoom widths may scroll without clipping.',
       total:results.length,failed:results.filter(x=>x.failures.length).length,results};
     await writeFile(join(outdir,'results.json'),JSON.stringify(report,null,2)+'\n');
     console.log('OMOK BROWSER QA '+(report.total-report.failed)+'/'+report.total);

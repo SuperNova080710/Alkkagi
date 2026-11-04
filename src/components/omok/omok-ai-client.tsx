@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OmokBoardView, isOmokBoardCells, type OmokBoardCells, type OmokPosition } from './omok-board-view';
+import { OmokResultOverlay } from './omok-result-overlay';
+import './omok-parity.css';
 import { isRecord, isUuid, omokErrorText, omokRequest, type OmokClientError } from './omok-client-api';
 import './omok-competitive.css';
 import './omok-live.css';
@@ -202,9 +204,15 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
       <p>난이도: {difficulties.find(d => d.id === snapshot.difficulty)?.title}</p>
     </div><span className="arena-omok-panel-pill" role="status" aria-live="polite">{status}</span></div>
     <div className="arena-omok-match-layout">
-      <OmokBoardView board={snapshot.board} lastMove={snapshot.lastMove}
-        status={snapshot.status} myTurn={!finished && !reconnecting} stoneToPlace="black"
-        pending={pending || reconnecting || !!retry} onPlace={onPlace}/>
+      <div className="arena-omok-board-stage">
+        <OmokBoardView board={snapshot.board} lastMove={snapshot.lastMove}
+          status={snapshot.status} myTurn={!finished && !reconnecting} stoneToPlace="black"
+          pending={pending || reconnecting || !!retry} onPlace={onPlace}/>
+        {finished && <OmokResultOverlay
+          outcome={snapshot.winner === 'human' ? '승리' : snapshot.winner === 'ai' ? '패배' : '무승부'}
+          mode="ai" finishReason={snapshot.finishReason} pending={pending}
+          error={error} onReplay={() => void again()} onReturn={() => router.push('/omok/ai')}/>}
+      </div>
       <aside className="arena-omok-match-side" aria-label="AI 대국 상태">
         <h3>경기 현황</h3>
         <p role="status">{status}</p>
@@ -217,16 +225,14 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
             같은 착수 재시도
           </button>
         </div>}
-        <div className="arena-omok-panel-actions">
-          {!finished && <button className="arena-button arena-button--outline"
-            disabled={pending || reconnecting} onClick={() => void forfeit()}>기권</button>}
-          {finished && <button className="arena-button" disabled={pending}
-            onClick={() => void again()}>{pending ? '생성 중…' : '같은 난이도로 다시하기'}</button>}
+        {!finished && <div className="arena-omok-panel-actions">
+          <button className="arena-button arena-button--outline"
+            disabled={pending || reconnecting} onClick={() => void forfeit()}>기권</button>
           <button className="arena-button arena-button--outline" onClick={() => void refresh()}>
             서버 상태 다시 조회
           </button>
           <Link className="arena-button arena-button--outline" href="/omok/ai">AI 대전 로비</Link>
-        </div>
+        </div>}
       </aside>
     </div>
   </section>;
