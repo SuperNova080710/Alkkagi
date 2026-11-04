@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import '@/components/lobby/lobby-size-parity.css';
+// Direct rendering (including QA) must load Omok art positioning just like /omok.
+import './omok-parity.css';
 import type { ReactNode } from 'react';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
