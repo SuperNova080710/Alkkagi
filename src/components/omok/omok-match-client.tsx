@@ -21,6 +21,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   matchId: string; currentUserId: string; kind?: 'casual' | 'ranked';
 }) {
   const router = useRouter();
+  const chatEnabled = kind === 'casual';
   const [match, setMatch] = useState<MatchSnapshot | null>(null);
   const [names, setNames] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<OmokChatRecord[]>([]);
@@ -66,19 +67,20 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   }, [matchId, router, kind]);
 
   const loadChat = useCallback(async () => {
+    if (!chatEnabled) return;
     try {
       const data = await omokRequest<unknown>('/api/omok/matches/' + matchId + '/messages');
       setMessages(parseMessages(data)); setChatError('');
     } catch (cause) { setChatError(omokErrorText(cause)); }
-  }, [matchId]);
+  }, [matchId, chatEnabled]);
 
   useEffect(() => {
     const sequenceRef = sequence;
-    queueMicrotask(() => { void load(); void loadChat(); });
+    queueMicrotask(() => { void load(); if (chatEnabled) void loadChat(); });
     const poll = window.setInterval(() => {
-      if (document.visibilityState === 'visible') { void load(); void loadChat(); }
+      if (document.visibilityState === 'visible') { void load(); if (chatEnabled) void loadChat(); }
     }, 4000);
-    const refresh = () => { void load(); void loadChat(); };
+    const refresh = () => { void load(); if (chatEnabled) void loadChat(); };
     window.addEventListener('focus', refresh);
     window.addEventListener('online', refresh);
     // Ranked timeout settlement requests an immediate server-authoritative refresh.
@@ -95,10 +97,12 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'omok_moves', filter: 'match_id=eq.' + matchId,
       }, () => { void load(); })
-      .on('postgres_changes', {
-        event: 'INSERT', schema: 'public', table: 'omok_match_messages', filter: 'match_id=eq.' + matchId,
-      }, () => { void loadChat(); })
-      .subscribe(state => { if (state === 'SUBSCRIBED') refresh(); });
+      ;
+    // Ranked matches do not subscribe to or fetch chat events.
+    if (chatEnabled) channel?.on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'omok_match_messages', filter: 'match_id=eq.' + matchId,
+    }, () => { void loadChat(); });
+    channel?.subscribe(state => { if (state === 'SUBSCRIBED') refresh(); });
     return () => {
       sequenceRef.current++;
       window.clearInterval(poll);
@@ -108,7 +112,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       document.removeEventListener('visibilitychange', visible);
       if (db && channel) void db.removeChannel(channel);
     };
-  }, [matchId, load, loadChat]);
+  }, [matchId, load, loadChat, chatEnabled]);
 
   async function sendMove(move: ProposedMove) {
     if (lock.current) return;
@@ -178,6 +182,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     }
   }
   async function sendChat(body: string): Promise<boolean> {
+    if (!chatEnabled) return false;
     if (chatRequest.current && chatRequest.current.body !== body) {
       setChatError('이전 메시지의 전송 결과가 불확실합니다. 같은 메시지를 먼저 재시도해 주세요.');
       return false;
@@ -209,7 +214,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     { id: match.blackId, nickname: names[match.blackId] || '흑돌 플레이어', stone: 'black' as const },
     { id: match.whiteId, nickname: names[match.whiteId] || '백돌 플레이어', stone: 'white' as const },
   ];
-  return <div className="arena-omok-live-stack">
+  return <div className={'arena-omok-live-stack' + (kind === 'ranked' ? ' arena-omok-live-stack--ranked' : '')}>
     <OmokMatchPanel board={match.board} lastMove={match.lastMove}
       players={players} currentUserId={currentUserId} turnUserId={match.turnUserId}
       status={match.status} winnerId={match.winnerId} finishReason={match.finishReason}
@@ -222,11 +227,11 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       extra={kind === 'ranked'
         ? <OmokRankedMatchMeta matchId={matchId} currentUserId={currentUserId}/>
         : undefined}
-      chat={<OmokChatPanel messages={messages.map(m => ({
+      chat={chatEnabled ? <OmokChatPanel messages={messages.map(m => ({
         id: m.id, senderId: m.sender_id,
         senderName: names[m.sender_id] || '플레이어', body: m.body,
       }))} currentUserId={currentUserId} error={chatError}
-        onSend={sendChat} disabled={reconnecting}/>}
+        onSend={sendChat} disabled={reconnecting}/> : undefined}
     />
     {retryMove && <div role="alert" className="arena-omok-live-panel">
       <p>착수 결과가 불확실합니다. 같은 요청 번호로 재시도하거나 최신 서버 상태를 확인해 주세요.</p>
