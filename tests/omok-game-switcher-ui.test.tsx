@@ -9,6 +9,27 @@ const { auth, notFound } = vi.hoisted(() => ({
 vi.mock('@/lib/auth/user', () => ({ requireUser: auth }));
 vi.mock('next/navigation', () => ({ notFound, useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 vi.mock('@/components/auth/logout-form', () => ({ LogoutForm: () => <button type="button">로그아웃</button> }));
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => ({
+    from: (table: string) => {
+      const data = table === 'profiles' ? { nickname: '오목 사용자' }
+        : table === 'omok_matches' ? [{ id: 'casual-id', room_id: 'room-id', mode: 'casual' }]
+          : [{ id: 'ai-id' }];
+      const chain = {
+        select() { return this; },
+        eq() { return this; },
+        or() { return this; },
+        order() { return this; },
+        limit: async () => ({ data, error: null }),
+        maybeSingle: async () => ({ data, error: null }),
+      };
+      return chain;
+    },
+    rpc: async () => ({ data: { rating: 1200, leaderboard: [
+      { position: 1, nickname: '오목 사용자', rating: 1200 },
+    ] }, error: null }),
+  }),
+}));
 
 import OmokPage from '../src/app/omok/page';
 import { GameSwitcher } from '../src/components/lobby/game-switcher';
@@ -83,10 +104,16 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('href="/omok/ai"');
     expect(html).toContain('href="/omok/ranked"');
     expect(html).not.toContain('준비 중</button>');
-    expect(html).toContain('일반전·AI·랭크 화면 연결 완료');
-    expect(html).toContain('href="#omok-casual-start"');
+    expect(html).toContain('arena-lobby-grid arena-lobby-grid--multigame');
+    expect(html).toContain('arena-hero--omok');
+    expect(html).toContain('오목 랭킹 TOP 3');
+    expect(html).toContain('오목 RP');
+    expect(html).toContain('href="/omok/matches/casual-id"');
+    expect(html).toContain('href="/omok/ai/ai-id"');
+    expect(html).toContain('방 만들기 · 코드로 참가');
     expect(html).toContain('새 방 만들기');
-    expect(html).toContain('코드로 참가');
+    expect(html).toContain('aria-labelledby="omok-mode-dialog-title"');
+    expect(html).not.toContain('href="#omok-casual-start"');
     expect(html).not.toContain('href="/omok/rooms/');
   });
 
@@ -95,7 +122,10 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     const section = css.slice(css.indexOf('/* #236: gated v0.3'));
     expect(section).toContain('.arena-game-switcher');
     expect(section).toContain('min-height: 44px');
-    expect(section).toContain('.arena-omok-mode-grid');
+    expect(section).toContain('.arena-lobby-grid--multigame');
+    const parity = readFileSync(new URL('../src/components/omok/omok-parity.css', import.meta.url), 'utf8');
+    expect(parity).toContain('.arena-hero--omok');
+    expect(parity).toContain('.arena-mode--omok');
     expect(section).toContain('(max-width: 500px)');
     expect(section).toContain('grid-template-columns: 1fr');
     expect(section).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
