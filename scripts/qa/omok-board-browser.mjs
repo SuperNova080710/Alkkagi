@@ -95,6 +95,29 @@ function dimensions() {
     alternativeButtonHeight:button?.getBoundingClientRect().height,
   };
 }
+function rankedMetrics() {
+  const wrap=document.querySelector('.arena-omok-ranked-table-scroll');
+  const table=wrap?.querySelector('table');
+  const head=table?.querySelectorAll('thead th')||[];
+  const rows=table?.querySelectorAll('tbody tr')||[];
+  const last=rows[rows.length-1]?.querySelector('td:last-child');
+  const longNames=[...(table?.querySelectorAll('.arena-omok-ranked-nickname')||[])];
+  const records=[...(table?.querySelectorAll('.arena-omok-ranked-record')||[])];
+  const wr=wrap?.getBoundingClientRect();
+  const tr=table?.getBoundingClientRect();
+  const lr=last?.getBoundingClientRect();
+  return {
+    columns:head.length,rows:rows.length,records:records.length,
+    wrapperWidth:wrap?.clientWidth||0,wrapperScrollWidth:wrap?.scrollWidth||0,
+    tableWidth:tr?.width||0,tableRight:tr?.right||0,wrapperRight:wr?.right||0,
+    rpRight:lr?.right||0,tableLayout:table?getComputedStyle(table).tableLayout:null,
+    clippedNicknames:longNames.filter(n=>n.scrollWidth>n.clientWidth+1).length,
+    clippedRecords:records.filter(n=>n.scrollWidth>n.clientWidth+1).length,
+    bodyHorizontalOverflow:Math.max(0,Math.max(document.body.scrollWidth,
+      document.documentElement.scrollWidth)-document.documentElement.clientWidth),
+    verticalScroll:!!wrap&&wrap.scrollHeight>wrap.clientHeight+1,
+  };
+}
 async function press(cdp,sid,key,vk,code=key){
   const opts={key,code,windowsVirtualKeyCode:vk,nativeVirtualKeyCode:vk};
   await cdp.call('Input.dispatchKeyEvent',{type:'keyDown',...opts},sid);
@@ -187,7 +210,27 @@ async function main(){
       await press(cdp,sid,'Home',36);
       const homed=await cdp.eval("document.activeElement?.dataset.omokCol",sid);
       if(homed!=='0')failures.push('Home not first column');
-      results.push({name,dims,actions:{occupiedBlocked:occupied==='[]',focus,placed:first,
+      // Test the real shared ranked-grid/table DOM with 100 rows, not CSS strings.
+      await cdp.call('Page.navigate',{url:origin+'/omok-ranked-width-qa'},sid);
+      await until(()=>cdp.eval(
+        "document.readyState==='complete' && document.querySelectorAll('.arena-omok-ranked-table tbody tr').length===100",sid));
+      await sleep(110);
+      const rank=await cdp.eval('('+rankedMetrics.toString()+')()',sid);
+      if(rank.columns!==3||rank.rows!==100||rank.records!==100)
+        failures.push('ranked columns/rows/records incorrect: '+JSON.stringify(rank));
+      if(rank.tableLayout!=='fixed')failures.push('ranked table-layout must be fixed');
+      if(rank.wrapperScrollWidth>rank.wrapperWidth+1)
+        failures.push('ranked horizontal overflow '+(rank.wrapperScrollWidth-rank.wrapperWidth)+'px');
+      if(rank.tableRight>rank.wrapperRight+1||rank.rpRight>rank.wrapperRight+1)
+        failures.push('ranked RP column clipped outside container');
+      if(rank.clippedNicknames>0||rank.clippedRecords>0)
+        failures.push('ranked nickname or W/L/D text clipped: '+JSON.stringify(rank));
+      if(rank.bodyHorizontalOverflow>1)
+        failures.push('ranked document horizontal overflow '+rank.bodyHorizontalOverflow+'px');
+      if(!rank.verticalScroll)failures.push('ranked 100 rows must retain vertical scrolling');
+      const rankShot=await cdp.call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sid);
+      await writeFile(join(outdir,name+'-ranked-top100.png'),Buffer.from(rankShot.data,'base64'));
+      results.push({name,dims,rank,actions:{occupiedBlocked:occupied==='[]',focus,placed:first,
         duplicateBlocked:twice===first,spacePlaced:space,
         spaceDuplicateBlocked:spaceTwice===space,spacePreventedScroll:afterSpaceScroll===beforeSpaceScroll,
         end:ended,home:homed},failures});
@@ -197,6 +240,7 @@ async function main(){
     }
     const report={generatedAt:new Date().toISOString(),
       fixture:'Generated only in GitHub Actions; no permanent route',
+      rankedPolicy:'100 long-name rows, 3 columns, all W/L/D data retained, no viewport or table horizontal scroll.',
       zoomNote:'960x540 is a CSS layout equivalent, NOT real Chrome 200% browser Zoom.',
       verticalPolicy:'Standard desktop width>=1200 and height>=768 requires <=1px full-shell vertical overflow. Mobile and short/zoom widths may scroll without clipping.',
       total:results.length,failed:results.filter(x=>x.failures.length).length,results};
