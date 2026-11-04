@@ -15,6 +15,28 @@ type RankedEntry = {
 };
 export type RankedDashboard = { rating: number; leaderboard: RankedEntry[] };
 
+/** Keep the whole leaderboard in three responsive columns, with W/L/D below the name. */
+export function OmokRankedLeaderboard({ rows }: { rows: RankedEntry[] }) {
+  return <div className="arena-table-scroll arena-omok-ranked-table-scroll">
+    <table className="arena-omok-ranked-table">
+      <caption className="sr-only">오목 랭크 순위, 닉네임, RP 및 승패무 전적</caption>
+      <thead><tr>
+        <th scope="col">순위</th><th scope="col">닉네임 · 전적</th><th scope="col">오목 RP</th>
+      </tr></thead>
+      <tbody>{rows.map(person => <tr key={person.position}>
+        <td><span className="arena-rank-number">{person.position}</span></td>
+        <td>
+          <span className="arena-omok-ranked-nickname">{person.nickname}</span>
+          <small className="arena-omok-ranked-record">
+            {person.wins}승 · {person.losses}패 · {person.draws}무
+          </small>
+        </td>
+        <td>{person.rating.toLocaleString('ko-KR')}</td>
+      </tr>)}</tbody>
+    </table>
+  </div>;
+}
+
 export function parseQueueState(data: unknown): QueueState {
   if (!isRecord(data) || !['idle','queued','matched'].includes(String(data.status)))
     throw Error('OMOK_QUEUE_RESPONSE_INVALID');
@@ -212,19 +234,7 @@ export function OmokRankedLobby({ nickname = '닉네임 확인 필요' }: { nick
       </div>
       <div className="arena-ranking-grid">
         <ArenaPanel title="리더보드 TOP 100">
-          <div className="arena-table-scroll arena-omok-ranked-table-scroll">
-            <table className="arena-omok-ranked-table">
-              <caption className="sr-only">오목 랭크 순위, 플레이어별 오목 RP 및 승패 기록</caption>
-              <thead><tr><th scope="col">순위</th><th scope="col">닉네임</th>
-                <th scope="col">오목 RP</th><th scope="col">승</th>
-                <th scope="col">패</th><th scope="col">무</th></tr></thead>
-              <tbody>{dashboard?.leaderboard.map(person => <tr key={person.position}>
-                <td><span className="arena-rank-number">{person.position}</span></td>
-                <td>{person.nickname}</td><td>{person.rating.toLocaleString('ko-KR')}</td>
-                <td>{person.wins}</td><td>{person.losses}</td><td>{person.draws}</td>
-              </tr>)}</tbody>
-            </table>
-          </div>
+          <OmokRankedLeaderboard rows={dashboard?.leaderboard ?? []}/>
           {!loading && !dashboardError && dashboard?.leaderboard.length === 0 &&
             <p className="arena-muted">아직 오목 랭크 순위가 없습니다.</p>}
         </ArenaPanel>
