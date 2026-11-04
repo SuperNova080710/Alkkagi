@@ -82,6 +82,7 @@
   .arena-omok-ranked-table td:last-child {width:73px;}
   .arena-omok-ranked-table th,.arena-omok-ranked-table td {padding:8px 4px;font-size:12px;}
   .arena-omok-ranked-record {font-size:10px;}
+}
 @media(max-width:580px) {
   .arena-omok-ranked-queue {padding:14px;}
   .arena-omok-ranked-queue h2 {font-size:18px;}
