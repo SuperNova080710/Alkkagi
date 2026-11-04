@@ -139,9 +139,9 @@ export function OmokCasualRoomClient({ roomId, currentUserId }: {
         stone: p.seat === 1 ? 'black' : 'white' }))}
       hostId={host} currentUserId={currentUserId} pending={pending} error={error}
       onStart={room.status === 'waiting' ? () => void action('start') : undefined}
-      onLeave={room.status === 'waiting' ? () => void action('leave') : undefined}/>
-    {room.status === 'waiting' && room.players.length === 1 && host === currentUserId &&
-      <OmokFriendInvitePicker roomId={roomId}/>}
+      onLeave={room.status === 'waiting' ? () => void action('leave') : undefined}
+      invitePanel={room.status === 'waiting' && room.players.length === 1 &&
+        host === currentUserId ? <OmokFriendInvitePicker roomId={roomId}/> : undefined}/>
     {room.status !== 'waiting' && <div role="status" className="arena-omok-live-panel">
       대기실이 종료되었거나 이미 경기가 시작되었습니다.
       <button type="button" className="arena-button" onClick={() => void reload()}>상태 확인</button>
