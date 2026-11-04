@@ -93,6 +93,27 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     expect(rankedPage).not.toContain('<OmokRankedMatchMeta');
   });
 
+  it('shows chat only in casual matches while ranked matches keep RP and clock panels', () => {
+    const prop = <aside data-chat-fixture="true">대전 채팅</aside>;
+    const casual = renderToStaticMarkup(<OmokMatchPanel board={board}
+      players={[me, other]} currentUserId="me" turnUserId="me"
+      status="active" mode="casual" chat={prop}/>);
+    const ranked = renderToStaticMarkup(<OmokMatchPanel board={board}
+      players={[me, other]} currentUserId="me" turnUserId="me"
+      status="active" mode="ranked" chat={prop}
+      extra={<div data-ranked-meta="true">남은 턴 시간</div>}/>);
+    expect(casual).toContain('data-chat-fixture');
+    expect(ranked).not.toContain('data-chat-fixture');
+    expect(ranked).toContain('data-ranked-meta');
+    expect(ranked).toContain('arena-omok-match-panel--ranked');
+    const client = readFileSync(new URL('../src/components/omok/omok-match-client.tsx', import.meta.url), 'utf8');
+    expect(client).toContain("const chatEnabled = kind === 'casual'");
+    expect(client).toContain("if (chatEnabled) void loadChat()");
+    expect(client).toContain('if (chatEnabled) channel?.on');
+    expect(client).toContain('chat={chatEnabled ? <OmokChatPanel');
+    expect(client).toContain('if (!chatEnabled) return false');
+  });
+
   it('shrinks a square board using viewport height rather than hide document scrolling', () => {
     const css = readFileSync(new URL('../src/components/omok/omok-parity.css', import.meta.url), 'utf8');
     expect(css).toContain('max(250px,calc(100dvh - 480px))');
