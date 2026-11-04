@@ -25,7 +25,7 @@ export function OmokLobbyView({ data, account, friendsEnabled = false, cosmetics
   experienceEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
-  return <ArenaShell current="lobby" account={account}>
+  return <ArenaShell current="lobby" game="omok" account={account}>
     <ArenaHero compact game="omok"/>
     <div className="arena-lobby-grid arena-lobby-grid--multigame arena-omok-lobby-grid">
       <div className="arena-play-column">
