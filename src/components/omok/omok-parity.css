@@ -115,3 +115,21 @@
 @media(prefers-reduced-motion:reduce) {
   .arena-mode--omok .arena-button {transition:none;}
 }
+
+/* v0.3.1 (#299): only the live ranked-match page uses the compact full-shell
+   viewport budget. Keep normal document scrolling on mobile/short screens;
+   never mask overflow or shrink touch/keyboard targets to hide a scrollbar. */
+@media (min-width:881px) and (min-height:700px) {
+  .arena-omok-overview--ranked { gap:10px; padding-block:6px 0; }
+  .arena-omok-overview--ranked > .arena-button { justify-self:start; min-height:44px; }
+  .arena-omok-live-stack--ranked { gap:8px; }
+  .arena-omok-match-panel--ranked { padding:10px; }
+  .arena-omok-match-panel--ranked .arena-omok-panel-heading { margin-bottom:6px; }
+  .arena-omok-match-panel--ranked .arena-omok-match-players { margin:4px 0 8px; }
+  .arena-omok-match-panel--ranked .arena-omok-match-side { padding:9px; gap:6px; }
+  .arena-omok-match-panel--ranked .arena-omok-ranked-meta { padding:8px; margin:0; }
+  .arena-omok-match-panel--ranked .arena-omok-ranked-meta .arena-omok-panel-hint { margin:4px 0; }
+  .arena-omok-match-panel--ranked .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
+    width:min(100%,510px,max(240px,calc(100dvh - 520px)));
+  }
+}
