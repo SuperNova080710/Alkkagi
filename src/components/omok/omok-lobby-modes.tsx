@@ -26,10 +26,10 @@ export function OmokLobbyModes() {
         </Link>
       </ArenaModeCard>
     </div>
-    <dialog className="arena-dialog arena-omok-entry-dialog" ref={dialog}
+    <dialog className="arena-dialog" ref={dialog}
       aria-labelledby="omok-mode-dialog-title">
       <div className="arena-dialog-heading">
-        <h2 id="omok-mode-dialog-title">친구와 오목 한 판!</h2>
+        <h2 id="omok-mode-dialog-title">친구와 한 판!</h2>
         <button type="button" className="arena-close" aria-label="닫기"
           onClick={() => dialog.current?.close()}>×</button>
       </div>
