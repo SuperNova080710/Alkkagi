@@ -12,6 +12,16 @@ const options: { value: Difficulty; label: string; hint: string }[] = [
   { value: 'hard', label: '어려움', hint: '상대의 수를 더 깊이 읽습니다.' },
 ];
 
+/** Validate the server response; never invent a match ID on the client. */
+export async function createOmokAiMatch(
+  difficulty: Difficulty,
+  request: (url: string, options: { method: 'POST'; body: { difficulty: Difficulty } }) => Promise<unknown> = omokRequest,
+): Promise<string> {
+  const result = await request('/api/omok/ai', { method: 'POST', body: { difficulty } });
+  if (!isRecord(result) || !isUuid(result.matchId)) throw Error('AI_CREATE_INVALID');
+  return result.matchId;
+}
+
 /** Starts the existing server-backed AI match without an intermediate room. */
 export function OmokAiModalEntry({ onPendingChange }: {
   onPendingChange?: (pending: boolean) => void;
@@ -30,11 +40,8 @@ export function OmokAiModalEntry({ onPendingChange }: {
     onPendingChange?.(true);
     setError('');
     try {
-      const result = await omokRequest<unknown>('/api/omok/ai', {
-        method: 'POST', body: { difficulty },
-      });
-      if (!isRecord(result) || !isUuid(result.matchId)) throw Error('AI_CREATE_INVALID');
-      router.push('/omok/ai/' + result.matchId);
+      const matchId = await createOmokAiMatch(difficulty);
+      router.push('/omok/ai/' + matchId);
     } catch (cause) {
       setError(omokErrorText(cause));
     } finally {
