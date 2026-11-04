@@ -47,10 +47,6 @@
 }
 .arena-mode--omok .arena-mode-heading {text-shadow:0 2px 6px #163026;}
 .arena-avatar--omok {background:radial-gradient(circle at 30% 25%,#fff,#d3c8aa 70%);color:#232323;}
-.arena-omok-entry-dialog {width:min(680px,calc(100vw - 24px));max-height:min(88dvh,780px);overflow-y:auto;}
-.arena-omok-entry-dialog .arena-omok-live-panel {margin-top:0;box-shadow:none;}
-.arena-omok-entry-dialog .arena-omok-live-panel .arena-omok-live-heading {gap:6px;}
-.arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
 .arena-omok-rules { font-size: 12px; line-height: 1.4; margin-bottom: 6px; }
 
 /* Keep the 15x15 board within the FULL game page, including ArenaShell header,
