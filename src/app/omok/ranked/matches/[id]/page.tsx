@@ -10,7 +10,7 @@ export default async function OmokRankedMatchPage({ params }: { params: Promise<
   const user = await requireUser();
   const { id } = await params;
   if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id)) notFound();
-  return <ArenaShell current="ranked" account={<LogoutForm/>}>
+  return <ArenaShell current="ranked" game="omok" account={<LogoutForm/>}>
     <div className="arena-omok-overview arena-omok-live-stack">
       <Link href="/omok/ranked" className="arena-button arena-button--outline">← 오목 랭크 로비</Link>
       <OmokMatchClient matchId={id} currentUserId={user.id} kind="ranked"/>
