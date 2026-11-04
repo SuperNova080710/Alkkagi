@@ -12,19 +12,19 @@ describe('v0.3 game-aware ranking navigation (#282)', () => {
     const html = renderToStaticMarkup(<ArenaShell current="ranked" game="omok">
       오목 랭킹
     </ArenaShell>);
-    expect(html).toContain('href="/omok/ranked" aria-current="page">랭킹');
+    expect(html).toContain('aria-current="page" href="/omok/ranked">랭킹');
     expect(html).toContain('href="/omok">로비');
-    expect(html).not.toContain('href="/ranked" aria-current="page">랭킹');
+    expect(html).not.toContain('aria-current="page" href="/ranked">랭킹');
   });
 
   it('preserves Alkkagi default and fails closed when Omok is not enabled', () => {
     vi.stubEnv('OMOK_UI_ENABLED', 'true');
     const normal = renderToStaticMarkup(<ArenaShell current="ranked">알까기</ArenaShell>);
-    expect(normal).toContain('href="/ranked" aria-current="page">랭킹');
+    expect(normal).toContain('aria-current="page" href="/ranked">랭킹');
     expect(normal).toContain('href="/lobby">로비');
     vi.stubEnv('OMOK_UI_ENABLED', 'false');
     const gated = renderToStaticMarkup(<ArenaShell game="omok" current="ranked">기본</ArenaShell>);
-    expect(gated).toContain('href="/ranked" aria-current="page">랭킹');
+    expect(gated).toContain('aria-current="page" href="/ranked">랭킹');
     expect(gated).not.toContain('href="/omok/ranked"');
   });
 
