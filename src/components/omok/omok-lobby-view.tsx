@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import { GameSwitcher } from '@/components/lobby/game-switcher';
 import { OmokLobbyModes } from './omok-lobby-modes';
+import { LobbyRecoveryInline } from '@/components/lobby/lobby-recovery-inline';
 import { LobbyIdentitySummary } from '@/components/lobby/lobby-identity-summary';
 
 export type OmokLobbyData = {
@@ -30,23 +31,18 @@ export function OmokLobbyView({ data, account, friendsEnabled = false, cosmetics
       <div className="arena-play-column">
         <GameSwitcher current="omok"/>
         <OmokLobbyModes/>
-        <ArenaPanel title="진행 중인 경기" className="arena-recovery">
-          <p className="arena-muted arena-omok-rules">15×15 오목 · 흑돌 선공 · 가로·세로·대각선 다섯 목을 먼저 만드세요.</p>
-          {data.recoveryUnavailable &&
-            <p role="status" className="arena-muted">오목 진행 중인 경기를 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.</p>}
-          {!hasMatches && !data.recoveryUnavailable &&
-            <p className="arena-muted">진행 중인 오목 경기가 없어요. 새로운 한 판을 시작해 보세요!</p>}
-          {hasMatches && <div className="arena-recovery-links">
-            {data.activeCasual.map((match, index) =>
-              <Link key={match.id} className="arena-button arena-button--outline"
-                href={match.mode === 'ranked' ? `/omok/ranked/matches/${match.id}` : `/omok/matches/${match.id}`}>
-                {match.mode === 'ranked' ? '랭크전' : '일반전'} {index + 1} 계속하기
-              </Link>)}
-            {data.activeAi.map((match, index) =>
-              <Link key={match.id} className="arena-button arena-button--outline"
-                href={`/omok/ai/${match.id}`}>AI 대전 {index + 1} 계속하기</Link>)}
-          </div>}
-        </ArenaPanel>
+        <LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
+          {data.activeCasual.map((match, index) => <Link key={match.id}
+            className="arena-button arena-button--outline"
+            href={match.mode === 'ranked' ? `/omok/ranked/matches/${match.id}` : `/omok/matches/${match.id}`}>
+            {match.mode === 'ranked' ? '랭크전' : '일반전'} {index + 1} 계속하기
+          </Link>)}
+          {data.activeAi.map((match, index) => <Link key={match.id}
+            className="arena-button arena-button--outline"
+            href={`/omok/ai/${match.id}`}>
+            AI 대전 {index + 1} 계속하기
+          </Link>)}
+        </LobbyRecoveryInline>
       </div>
       <aside className="arena-sidebar" aria-label="오목 내 정보와 랭킹">
         <ArenaPanel title="내 정보">
