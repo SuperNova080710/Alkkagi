@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArenaPanel } from '@/components/ui/arena';
+import { ArenaPanel } from '@/components/ui/arena-panel';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isRecord, isUuid, omokErrorText, omokRequest } from './omok-client-api';
