@@ -1,0 +1,22 @@
+/* #262: same hero typography metrics and mode card sizing for both games. */
+.arena-wrap:has(> main > .arena-lobby-grid--multigame) > main > .arena-hero--compact .arena-hero-copy {
+  width: min(100%, 680px);
+}
+.arena-wrap:has(> main > .arena-lobby-grid--multigame) > main > .arena-hero--compact h1 {
+  width: 100%;
+  text-align: center;
+}
+@media (min-width: 1024px) and (min-height: 720px) {
+  .arena-wrap:has(> main > .arena-lobby-grid--multigame) > main > .arena-hero--compact {
+    flex: 0 0 auto;
+    height: clamp(270px, calc(100dvh - 600px), 450px);
+  }
+  .arena-lobby-grid--multigame .arena-modes .arena-mode {
+    height: clamp(250px, 28dvh, 310px);
+  }
+}
+@media (max-width: 639px) {
+  .arena-wrap:has(> main > .arena-lobby-grid--multigame) > main > .arena-hero--compact .arena-hero-copy {
+    width: min(100%, 330px);
+  }
+}
