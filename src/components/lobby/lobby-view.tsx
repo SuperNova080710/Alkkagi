@@ -1,7 +1,10 @@
 import Link from 'next/link';
+import './lobby-size-parity.css';
 import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
-import { LobbyExperienceMini } from './lobby-experience-mini';
+import { LobbyIdentitySummary } from './lobby-identity-summary';
+import { GameSwitcher } from './game-switcher';
+import { LobbyRecoveryInline } from './lobby-recovery-inline';
 
 export type LobbyData = {
   nickname: string;
@@ -14,27 +17,30 @@ export type LobbyData = {
 };
 
 /** Presentation boundary for backend integration and credential-free visual verification. */
-export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false }: {
+export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false, omokEnabled = false }: {
   data: LobbyData; modes: ReactNode; account?: ReactNode;
-  friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean;
+  friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean; omokEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaShell current="lobby" account={account}>
     <ArenaHero compact />
-    <div className="arena-lobby-grid">
-      <div className="arena-play-column">{modes}
-        <ArenaPanel title="진행 중인 경기" className="arena-recovery">
-          {data.recoveryUnavailable && <p role="status" className="arena-muted">진행 중인 경기 일부를 불러오지 못했습니다. 새로고침 후 다시 확인해 주세요.</p>}
-          {!hasMatches && !data.recoveryUnavailable && <p className="arena-muted">진행 중인 경기가 없어요. 새로운 한 판을 시작해 보세요!</p>}
-          {hasMatches && <div className="arena-recovery-links">
-            {data.activeCasual.map((match, index) => <Link key={match.id} href={`/rooms/${match.room_id}`} className="arena-button arena-button--outline">일반전 {index + 1} 계속하기</Link>)}
-            {data.activeAi.map((match, index) => <Link key={match.room_id} href={`/rooms/${match.room_id}/ai`} className="arena-button arena-button--outline">AI 대전 {index + 1} 계속하기</Link>)}
-          </div>}
-        </ArenaPanel>
+    <div className={`arena-lobby-grid${omokEnabled ? ' arena-lobby-grid--multigame' : ''}`}>
+      <div className="arena-play-column">{omokEnabled && <GameSwitcher current="alkkagi"/>}{modes}
+        <LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
+          {data.activeCasual.map((match, index) => <Link key={match.id}
+            href={`/rooms/${match.room_id}`} className="arena-button arena-button--outline">
+            일반전 {index + 1} 계속하기
+          </Link>)}
+          {data.activeAi.map((match, index) => <Link key={match.room_id}
+            href={`/rooms/${match.room_id}/ai`} className="arena-button arena-button--outline">
+            AI 대전 {index + 1} 계속하기
+          </Link>)}
+        </LobbyRecoveryInline>
       </div>
       <aside className="arena-sidebar" aria-label="내 정보와 랭킹">
         <ArenaPanel title="내 정보">
-          <div className="arena-player-summary"><span className="arena-avatar" aria-hidden="true">●</span><div className="arena-player-summary-copy"><p className="arena-nickname">{data.nickname}</p><p className="arena-muted">{data.rating === null ? 'RP를 불러오지 못했어요' : `${data.rating.toLocaleString('ko-KR')} RP`}</p>{experienceEnabled && <LobbyExperienceMini/>}</div></div>
+          <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game="alkkagi"
+            experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
         <ArenaPanel title="랭킹 TOP 3">

@@ -1,0 +1,31 @@
+/* #270: Reuse Alkkagi Waiting Room v2 tokens without changing the game routes. */
+.arena-omok-waiting {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0;
+  color: var(--arena-ink);
+}
+.arena-omok-waiting .game-page-header { margin-top: 8px; }
+.arena-omok-waiting .arena-room-wait-layout { margin-top: 16px; }
+.arena-omok-waiting .arena-room-stage { min-width: 0; }
+.arena-omok-waiting .arena-room-seats li { min-width: 0; }
+.arena-omok-waiting .arena-room-seat-number.arena-omok-wait-stone--black {
+  color: #fff; background: radial-gradient(circle at 30% 22%,#68645f,#111 76%);
+  border-color: #918979; box-shadow: 0 3px 0 #312d28;
+}
+.arena-omok-waiting .arena-room-seat-number.arena-omok-wait-stone--white {
+  color: #37332a; background: radial-gradient(circle at 30% 22%,#fff,#d8c9ad 80%);
+  border-color: #fff; box-shadow: 0 3px 0 #8c806b;
+}
+.arena-omok-waiting .arena-room-main-action .arena-button {width:100%;min-height:44px;}
+.arena-omok-waiting .arena-room-leave .arena-button {min-height:44px;}
+.arena-omok-waiting .arena-room-side .arena-omok-live-actions {min-width:0;}
+@media(max-width:760px){.arena-omok-waiting .arena-room-wait-layout {grid-template-columns:minmax(0,1fr);}
+  .arena-omok-waiting .arena-room-seats{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:520px){
+  .arena-omok-waiting .game-page-header {padding:12px;}
+  .arena-omok-waiting .arena-room-stage {padding:14px;}
+  .arena-omok-waiting .arena-room-seats {grid-template-columns:minmax(0,1fr);}
+  .arena-omok-waiting .arena-room-seats li {min-height:78px;}
+}

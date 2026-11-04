@@ -1,5 +1,8 @@
 # Direct Messages V1 — 시스템 / UI 연동 계약 (2026-10-29)
 
+> **2026-11-03 최신 상태:** 친구 전용 DM API #81·UI #143 병합, SQL 006 운영 적용 완료. 실제 두 계정 WebSocket INSERT 이벤트/HTTP 재조회·차단 RLS 테스트는 #196/#206에 남았습니다. [통합 인수](current-status-2026-11-03.md). 아래 과거 '미병합/미적용' 표현은 작성 당시 상태로만 읽으세요.
+
+
 ## 적용 상태 / 선행 의존성
 - 시스템 이슈 [#77](https://github.com/SuperNova080710/Alkkagi/issues/77), SQL #78, HTTP #79, CI·인계 #80.
 - 이전 친구 백엔드 PR #76, 보안 PR #69는 **GitHub main에 병합됨**. 2026-10-29 조회한 Supabase 운영 migration history에는 `202610290004` / `202610290005` 적용 기록이 없었음. **코드 병합은 DB 적용을 의미하지 않습니다.**

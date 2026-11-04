@@ -1,0 +1,56 @@
+name: Omok ranked PostgreSQL 17 concurrency
+
+on:
+  push:
+    branches: ['feat/223-omok-ranked-core']
+    paths:
+      - 'supabase/migrations/202611030004_omok_ranked.sql'
+      - 'tests/omok-pg17-ranked.sql'
+      - '.github/workflows/omok-pg17-ranked.yml'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'supabase/migrations/202611030004_omok_ranked.sql'
+      - 'tests/omok-pg17-ranked.sql'
+      - '.github/workflows/omok-pg17-ranked.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pg17-ranked-race:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: PostgreSQL 17 isolated ranked race and privilege acceptance
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = postgres
+          actual="$(psql -X -At -v ON_ERROR_STOP=1 -c 'show server_version_num')"
+          test "$actual" -ge 170000 && test "$actual" -lt 180000
+          psql -X -v ON_ERROR_STOP=1 -f tests/omok-pg17-ranked.sql
