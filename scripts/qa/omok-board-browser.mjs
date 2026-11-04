@@ -230,7 +230,40 @@ async function main(){
       if(!rank.verticalScroll)failures.push('ranked 100 rows must retain vertical scrolling');
       const rankShot=await cdp.call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false},sid);
       await writeFile(join(outdir,name+'-ranked-top100.png'),Buffer.from(rankShot.data,'base64'));
-      results.push({name,dims,rank,actions:{occupiedBlocked:occupied==='[]',focus,placed:first,
+      // v0.3.1: test the actual ranked match layout (not only the leaderboard).
+      await cdp.call('Page.navigate',{url:origin+'/omok-ranked-match-qa'},sid);
+      await until(()=>cdp.eval(
+        "document.readyState==='complete' && document.documentElement.dataset.omokQaReady==='true'",sid));
+      await sleep(120);
+      const rankedGame=await cdp.eval('('+dimensions.toString()+')()',sid);
+      const rankedFlags=await cdp.eval(`({
+        chatPresent:!!document.querySelector('.arena-omok-chat'),
+        metaPresent:!!document.querySelector('.arena-omok-ranked-meta'),
+        rankedPanel:!!document.querySelector('.arena-omok-match-panel--ranked'),
+        backLink:document.querySelector('.arena-omok-overview--ranked > .arena-button')?.textContent,
+      })`,sid);
+      if(!rankedGame.shellReady)failures.push('ranked match ArenaShell/header/footer/back-link missing');
+      if(rankedGame.horizontalOverflow>1)
+        failures.push('ranked match horizontal overflow '+rankedGame.horizontalOverflow);
+      if(standardDesktop&&rankedGame.verticalOverflow>1)
+        failures.push('ranked match vertical overflow '+rankedGame.verticalOverflow+
+          'px in '+name+' (including shell/footer)');
+      if(rankedGame.rowCount!==15||rankedGame.cellCount!==225)
+        failures.push('ranked match board is not 225 cells');
+      if((rankedGame.alternativeSelectHeight||0)<44||(rankedGame.alternativeButtonHeight||0)<44)
+        failures.push('ranked match alternative controls below 44px');
+      if(rankedFlags.chatPresent)failures.push('ranked chat present');
+      if(!rankedFlags.metaPresent||!rankedFlags.rankedPanel||!rankedFlags.backLink)
+        failures.push('ranked meta or ranked page context missing');
+      const rankedShot=await cdp.call('Page.captureScreenshot',
+        {format:'png',captureBeyondViewport:false},sid);
+      await writeFile(join(outdir,name+'-ranked-match.png'),Buffer.from(rankedShot.data,'base64'));
+      await cdp.eval("document.querySelector('[data-omok-row=\\\"7\\\"][data-omok-col=\\\"8\\\"]').focus()",sid);
+      await press(cdp,sid,'Enter',13);
+      const rankedMove=await cdp.eval("document.getElementById('qa-ranked-moves').textContent",sid);
+      if(rankedMove!=='[{"row":7,"col":8}]')
+        failures.push('ranked match keyboard placement failed: '+rankedMove);
+      results.push({name,dims,rank,rankedGame,rankedFlags,actions:{occupiedBlocked:occupied==='[]',focus,placed:first,
         duplicateBlocked:twice===first,spacePlaced:space,
         spaceDuplicateBlocked:spaceTwice===space,spacePreventedScroll:afterSpaceScroll===beforeSpaceScroll,
         end:ended,home:homed},failures});
@@ -240,7 +273,7 @@ async function main(){
     }
     const report={generatedAt:new Date().toISOString(),
       fixture:'Generated only in GitHub Actions; no permanent route',
-      rankedPolicy:'100 long-name rows, 3 columns, all W/L/D data retained, no viewport or table horizontal scroll.',
+      rankedPolicy:'100 long-name rows and ranked match with board/timer/RP, no ranked chat and <=1px desktop full-shell document overflow.',
       zoomNote:'960x540 is a CSS layout equivalent, NOT real Chrome 200% browser Zoom.',
       verticalPolicy:'Standard desktop width>=1200 and height>=768 requires <=1px full-shell vertical overflow. Mobile and short/zoom widths may scroll without clipping.',
       total:results.length,failed:results.filter(x=>x.failures.length).length,results};
