@@ -40,3 +40,33 @@
 @media (prefers-reduced-motion:reduce) {
   .arena-omok-difficulty label {transition:none;}
 }
+
+/* #290: Omok ranking inherits the same layout and visual tokens as Alkkagi. */
+.arena-omok-ranked-view {min-width:0;}
+.arena-omok-ranked-queue {
+  min-width:0;padding:16px;border:1px solid var(--arena-line);border-radius:20px;
+  background:var(--arena-cream);box-shadow:var(--arena-shadow);
+  display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+}
+.arena-omok-ranked-queue h2 {margin:0;font-size:20px;font-weight:900;color:var(--arena-forest);}
+.arena-omok-ranked-queue p {margin:0;line-height:1.5;}
+.arena-omok-ranked-actions {display:flex;flex-wrap:wrap;align-items:center;gap:9px;}
+.arena-omok-ranked-actions .arena-button {min-height:44px;}
+.arena-omok-ranked-table-scroll {
+  max-width:100%;max-height:clamp(145px,24dvh,300px);
+  border:0;border-radius:0;overflow:auto;
+}
+.arena-omok-ranked-table {min-width:560px;font-size:13px;}
+.arena-omok-ranked-table th,.arena-omok-ranked-table td {
+  padding:8px 7px;border-bottom:1px solid var(--arena-line);
+}
+.arena-omok-ranked-table th {background:var(--arena-cream);color:var(--arena-muted);}
+.arena-omok-ranked-table td:nth-child(2) {max-width:190px;overflow-wrap:anywhere;}
+.arena-omok-ranked-table td:last-child,.arena-omok-ranked-table th:last-child {text-align:right;}
+.arena-omok-ranked-guide {margin:0;}
+.arena-omok-ranked-guide li {margin-bottom:8px;}
+.arena-omok-ranked-guide p {margin:5px 0 0;}
+@media(max-width:580px) {
+  .arena-omok-ranked-queue {padding:14px;}
+  .arena-omok-ranked-queue h2 {font-size:18px;}
+}
