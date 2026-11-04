@@ -3,7 +3,7 @@ name: Omok board real-browser QA
 on:
   workflow_dispatch:
   pull_request:
-    branches: [develop]
+    branches: [develop, 'release/v0.3.0']
     paths:
       - '.github/workflows/omok-board-browser.yml'
       - 'scripts/qa/omok-board-browser.mjs'
