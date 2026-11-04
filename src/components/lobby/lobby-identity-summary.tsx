@@ -9,7 +9,7 @@ import { usePlayerResource } from '@/components/players/use-player-resource';
 function LobbyCosmeticAvatar() {
   const { data, error, loading } = usePlayerResource<unknown>('/api/cosmetics/me');
   const inventory = isCosmeticInventory(data) ? data : null;
-  return <>
+  return <div className="arena-player-avatar-stack">
     <span className="arena-avatar">
       {inventory
         ? <CosmeticPreview code={inventory.loadout.avatarCode} slot="avatar" compact/>
@@ -18,7 +18,7 @@ function LobbyCosmeticAvatar() {
     {loading && <span className="arena-lobby-identity-hint" role="status">아바타 확인 중</span>}
     {!loading && (error != null || !inventory) &&
       <span className="arena-lobby-identity-hint" role="status">기본 아바타로 표시 중</span>}
-  </>;
+  </div>;
 }
 
 /** One identity presentation across games, no resource hook while flags are OFF. */
