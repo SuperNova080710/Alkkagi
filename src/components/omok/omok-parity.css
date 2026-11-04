@@ -51,10 +51,6 @@
 .arena-omok-entry-dialog .arena-omok-live-panel {margin-top:0;box-shadow:none;}
 .arena-omok-entry-dialog .arena-omok-live-panel .arena-omok-live-heading {gap:6px;}
 .arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
-.arena-omok-lobby-grid .arena-mode--omok {
-  /* Keep height intrinsic like the Alkkagi ArenaModeCard. */
-  min-height: inherit;
-}
 .arena-omok-rules { font-size: 12px; line-height: 1.4; margin-bottom: 6px; }
 
 /* Keep the 15x15 board within the FULL game page, including ArenaShell header,
