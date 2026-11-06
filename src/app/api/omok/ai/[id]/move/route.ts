@@ -22,7 +22,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
   try {
     const db=await createClient();
     const {data:game,error}=await db.from('omok_ai_matches')
-      .select('owner_id,difficulty,turn_no,board_state,status,winner,finish_reason')
+      .select('owner_id,difficulty,turn_no,board_state,rule_set,status,winner,finish_reason')
       .eq('id',id).maybeSingle();
     if(error) return NextResponse.json({error:'GAME_SERVICE_UNAVAILABLE'},{status:503});
     if(!game || game.owner_id!==user.id)
@@ -55,7 +55,7 @@ export async function POST(request:NextRequest,{params}:{params:Promise<{id:stri
     afterHuman[move.row][move.col]='black';
     const humanWin=hasFive(afterHuman,move.row,move.col,'black');
     const aiMove=humanWin || game.turn_no===113 ? null :
-      chooseOmokAiMove(afterHuman,'white',game.difficulty,game.turn_no);
+      chooseOmokAiMove(afterHuman,'white',game.difficulty,game.turn_no,game.rule_set==='black_forbidden');
     // The service-role RPC uses a row lock and recomputes both results.
     // The client never chooses an AI move or supplies the board.
     const {data,error:commitError}=await createAdminClient().rpc('commit_omok_ai_turn',{

@@ -7,7 +7,7 @@ import { OmokBoardView, isOmokBoardCells, type OmokBoardCells, type OmokPosition
 import { OmokResultOverlay } from './omok-result-overlay';
 import { OmokAiModalEntry } from './omok-ai-modal-entry';
 import './omok-parity.css';
-import { isRecord, isUuid, omokErrorText, omokRequest, type OmokClientError } from './omok-client-api';
+import { isRecord, isUuid, omokErrorText, omokRequest, omokRuleText, type OmokClientError, type OmokRuleSet } from './omok-client-api';
 import './omok-competitive.css';
 import './omok-live.css';
 
@@ -20,7 +20,7 @@ const difficulties: { id: AiDifficulty; title: string; hint: string }[] = [
 export type AiSnapshot = {
   id: string; difficulty: AiDifficulty; turnNo: number; board: OmokBoardCells;
   status: 'active' | 'finished'; winner: 'human' | 'ai' | null;
-  finishReason: string | null; lastMove: OmokPosition | null;
+  finishReason: string | null; lastMove: OmokPosition | null; ruleSet: OmokRuleSet;
 };
 export function parseAiSnapshot(value: unknown): AiSnapshot {
   if (!isRecord(value) || !isRecord(value.match) || !Array.isArray(value.turns))
@@ -44,7 +44,7 @@ export function parseAiSnapshot(value: unknown): AiSnapshot {
     board: m.board_state, status: m.status as AiSnapshot['status'],
     winner: m.winner === 'human' || m.winner === 'ai' ? m.winner : null,
     finishReason: typeof m.finish_reason === 'string' ? m.finish_reason : null,
-    lastMove: last,
+    lastMove: last, ruleSet: m.rule_set === 'black_forbidden' ? 'black_forbidden' : 'freestyle',
   };
 }
 export function OmokAiLobby() {
@@ -105,6 +105,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState<Proposed | null>(null);
   const [error, setError] = useState('');
+  const [moveError, setMoveError] = useState<{ matchId: string; turnNo: number; message: string } | null>(null);
   const sequence = useRef(0);
   const lock = useRef(false);
   const pendingMove = useRef<Proposed | null>(null);
@@ -147,7 +148,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
 
   async function submitMove(move: Proposed) {
     if (lock.current) return;
-    lock.current = true; setPending(true); setError('');
+    lock.current = true; setPending(true); setError(''); setMoveError(null);
     try {
       await omokRequest('/api/omok/ai/' + matchId + '/move', {
         method: 'POST', body: move,
@@ -159,7 +160,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
       if (code === 'NETWORK_ERROR' || code === 'GAME_SERVICE_UNAVAILABLE') setRetry(move);
       else { pendingMove.current = null; setRetry(null); }
       await refresh();
-      setError(omokErrorText(cause));
+      setMoveError({ matchId, turnNo: move.turnNo, message: omokErrorText(cause) });
     } finally { lock.current = false; setPending(false); }
   }
   function onPlace(position: OmokPosition) {
@@ -211,9 +212,11 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
       <aside className="arena-omok-match-side" aria-label="AI 대국 상태">
         <h3>경기 현황</h3>
         <p role="status">{status}</p>
-        <p className="arena-omok-panel-hint">나: 흑돌 · AI: 백돌</p>
+        <p className="arena-omok-panel-hint">나: 흑돌 · AI: 백돌 · {omokRuleText(snapshot.ruleSet)}</p>
         <p className="arena-omok-panel-hint">AI 대전은 오목 랭크 RP가 변하지 않습니다. XP는 서버 기록을 기준으로 합니다.</p>
         {error && <p role="alert" className="arena-omok-live-error">{error}</p>}
+        {!error && !finished && moveError?.matchId === matchId && moveError.turnNo === snapshot.turnNo &&
+          <p role="alert" className="arena-omok-live-error">{moveError.message}</p>}
         {retry && <div role="alert">
           <p>이전 착수의 결과가 불확실합니다. 같은 요청 번호로 재전송해 주세요.</p>
           <button className="arena-button" disabled={pending} onClick={() => void submitMove(retry)}>

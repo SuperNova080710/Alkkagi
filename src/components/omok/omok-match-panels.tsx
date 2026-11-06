@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { OmokBoardView, type OmokPosition, type OmokStone } from './omok-board-view';
+import { omokRuleText, type OmokRuleSet } from './omok-client-api';
 import { OmokResultOverlay } from './omok-result-overlay';
 import './omok-match-panels.css';
 import './omok-parity.css';
@@ -125,6 +126,7 @@ export type OmokMatchViewProps = {
   onReturn?: () => void;
   onRankedReplay?: () => void;
   mode?: 'casual' | 'ranked';
+  ruleSet?: OmokRuleSet;
   chat?: ReactNode;
   extra?: ReactNode;
 };
@@ -133,7 +135,7 @@ export function OmokMatchPanel({
   board, players, currentUserId, turnUserId, status, lastMove, winnerId,
   finishReason, pending = false, reconnecting = false, error, rematchReadyCount = 0,
   myRematchVote = false, onPlace, onForfeit, onRematch, onReturn,
-  onRankedReplay, mode = 'casual', chat, extra,
+  onRankedReplay, mode = 'casual', ruleSet, chat, extra,
 }: OmokMatchViewProps) {
   const me = players.find(p => p.id === currentUserId);
   const turn = players.find(p => p.id === turnUserId);
@@ -170,6 +172,7 @@ export function OmokMatchPanel({
       </div>
       <aside className="arena-omok-match-side" aria-label="대국 진행">
         <h3>경기 현황</h3>
+        {ruleSet && <p className="arena-omok-panel-hint">{omokRuleText(ruleSet)}</p>}
         <p role="status" aria-live="polite">{finished
           ? `대국 종료 · ${result}${finishReason ? ' · ' + finishReason : ''}`
           : reconnecting ? '연결 복구 중입니다. 서버 상태를 확인하고 있습니다.'

@@ -54,6 +54,12 @@ describe('Omok AI deterministic strategy', () => {
     }
   });
 
+  it('does not defend an overline as a black winning move under black forbidden rules', () => {
+    const board=boardWith([[7,4],[7,5],[7,6],[7,8],[7,9]],[[11,1],[11,2],[11,3]]);
+    expect(chooseOmokAiMove(board,'white','normal',6)).toEqual({row:7,col:7});
+    expect(chooseOmokAiMove(board,'white','normal',6,true)).not.toEqual({row:7,col:7});
+  });
+
   it('rejects full board, and explores without exponential growth', () => {
     const board: OmokBoard=Array.from({length:15},(_,r)=>
       Array.from({length:15},(_,c)=>(r+c)%2===0?'black':'white'));

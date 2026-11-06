@@ -12,7 +12,7 @@ export async function GET(_request: Request,{params}:{params:Promise<{id:string}
   try {
     const db=await createClient();
     const {data:match,error}=await db.from('omok_ai_matches')
-      .select('id,difficulty,turn_no,board_state,status,winner,finish_reason,created_at,finished_at')
+      .select('id,difficulty,turn_no,board_state,rule_set,status,winner,finish_reason,created_at,finished_at')
       .eq('id',id).maybeSingle();
     if(error) return NextResponse.json({error:'GAME_SERVICE_UNAVAILABLE'},{status:503});
     if(!match) return NextResponse.json({error:'MATCH_NOT_FOUND'},{status:404});

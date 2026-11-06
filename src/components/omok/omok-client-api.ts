@@ -22,6 +22,9 @@ export function omokErrorText(error: unknown): string {
     NOT_YOUR_TURN: '현재 착수할 차례가 아닙니다.',
     STALE_TURN: '경기 상태가 바뀌었습니다. 최신 대국을 다시 확인해 주세요.',
     CELL_OCCUPIED: '이미 돌이 놓인 자리입니다.',
+    OMOK_FORBIDDEN_DOUBLE_THREE: '흑돌은 33을 만들 수 없습니다. 다른 곳에 착수해 주세요.',
+    OMOK_FORBIDDEN_DOUBLE_FOUR: '흑돌은 44를 만들 수 없습니다. 다른 곳에 착수해 주세요.',
+    OMOK_FORBIDDEN_OVERLINE: '흑돌은 장목(6목 이상)을 만들 수 없습니다. 다른 곳에 착수해 주세요.',
     MATCH_FINISHED: '이미 종료된 경기입니다.',
     REQUEST_CONFLICT: '이 요청은 다른 좌표로 재사용할 수 없습니다.',
     CHAT_RATE_LIMIT: '메시지를 너무 빠르게 보냈습니다. 잠시 후 다시 시도해 주세요.',
@@ -100,12 +103,19 @@ export function parseRoom(data: unknown): RoomSnapshot {
     players,
   };
 }
+export type OmokRuleSet = 'freestyle' | 'black_forbidden';
+
+export function omokRuleText(ruleSet: OmokRuleSet): string {
+  return ruleSet === 'black_forbidden' ? '흑돌 33·44·장목 금지' : '자유룰 · 흑·백 5목 이상';
+}
+
 export type MatchSnapshot = {
   id: string; roomId: string | null;
   blackId: string; whiteId: string; turnUserId: string;
   turnNo: number; board: OmokBoardCells; status: 'active' | 'finished';
   winnerId: string | null; finishReason: string | null; lastMove: OmokPosition | null;
   turnDeadline: string | null;
+  ruleSet: OmokRuleSet;
 };
 export function parseMatch(data: unknown): MatchSnapshot {
   if (!isRecord(data) || !isRecord(data.match) || !Array.isArray(data.moves))
@@ -126,6 +136,7 @@ export function parseMatch(data: unknown): MatchSnapshot {
     blackId: m.black_id, whiteId: m.white_id, turnUserId: m.turn_user_id,
     turnNo: m.turn_no, board: m.board_state as OmokBoardCells,
     status: m.status, winnerId: isUuid(m.winner_id) ? m.winner_id : null,
+    ruleSet: m.rule_set === 'black_forbidden' ? 'black_forbidden' : 'freestyle',
     finishReason: typeof m.finish_reason === 'string' ? m.finish_reason : null,
     lastMove, turnDeadline: typeof m.turn_deadline === 'string' ? m.turn_deadline : null,
   };
