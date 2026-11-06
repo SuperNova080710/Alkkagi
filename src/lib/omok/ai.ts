@@ -1,6 +1,7 @@
 import {
   OMOK_SIZE, hasFive, validOmokBoard, type OmokBoard, type OmokMove, type Stone,
 } from '@/lib/omok/engine';
+import { blackMoveResult } from './black-rules';
 
 export const OMOK_AI_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type OmokAiDifficulty = typeof OMOK_AI_DIFFICULTIES[number];
@@ -35,10 +36,16 @@ function withStone(board: OmokBoard, move: OmokMove, color: Stone): OmokBoard {
   changed[move.row][move.col] = color;
   return changed;
 }
-function pointScore(board: OmokBoard, move: OmokMove, color: Stone): number {
+function pointScore(board: OmokBoard, move: OmokMove, color: Stone, restrictBlack: boolean): number {
   if (board[move.row][move.col] !== null) return -Infinity;
   const placed = withStone(board, move, color);
-  if (hasFive(placed, move.row, move.col, color)) return 1_000_000;
+  if (restrictBlack && color === 'black') {
+    const result = blackMoveResult(placed, move);
+    if (result === 'five') return 1_000_000;
+    if (result !== null) return -Infinity;
+  } else if (hasFive(placed, move.row, move.col, color)) {
+    return 1_000_000;
+  }
   let score = 0;
   for (const [dr, dc] of directions) {
     let stones = 1, open = 0;
@@ -64,8 +71,9 @@ function fastHash(board: OmokBoard, turn: number): number {
   return h;
 }
 function other(color: Stone): Stone { return color === 'black' ? 'white' : 'black'; }
-function bestOf(board: OmokBoard, moves: OmokMove[], color: Stone) {
-  return moves.map(move => ({ move, score: pointScore(board, move, color) }))
+function bestOf(board: OmokBoard, moves: OmokMove[], color: Stone, restrictBlack: boolean) {
+  return moves.map(move => ({ move, score: pointScore(board, move, color, restrictBlack) }))
+    .filter(({ score }) => score !== -Infinity)
     .sort((a, b) => b.score - a.score ||
       centerDistance(a.move) - centerDistance(b.move) ||
       a.move.row - b.move.row || a.move.col - b.move.col);
@@ -73,7 +81,7 @@ function bestOf(board: OmokBoard, moves: OmokMove[], color: Stone) {
 
 /** Pure deterministic decision function. Server decides when to call it. */
 export function chooseOmokAiMove(
-  board: OmokBoard, color: Stone, difficulty: OmokAiDifficulty, turn: number,
+  board: OmokBoard, color: Stone, difficulty: OmokAiDifficulty, turn: number, restrictBlack = false,
 ): OmokMove {
   if (!validOmokBoard(board)) throw Error('INVALID_BOARD');
   if (color !== 'black' && color !== 'white') throw Error('INVALID_STONE');
@@ -81,14 +89,18 @@ export function chooseOmokAiMove(
     throw Error('INVALID_DIFFICULTY');
   const moves = candidates(board);
   if (!moves.length) throw Error('NO_LEGAL_MOVE');
-  if (difficulty === 'easy') {
+  if (difficulty === 'easy' && !(restrictBlack && color === 'black'))
     return moves[fastHash(board, turn) % moves.length];
-  }
+
   const enemy = other(color);
-  const offense = bestOf(board, moves, color);
+  const offense = bestOf(board, moves, color, restrictBlack);
+  if (!offense.length) throw Error('NO_LEGAL_MOVE');
+  if (difficulty === 'easy') return offense[fastHash(board, turn) % offense.length].move;
   if (offense[0].score >= 1_000_000) return offense[0].move;
-  const defense = bestOf(board, moves, enemy);
-  if (defense[0].score >= 1_000_000) return defense[0].move;
+  const defense = bestOf(board, moves, enemy, restrictBlack);
+  const winningThreat = defense[0];
+  if (winningThreat && winningThreat.score >= 1_000_000 &&
+      offense.some(candidate => candidate.move === winningThreat.move)) return winningThreat.move;
 
   // Find tactical candidates from offense and defense. Keep the branching
   // factor bounded to stay within Vercel serverless CPU budgets.
@@ -109,7 +121,7 @@ export function chooseOmokAiMove(
     const responses = candidates(next);
     let worst = 0;
     for (const reply of responses) {
-      const score = pointScore(next, reply, enemy);
+      const score = pointScore(next, reply, enemy, restrictBlack);
       if (score > worst) worst = score;
       if (worst >= 1_000_000) break;
     }

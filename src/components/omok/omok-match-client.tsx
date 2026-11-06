@@ -26,6 +26,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   const [names, setNames] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<OmokChatRecord[]>([]);
   const [error, setError] = useState('');
+  const [moveError, setMoveError] = useState<{ matchId: string; turnNo: number; message: string } | null>(null);
   const [chatError, setChatError] = useState('');
   const [loading, setLoading] = useState(true);
   const [reconnecting, setReconnecting] = useState(false);
@@ -116,7 +117,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
 
   async function sendMove(move: ProposedMove) {
     if (lock.current) return;
-    lock.current = true; setPending(true); setError('');
+    lock.current = true; setPending(true); setError(''); setMoveError(null);
     try {
       await omokRequest<unknown>('/api/omok/matches/' + matchId + '/move', {
         method: 'POST', body: move,
@@ -124,7 +125,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
       moveRequest.current = null; setRetryMove(null);
       await load();
     } catch (cause) {
-      setError(omokErrorText(cause));
+      setMoveError({ matchId, turnNo: move.turnNo, message: omokErrorText(cause) });
       const unknownOutcome = !isRecord(cause) && !(cause instanceof Error) ? true :
         ('code' in Object(cause) && ['NETWORK_ERROR','GAME_SERVICE_UNAVAILABLE'].includes(
           String((cause as { code?: string }).code)));
@@ -218,7 +219,9 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
     <OmokMatchPanel board={match.board} lastMove={match.lastMove}
       players={players} currentUserId={currentUserId} turnUserId={match.turnUserId}
       status={match.status} winnerId={match.winnerId} finishReason={match.finishReason}
-      error={error} pending={pending || !!retryMove} reconnecting={reconnecting}
+      ruleSet={match.ruleSet}
+      error={error || (match.status === 'active' && moveError?.matchId === matchId && moveError.turnNo === match.turnNo ? moveError.message : '')}
+      pending={pending || !!retryMove} reconnecting={reconnecting}
       rematchReadyCount={readyCount} myRematchVote={myRematchVote}
       mode={kind} onPlace={propose} onForfeit={forfeit}
       onRematch={kind === 'casual' && match.roomId ? rematch : undefined}

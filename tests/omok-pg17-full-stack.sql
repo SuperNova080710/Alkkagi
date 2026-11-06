@@ -380,3 +380,24 @@ begin
 end;
 $invite_done$;
 rollback;
+
+\echo 'Apply black forbidden-move migration after the legacy scenarios'
+\i supabase/migrations/20261106070823_omok_forbidden_moves.sql
+do $forbidden_smoke$
+declare board jsonb:=to_jsonb(array_fill(null::text,array[15,15]));
+begin
+  board:=jsonb_set(board,'{7,6}','"black"');
+  board:=jsonb_set(board,'{7,8}','"black"');
+  board:=jsonb_set(board,'{6,7}','"black"');
+  board:=jsonb_set(board,'{8,7}','"black"');
+  board:=jsonb_set(board,'{7,7}','"black"');
+  if private.omok_black_move_result(board,7,7) is distinct from 'double_three' then
+    raise exception 'OMOK_BLACK_DOUBLE_THREE_NOT_DETECTED';
+  end if;
+  if has_function_privilege('authenticated','private.omok_black_move_result(jsonb,integer,integer)','EXECUTE')
+    or has_function_privilege('authenticated','public.commit_omok_ai_turn(uuid,uuid,uuid,integer,jsonb,integer,integer,integer,integer)','EXECUTE') then
+    raise exception 'OMOK_FORBIDDEN_HELPER_OR_AI_COMMIT_EXPOSED';
+  end if;
+  raise notice 'PASS: black forbidden-move migration, double three and ACL';
+end;
+$forbidden_smoke$;
