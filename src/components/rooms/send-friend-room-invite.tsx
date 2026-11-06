@@ -7,8 +7,9 @@ import { inviteTime, isRoomUuid, roomInviteError, roomInviteMutation,
   validInviteFriends, validSentRoomInvites, type RoomInviteSent,
 } from './room-invite-api';
 
-/** Only mounted by a server-verified host of a waiting, unfilled casual room. */
-export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
+/** Shown to the host of a waiting, unfilled casual room. */
+export function SendFriendRoomInvite({ roomId, game }: { roomId: string; game?: 'chess' }) {
+  const api = game === 'chess' ? '/api/chess/invites' : '/api/room-invites';
   const [selected, setSelected] = useState('');
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
@@ -18,7 +19,7 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
     usePlayerResource<unknown>('/api/friends');
   const { data: sent, error: sentError, loading: sentLoading, retry: retrySent } =
     usePlayerResource<unknown>(isRoomUuid(roomId)
-      ? '/api/room-invites/sent?roomId=' + encodeURIComponent(roomId) : null);
+      ? api + '/sent?roomId=' + encodeURIComponent(roomId) : null);
 
   useEffect(() => {
     const refresh = () => { if (document.visibilityState === 'visible') retrySent(); };
@@ -36,7 +37,7 @@ export function SendFriendRoomInvite({ roomId }: { roomId: string }) {
         !invitees.some(friend => friend.id === selected)) return;
     busy.current = true; setPending(true); setFeedback(''); setFailure(null);
     try {
-      const result = await roomInviteMutation<RoomInviteSent>('/api/room-invites', {
+      const result = await roomInviteMutation<RoomInviteSent>(api, {
         roomId, targetId: selected,
       });
       setFeedback(result.alreadyPending ? '이미 초대가 발송되어 있습니다.' : '친구에게 초대를 보냈습니다. 5분 안에 수락할 수 있습니다.');
