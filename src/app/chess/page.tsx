@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArenaLobbyLayout } from '@/components/lobby/arena-lobby-layout';
-import { ArenaModeCard } from '@/components/ui/arena';
-import { ChessRoomEntry } from '@/components/chess/chess-online';
+import { ChessLobbyModes } from '@/components/chess/chess-lobby-modes';
+import { LobbyRecoveryInline } from '@/components/lobby/lobby-recovery-inline';
 import { LogoutForm } from '@/components/auth/logout-form';
 import { requireUser } from '@/lib/auth/user';
 import { getChessRankedDashboard } from '@/lib/chess/ranked';
@@ -21,13 +21,10 @@ export default async function ChessLobbyPage() {
     experienceEnabled={process.env.EXPERIENCE_UI_ENABLED === 'true'}
     cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}
     data={{nickname:profile.data?.nickname ?? '플레이어',rating:dashboard?.rating ?? null,leaderboard:dashboard?.leaderboard ?? [],rankingUnavailable:!dashboard}}
-    recovery={games.data?.length ? <div className="chess-actions" aria-label="진행 중인 체스 경기">
-      {games.data.map((game, i) => <Link key={game.id} href={'/chess/matches/' + game.id}
-        className="arena-button arena-button--outline">진행 중인 경기 {i+1}</Link>)}
-    </div> : null}
-    modes={<div className="arena-modes">
-      <ArenaModeCard game="chess" mode="casual"><ChessRoomEntry/></ArenaModeCard>
-      <ArenaModeCard game="chess" mode="ranked"><Link href="/chess/ranked" className="arena-button arena-button--gold">랭크전</Link></ArenaModeCard>
-      <ArenaModeCard game="chess" mode="ai"><Link href="/chess/ai" className="arena-button">난이도 선택</Link></ArenaModeCard>
-    </div>}/>;
+    recovery={<LobbyRecoveryInline hasMatches={Boolean(games.data?.length)} unavailable={Boolean(games.error)}>
+      {games.data?.map((game, i) => <Link key={game.id} href={'/chess/matches/' + game.id}
+        className="arena-button arena-button--outline">체스 대국 {i + 1} 계속하기</Link>)}
+    </LobbyRecoveryInline>}
+    modes={<ChessLobbyModes invitesEnabled={process.env.FRIENDS_UI_ENABLED === 'true' &&
+      process.env.ROOM_INVITES_UI_ENABLED === 'true'}/>}/>;
 }

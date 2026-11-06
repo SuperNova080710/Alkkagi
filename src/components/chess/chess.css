@@ -15,15 +15,13 @@
 }
 .chess-page { padding: 1rem 0; }
 .chess-actions { display: flex; gap: .65rem; flex-wrap: wrap; align-items: center; }
-.chess-join { display: grid; gap: .65rem; }
-.chess-join input { min-width: 0; width: 100%; border: 1px solid var(--arena-line); border-radius: 8px; padding: .65rem; }
-.chess-join button { width: 100%; }
 .chess-game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, .5fr); gap: 1rem; align-items: start; }
 .chess-board { width: min(100%, 40rem, calc(100dvh - 11rem)); aspect-ratio: 1; margin: 0 auto;
-  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); overflow: hidden;
+  display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr));
+  container-type: inline-size; overflow: hidden;
   border: .4rem solid #654b32; border-radius: .75rem; box-shadow: var(--arena-shadow); }
-.chess-square { position: relative; display: grid; place-items: center; padding: 0; min-width: 0;
-  border: 0; font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif; font-size: clamp(1rem, 5vw, 3.2rem); line-height: 1; }
+.chess-square { position: relative; display: grid; place-items: center; padding: 0; min-width: 0; min-height: 0;
+  border: 0; font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif; font-size: min(9cqw, 3.2rem); line-height: 1; }
 .chess-square--light { background: #f3dfb2; }
 .chess-square--dark { background: #81906c; }
 .chess-square[aria-pressed="true"] { box-shadow: inset 0 0 0 4px #e6a231; }
@@ -38,7 +36,9 @@
 @media (max-width: 720px) {
   .chess-game-layout { grid-template-columns: minmax(0, 1fr); }
   .chess-board { width: min(100%, 35rem); }
-  .chess-square { font-size: clamp(1rem, 8vw, 3.2rem); }
 }
 .chess-mode-piece { position: absolute; inset: 12% 6% auto auto; color: #fbe2ab99;
   font-size: clamp(3.2rem, 9vw, 8rem); line-height: 1; text-shadow: 0 4px #162a2380; }
+
+.chess-board-stage { position: relative; min-width: 0; }
+.chess-casual-entry { display: grid; gap: .8rem; }

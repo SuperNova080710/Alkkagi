@@ -1,14 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArenaPanel } from '@/components/ui/arena-panel';
 import { chooseChessAiMove, type ChessDifficulty } from '@/lib/chess/ai';
 import { initialChessState, inspectChessState, parseChessMove, playChessMove, type ChessMove, type ChessState } from '@/lib/chess/engine';
+import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import { ChessBoard } from './chess-board';
+import { ChessDifficultyForm, chessDifficultyLabels as levels } from './chess-difficulty-form';
 
 type Session = {difficulty:ChessDifficulty; state:ChessState; notation:string[]; resigned:boolean};
-const levels = {easy:'쉬움',normal:'보통',hard:'어려움'} as const;
+const finishReasons = {
+  checkmate: '체크메이트', stalemate: '스테일메이트', 'insufficient-material': '기물 부족',
+  'threefold-repetition': '3회 반복', 'fifty-move-rule': '50수 규칙',
+};
+
+function newSession(difficulty: ChessDifficulty): Session {
+  return {difficulty, state:initialChessState(), notation:[], resigned:false};
+}
+
+function save(key: string, session: Session) {
+  try { localStorage.setItem(key, JSON.stringify(session)); }
+  catch { /* Practice can continue for the current tab. */ }
+}
 
 function recover(key: string): Session | null {
   try {
@@ -23,6 +38,8 @@ function recover(key: string): Session | null {
 }
 
 export function ChessAi({userId}: {userId:string}) {
+  const router = useRouter();
+  const replay = useRef<HTMLDialogElement>(null);
   const key = 'chess-practice-v040:' + userId;
   const [session,setSession] = useState<Session|null>(null);
   const [loaded,setLoaded] = useState(false);
@@ -32,16 +49,22 @@ export function ChessAi({userId}: {userId:string}) {
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {
-      if (!cancelled) {setSession(recover(key)); setLoaded(true);}
+      if (cancelled) return;
+      const chosen = window.location.hash.slice(1);
+      if (Object.hasOwn(levels, chosen)) {
+        const next = newSession(chosen as ChessDifficulty);
+        save(key, next);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        setSession(next);
+      } else {
+        setSession(recover(key));
+      }
+      setLoaded(true);
     });
     return () => {cancelled = true;};
   },[key]);
   useEffect(() => {
-    if (!loaded) return;
-    try {
-      if (session) localStorage.setItem(key,JSON.stringify(session));
-      else localStorage.removeItem(key);
-    } catch { /* Practice can continue for the current tab. */ }
+    if (loaded && session) save(key, session);
   },[key,loaded,session]);
 
   useEffect(() => {
@@ -63,39 +86,49 @@ export function ChessAi({userId}: {userId:string}) {
     if (next.ok) setSession({...session,state:next.state,notation:[...session.notation,next.san]});
   }
 
+  function start(difficulty: ChessDifficulty) {
+    setError('');
+    setSession(newSession(difficulty));
+    replay.current?.close();
+  }
+
   if (!loaded) return <p role="status">연습 대전을 확인하는 중입니다.</p>;
   if (!session || !position) return <ArenaPanel title="체스 AI 대전">
-    <p>난이도를 선택하면 백으로 바로 시작합니다. 연습 기보는 이 브라우저에 저장합니다.</p>
-    <div className="chess-actions">
-      {(Object.keys(levels) as ChessDifficulty[]).map(difficulty =>
-        <button className="arena-button" key={difficulty} type="button"
-          onClick={() => {setError('');setSession({difficulty,state:initialChessState(),notation:[],resigned:false});}}>
-          {levels[difficulty]}
-        </button>)}
-    </div>
-    <Link href="/chess" className="arena-text-link">체스 로비</Link>
+    <ChessDifficultyForm onStart={start}>
+      <Link href="/chess" className="arena-text-link">체스 로비</Link>
+    </ChessDifficultyForm>
   </ArenaPanel>;
+
   const finished = Boolean(position.outcome || session.resigned);
-  const status = session.resigned ? '패배 · 기권'
-    : position.outcome ? position.outcome.winner === 'w' ? '승리 · 체크메이트'
-      : position.outcome.winner === 'b' ? '패배 · 체크메이트' : '무승부'
-      : position.turn === 'w' ? '내 차례' : 'AI가 수를 고르는 중입니다.';
+  const outcome = session.resigned || position.outcome?.winner === 'b' ? '패배'
+    : position.outcome?.winner === 'w' ? '승리' : '무승부';
+  const reason = session.resigned ? '기권' : position.outcome ? finishReasons[position.outcome.reason] : null;
   return <div className="chess-game-layout">
-    <ChessBoard key={session.notation.length} fen={position.fen} black={false}
-      enabled={!finished && position.turn === 'w'} onMove={play}/>
+    <div className="chess-board-stage">
+      <ChessBoard key={session.notation.length} fen={position.fen} black={false}
+        enabled={!finished && position.turn === 'w'} onMove={play}/>
+      {finished && <OmokResultOverlay game="chess" mode="ai" outcome={outcome} finishReason={reason}
+        onReplay={() => replay.current?.showModal()} onReturn={() => router.push('/chess')}/>}
+    </div>
     <ArenaPanel title={'체스 AI · ' + levels[session.difficulty]}>
-      <p role="status">{status}{!finished && position.inCheck ? ' · 체크' : ''}</p>
-      {error && <><p role="alert">{error}</p>
+      <p role="status">{finished ? outcome : position.turn === 'w' ? '내 차례' : 'AI가 수를 고르는 중입니다.'}
+        {!finished && position.inCheck ? ' · 체크' : ''}</p>
+      {!finished && error && <><p role="alert">{error}</p>
         <button type="button" className="arena-button" onClick={() => setError('')}>AI 다시 시도</button></>}
       <h3>기보</h3>
       <ol className="chess-history">{session.notation.map((san,i) => <li key={i}>{san}</li>)}</ol>
-      <div className="chess-actions">
-        <button type="button" className="arena-button" onClick={() => {
-          if (finished) {setError('');setSession(null);}
-          else setSession({...session,resigned:true});
-        }}>{finished ? '다시하기' : '기권'}</button>
+      {!finished && <div className="chess-actions">
+        <button type="button" className="arena-button" onClick={() => setSession({...session,resigned:true})}>기권</button>
         <Link className="arena-button arena-button--outline" href="/chess">체스 로비</Link>
-      </div>
+      </div>}
     </ArenaPanel>
+    {finished && <dialog ref={replay} className="arena-dialog" aria-labelledby="chess-replay-title">
+      <div className="arena-dialog-heading">
+        <h2 id="chess-replay-title">AI와 다시 한 판!</h2>
+        <button type="button" className="arena-close" aria-label="닫기"
+          onClick={() => replay.current?.close()}>×</button>
+      </div>
+      <ChessDifficultyForm initial={session.difficulty} onStart={start}/>
+    </dialog>}
   </div>;
 }
