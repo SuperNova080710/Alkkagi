@@ -1,6 +1,7 @@
 'use client';
 
 import './lobby-identity-summary.css';
+import type { ArenaGame } from './game-switcher';
 import { LobbyExperienceMini } from '@/components/lobby/lobby-experience-mini';
 import { CosmeticPreview } from '@/components/cosmetics/cosmetic-preview';
 import { isCosmeticInventory } from '@/components/cosmetics/cosmetic-api';
@@ -25,11 +26,11 @@ function LobbyCosmeticAvatar() {
 export function LobbyIdentitySummary({ nickname, rating, game, experienceEnabled = false, cosmeticsEnabled = false }: {
   nickname: string;
   rating: number | null;
-  game: 'alkkagi' | 'omok';
+  game: ArenaGame;
   experienceEnabled?: boolean;
   cosmeticsEnabled?: boolean;
 }) {
-  const ratingLabel = game === 'omok' ? '오목 RP' : 'RP';
+  const ratingLabel = game === 'chess' ? '체스 RP' : game === 'omok' ? '오목 RP' : 'RP';
   return <div className="arena-player-summary arena-player-summary--shared" aria-label="내 공통 프로필">
     {cosmeticsEnabled ? <LobbyCosmeticAvatar/>
       : <span className="arena-avatar" aria-hidden="true">●</span>}
