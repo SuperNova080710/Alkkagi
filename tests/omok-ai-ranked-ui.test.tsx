@@ -17,6 +17,15 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/components/auth/logout-form', () => ({
   LogoutForm: () => <button type="button">로그아웃</button>,
 }));
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => ({
+    from: () => ({
+      select() { return this; },
+      eq() { return this; },
+      maybeSingle: async () => ({ data: { nickname: '오목 사용자' }, error: null }),
+    }),
+  }),
+}));
 import AiLobbyPage from '../src/app/omok/ai/page';
 import AiMatchPage from '../src/app/omok/ai/[id]/page';
 import RankedLobbyPage from '../src/app/omok/ranked/page';
@@ -65,7 +74,7 @@ describe('v0.3.0 independent Omok ranked UI (#244)', () => {
     const markup = renderToStaticMarkup(<OmokRankedLobby/>);
     expect(markup).toContain('나의 오목 RP');
     expect(markup).toContain('랭크 매칭 시작');
-    expect(markup).toContain('오목 랭킹 TOP 0');
+    expect(markup).toContain('리더보드 TOP 100');
     expect(markup).not.toContain('1,000 RP');
   });
   it('enters a matched game immediately even when the leaderboard is still pending then returns 503', async () => {
@@ -184,7 +193,7 @@ describe('protected AI/ranked pages and UI boundaries', () => {
     const rank = renderToStaticMarkup(await RankedLobbyPage());
     const game = renderToStaticMarkup(await RankedMatchPage({params:Promise.resolve({id})}));
     expect(ai).toContain('AI 오목 연습');
-    expect(rank).toContain('오목 랭크전');
+    expect(rank).toContain('나의 오목 RP');
     expect(game).toContain('오목 경기 정보를 불러오는 중');
     expect(auth).toHaveBeenCalledTimes(3);
   });
@@ -192,7 +201,9 @@ describe('protected AI/ranked pages and UI boundaries', () => {
     const css = readFileSync(new URL('../src/components/omok/omok-competitive.css',import.meta.url),'utf8');
     expect(css).toContain('max-width:580px');
     expect(css).toContain('min-height:44px');
-    expect(css).toContain('overflow-x:auto');
+    expect(css).toContain('overflow-x:hidden');
+    expect(css).toContain('overflow-y:auto');
+    expect(css).not.toContain('min-width:560px');
     expect(css).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
   });
 });

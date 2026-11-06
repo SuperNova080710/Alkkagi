@@ -24,23 +24,51 @@ describe('Omok pre-integration presentation panels (#254)', () => {
     const html = room([me]);
     expect(html).toContain('오목 대기실');
     expect(html).toContain('ABCD12');
-    expect(html).toContain('참가자 1/2');
-    expect(html).toContain('상대 입장 대기 중');
+    expect(html).toContain('참가자 <span>1/2</span>');
+    expect(html).toContain('친구 기다리는 중');
+    expect(html).toContain('arena-room-seats');
+    expect(html).toContain('arena-omok-waiting');
+    expect(html).not.toContain('class="arena-waiting--v2 arena-omok-waiting"');
+    expect(html).toContain('arena-invite');
+    expect(html).toContain('arena-button arena-button--gold');
+    expect(html).toContain('선공 · 흑돌');
+    expect(html).toContain('후공 · 백돌');
     expect(html).toMatch(/disabled=""[^>]*>경기 시작/);
-    expect(html).toContain('방 나가기');
+    expect(html).toContain('방 닫기');
     expect(html).not.toContain('href="/omok/rooms/');
   });
 
   it('shows both players and lets host propose start with ready room', () => {
     const html = room([me, other]);
-    expect(html).toContain('참가자 2/2');
+    expect(html).toContain('참가자 <span>2/2</span>');
     expect(html).toContain('두 번째 참가자');
     expect(html).toContain('두 명이 모였습니다');
+    const reverse = room([other, me]);
+    const firstSeat = reverse.indexOf('선공 · 흑돌');
+    const meName = reverse.indexOf('긴 닉네임 사용자', firstSeat);
+    const secondSeat = reverse.indexOf('후공 · 백돌');
+    expect(firstSeat).toBeGreaterThan(-1);
+    expect(meName).toBeGreaterThan(firstSeat);
+    expect(meName).toBeLessThan(secondSeat);
+    expect(reverse.indexOf('두 번째 참가자', secondSeat)).toBeGreaterThan(secondSeat);
     expect(html).not.toMatch(/disabled=""[^>]*>경기 시작/);
     const guest = renderToStaticMarkup(<OmokRoomPanel code="ABCD12"
       players={[me, other]} hostId="me" currentUserId="other" onLeave={() => {}}/>);
     expect(guest).toContain('방장의 경기 시작을 기다리고 있습니다');
     expect(guest).not.toContain('>경기 시작</button>');
+    expect(guest).toContain('방 나가기');
+  });
+
+  it('shares the Alkkagi invitation column without breaking the Omok host callback', () => {
+    const html = renderToStaticMarkup(<OmokRoomPanel code="ABCD12" players={[me]}
+      hostId="me" currentUserId="me" onStart={() => {}} onLeave={() => {}}
+      invitePanel={<section>오목 친구 초대</section>}/>);
+    expect(html).toContain('arena-room-side');
+    expect(html).toContain('오목 친구 초대');
+    const css = readFileSync(new URL('../src/components/omok/omok-waiting-parity.css', import.meta.url), 'utf8');
+    expect(css).toContain('arena-omok-waiting');
+    expect(css).toContain('min-height:44px');
+    expect(css).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
   });
 
   it('never computes a winner or changes the board; renders only supplied server state', () => {

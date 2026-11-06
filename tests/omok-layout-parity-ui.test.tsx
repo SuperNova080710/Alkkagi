@@ -32,7 +32,8 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     expect(html).toContain('새 방 만들기');
     expect(html).toContain('코드로 참가');
     expect(html).toContain('href="/omok/ranked"');
-    expect(html).toContain('href="/omok/ai"');
+    expect(html).not.toContain('href="/omok/ai"');
+    expect(html).toContain('AI 연습 시작');
     expect(html).not.toContain('href="#omok-casual-start"');
   });
 
@@ -64,17 +65,21 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     expect(ai).toContain('MATCH RESULT');
     expect(ai).toContain('패배');
     expect(ai).toContain('기권');
-    expect(ai).toContain('같은 난이도로 다시하기');
+    expect(ai).toContain('다시하기 · 난이도 선택');
     expect(ai).not.toContain('RP 변동');
     const source = readFileSync(new URL('../src/components/omok/omok-ai-client.tsx', import.meta.url), 'utf8');
     expect(source).toContain('<OmokResultOverlay');
+    expect(source).toContain('onReplay={chooseReplayDifficulty}');
+    expect(source).toContain('replayDialog.current?.showModal()');
+    expect(source).toContain('initialDifficulty={snapshot.difficulty}');
+    expect(source).not.toContain('async function again()');
     expect(source).toContain("snapshot.winner === 'human'");
     expect(source).not.toContain('calculateWinner');
   });
 
   it('keeps chat and real ranked settlement beside the board, not below it', () => {
     const client = readFileSync(new URL('../src/components/omok/omok-match-client.tsx', import.meta.url), 'utf8');
-    expect(client).toContain('chat={<OmokChatPanel');
+    expect(client).toContain('chat={chatEnabled ? <OmokChatPanel');
     expect(client).toContain('<OmokRankedMatchMeta');
     expect(client).toContain('onRankedReplay=');
     expect(client).toContain('parseQueueState');
@@ -82,10 +87,31 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     const panel = readFileSync(new URL('../src/components/omok/omok-match-panels.tsx', import.meta.url), 'utf8');
     expect(panel).toContain('arena-omok-board-stage');
     expect(panel).toContain('{extra}');
-    expect(panel).toContain('{chat}');
+    expect(panel).toContain("{mode === 'casual' ? chat : null}");
     const rankedPage = readFileSync(
       new URL('../src/app/omok/ranked/matches/[id]/page.tsx', import.meta.url), 'utf8');
     expect(rankedPage).not.toContain('<OmokRankedMatchMeta');
+  });
+
+  it('shows chat only in casual matches while ranked matches keep RP and clock panels', () => {
+    const prop = <aside data-chat-fixture="true">대전 채팅</aside>;
+    const casual = renderToStaticMarkup(<OmokMatchPanel board={board}
+      players={[me, other]} currentUserId="me" turnUserId="me"
+      status="active" mode="casual" chat={prop}/>);
+    const ranked = renderToStaticMarkup(<OmokMatchPanel board={board}
+      players={[me, other]} currentUserId="me" turnUserId="me"
+      status="active" mode="ranked" chat={prop}
+      extra={<div data-ranked-meta="true">남은 턴 시간</div>}/>);
+    expect(casual).toContain('data-chat-fixture');
+    expect(ranked).not.toContain('data-chat-fixture');
+    expect(ranked).toContain('data-ranked-meta');
+    expect(ranked).toContain('arena-omok-match-panel--ranked');
+    const client = readFileSync(new URL('../src/components/omok/omok-match-client.tsx', import.meta.url), 'utf8');
+    expect(client).toContain("const chatEnabled = kind === 'casual'");
+    expect(client).toContain("if (chatEnabled) void loadChat()");
+    expect(client).toContain('if (chatEnabled) channel?.on');
+    expect(client).toContain('chat={chatEnabled ? <OmokChatPanel');
+    expect(client).toContain('if (!chatEnabled) return false');
   });
 
   it('shrinks a square board using viewport height rather than hide document scrolling', () => {

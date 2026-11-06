@@ -27,6 +27,7 @@ export function omokErrorText(error: unknown): string {
     CHAT_RATE_LIMIT: '메시지를 너무 빠르게 보냈습니다. 잠시 후 다시 시도해 주세요.',
     INVALID_MESSAGE: '메시지는 1~280자로 입력해 주세요.',
     CHAT_CLOSED: '이 경기의 채팅이 종료되었습니다.',
+    CHAT_NOT_AVAILABLE: '오목 랭크전에서는 채팅을 사용할 수 없습니다.',
     FRIEND_NOT_AVAILABLE: '초대할 수 없는 친구입니다.',
     ROOM_INVITE_RATE_LIMIT: '초대 발송 제한에 도달했습니다.',
     ROOM_INVITE_NOT_FOUND: '초대가 만료되었거나 이미 처리되었습니다.',

@@ -37,5 +37,6 @@ export default async function OmokPage() {
   };
   return <OmokLobbyView data={data} account={<LogoutForm />}
     friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}
-    cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}/>;
+    cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}
+    experienceEnabled={process.env.EXPERIENCE_UI_ENABLED === 'true'}/>;
 }

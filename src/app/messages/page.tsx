@@ -19,7 +19,7 @@ export default async function MessagesPage({
   const initialPeer = typeof query.peer === 'string' && isDmPeerId(query.peer) &&
     query.peer !== user.id ? query.peer : null;
 
-  return <ArenaShell current="friends">
+  return <ArenaShell current="messages">
     <div className="arena-service arena-dm-page">
       <header className="arena-service-heading">
         <div><p className="arena-section-kicker">FRIENDS · DIRECT MESSAGES</p>

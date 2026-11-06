@@ -2,6 +2,21 @@
 
 Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production 배포**를 분리합니다. `main`/운영에 없는 변경을 출시 완료로 표시하지 않습니다. [릴리스 프로세스](docs/release-process.md) · [2026-11-03 상태](docs/current-status-2026-11-03.md).
 
+## [0.3.1] — 오목 랭크전 레이아웃 및 채팅 정책 핫픽스 (2026-11-04)
+
+- **랭크전 화면:** `/omok/ranked/matches/[id]`에서 상단 링크, 경기판, 턴 시간·RP, 하단 푸터의 전체 높이 예산을 조정해 표준 데스크톱의 불필요한 문서 스크롤을 최소화합니다.
+- **랭크전 채팅:** 랭크 매치의 채팅 UI/폴링/Realtime 구독을 비활성화하고 채팅 GET/POST API를 인증·RLS 검증 후 403으로 차단합니다. **일반전 채팅은 유지**합니다.
+- **품질:** CI 전용 7-뷰포트 Chromium 랭크 경기 fixture 및 채팅 경계 회귀 테스트 추가. 운영용 fixture 라우트는 포함하지 않습니다.
+- **운영:** DB 마이그레이션·알까기 판정/RP·오목 엔진과 기존 운영 기능 플래그는 변경하지 않습니다. 정식 Production 배포 결과는 [#298](https://github.com/SuperNova080710/Alkkagi/issues/298)에 기록합니다.
+
+## [0.3.0] — 오목 정식 릴리스 후보 승인 (2026-11-04)
+
+- **출시 범위:** 기존 알까기 유지, 오목 15×15 자유룰, 일반전·AI 3단계·독립 랭크/랭킹, 친구 초대·채팅·재대결, 공통 프로필·레벨·경험치.
+- **UI:** 게임별 랭킹 직접 전환, 일반전 대화상자·대기실 공통 디자인, AI 난이도 선택/다시하기, TOP 100 리더보드 가로 스크롤 제거, 반응형 화면 검증.
+- **데이터베이스:** Supabase PostgreSQL 17.11 운영에 오목 SQL 001~006 적용 이력 확인. 이미 적용된 SQL을 재실행하지 않습니다.
+- **릴리스 관리:** `release/v0.3.0` Preview 사용자 인수 후 2026-11-04 Production 승인을 받았습니다. 실제 운영 배포·도메인·릴리스 SHA는 [#224](https://github.com/SuperNova080710/Alkkagi/issues/224)에서 별도로 확인합니다.
+- **검증 경계:** 자동 Quality/Chromium/PG17과 사용자의 Preview 화면 인수는 별도이며, 운영 2계정 Realtime·전체 게임 플레이 E2E는 별도 검증이 필요합니다.
+
 ## [0.2.0] — main 코드 병합 및 Production READY (2026-11-03)
 
 > [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207)은 **`main`에 병합**(`dc5a2f4`)됐고 Vercel Production **READY·서비스 도메인 별칭**을 확인했습니다. 그러나 실제 사용자 A/B·Realtime·AI 및 모바일 E2E, Production Smoke, 공식 `v0.2.0` Git tag/GitHub Release는 **확인되지 않았습니다**. [배포 기록](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr).
@@ -30,11 +45,6 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 ## [Unreleased]
 
 - 0.2.0 Production 코드는 배포됐으나 실사용 QA·AI Preview 인증키 문제 및 공식 태그/Release 발행은 별도 인수합니다. 발견된 수정은 후속 버전/핫픽스로 관리합니다.
-
-## Next — v0.3.0 제안 (개발 기획 중)
-
-- 오목 15×15 자유룰 두 번째 게임 확장 [Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217). 설계 Draft PR #231, 도메인 엔진 Draft PR #230의 구현·리뷰를 시작했습니다.
-- 오목 독립 DB/2인 실시간 경기/AI/랭크 RP/로비 및 E2E는 #220~#224의 **미구현 또는 검토 중인 범위**입니다. v0.2.0 출시 후보에 포함하지 않으며 실제 출시 버전으로 간주하지 않습니다.
 
 ## 이전 Production 기준점
 

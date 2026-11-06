@@ -24,10 +24,6 @@
   background:radial-gradient(circle at 30% 23%,#fff,#d4cbb6 85%);
 }
 .arena-hero--omok .arena-hero-copy {text-shadow:0 2px 8px #091b16;}
-.arena-hero--omok .arena-omok-hero-quicknote {
-  max-width:min(92vw,650px);margin:6px auto 0;
-  color:#fff2d2;font-size:clamp(10px,1vw,12px);font-weight:700;line-height:1.35;
-}
 .arena-mode--omok .arena-mode-omok-art {
   position:absolute;inset:0;
   background:
@@ -51,11 +47,7 @@
 }
 .arena-mode--omok .arena-mode-heading {text-shadow:0 2px 6px #163026;}
 .arena-avatar--omok {background:radial-gradient(circle at 30% 25%,#fff,#d3c8aa 70%);color:#232323;}
-.arena-omok-entry-dialog {width:min(680px,calc(100vw - 24px));max-height:min(88dvh,780px);overflow-y:auto;}
-.arena-omok-entry-dialog .arena-omok-live-panel {margin-top:0;box-shadow:none;}
-.arena-omok-entry-dialog .arena-omok-live-panel .arena-omok-live-heading {gap:6px;}
-.arena-omok-entry-dialog .arena-omok-live-panel h2 {font-size:16px;}
-.arena-omok-lobby-grid .arena-mode--omok {height:100%;}
+.arena-omok-rules { font-size: 12px; line-height: 1.4; margin-bottom: 6px; }
 
 /* Keep the 15x15 board within the FULL game page, including ArenaShell header,
    footer, game back-link, player badges, status and coordinate input. A 480px
@@ -122,4 +114,22 @@
 }
 @media(prefers-reduced-motion:reduce) {
   .arena-mode--omok .arena-button {transition:none;}
+}
+
+/* v0.3.1 (#299): only the live ranked-match page uses the compact full-shell
+   viewport budget. Keep normal document scrolling on mobile/short screens;
+   never mask overflow or shrink touch/keyboard targets to hide a scrollbar. */
+@media (min-width:881px) and (min-height:700px) {
+  .arena-omok-overview--ranked { gap:10px; padding-block:6px 0; }
+  .arena-omok-overview--ranked > .arena-button { justify-self:start; min-height:44px; }
+  .arena-omok-live-stack--ranked { gap:8px; }
+  .arena-omok-match-panel--ranked { padding:10px; }
+  .arena-omok-match-panel--ranked .arena-omok-panel-heading { margin-bottom:6px; }
+  .arena-omok-match-panel--ranked .arena-omok-match-players { margin:4px 0 8px; }
+  .arena-omok-match-panel--ranked .arena-omok-match-side { padding:9px; gap:6px; }
+  .arena-omok-match-panel--ranked .arena-omok-ranked-meta { padding:8px; margin:0; }
+  .arena-omok-match-panel--ranked .arena-omok-ranked-meta .arena-omok-panel-hint { margin:4px 0; }
+  .arena-omok-match-panel--ranked .arena-omok-match-layout .arena-omok-board-stage .arena-omok-board-view {
+    width:min(100%,510px,max(240px,calc(100dvh - 520px)));
+  }
 }

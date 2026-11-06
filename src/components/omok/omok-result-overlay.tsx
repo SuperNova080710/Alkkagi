@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import './omok-result-parity.css';
 
 export type OmokOutcome = '승리' | '패배' | '무승부';
 export type OmokResultOverlayProps = {
@@ -37,8 +38,8 @@ export function OmokResultOverlay({
   const replayLabel = mode === 'casual'
     ? myRematchVote ? '상대 수락 대기 중' : '재도전 · 다시하기'
     : mode === 'ranked' ? '재도전 · 새 랭크 매칭'
-      : '같은 난이도로 다시하기';
-  return <div className="game-result-overlay absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-slate-950/70 p-3"
+      : '다시하기 · 난이도 선택';
+  return <div className="game-result-overlay arena-omok-result-overlay absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-slate-950/70 p-3"
     aria-label="오목 경기 결과">
     <div ref={card} tabIndex={-1}
       className="game-result-card w-full max-w-sm rounded-2xl border border-slate-600 bg-slate-950/95 p-5 text-center shadow-2xl sm:p-6"

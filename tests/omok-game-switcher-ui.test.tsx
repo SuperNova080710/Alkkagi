@@ -87,8 +87,7 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     const html = renderToStaticMarkup(await OmokPage());
     expect(auth).toHaveBeenCalledOnce();
     expect(html).toContain('오목 아레나');
-    expect(html).toContain('OMOK ARENA · 15×15');
-    expect(html).toContain('가로·세로·대각선');
+    expect(html).not.toContain('arena-omok-rules');
     expect(html).toContain('aria-label="오목 대전 방식"');
     expect(html).toContain('href="/lobby"');
     expect(html).toContain('aria-current="page"');
@@ -101,7 +100,8 @@ describe('multi-game lobby UI v0.3 (#236)', () => {
     expect(html).toContain('일반전');
     expect(html).toContain('AI 대전');
     expect(html).toContain('랭크전');
-    expect(html).toContain('href="/omok/ai"');
+    expect(html).not.toContain('href="/omok/ai"');
+    expect(html).toContain('AI 연습 시작');
     expect(html).toContain('href="/omok/ranked"');
     expect(html).not.toContain('준비 중</button>');
     expect(html).toContain('arena-lobby-grid arena-lobby-grid--multigame');
