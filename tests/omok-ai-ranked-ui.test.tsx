@@ -197,13 +197,13 @@ describe('protected AI/ranked pages and UI boundaries', () => {
     expect(game).toContain('오목 경기 정보를 불러오는 중');
     expect(auth).toHaveBeenCalledTimes(3);
   });
-  it('isolates stylesheet without hiding global scroll or modifying Alkkagi arena', () => {
+  it('keeps Omok difficulty responsive and limits leaderboard scrolling to its container', () => {
     const css = readFileSync(new URL('../src/components/omok/omok-competitive.css',import.meta.url),'utf8');
     expect(css).toContain('max-width:580px');
     expect(css).toContain('min-height:44px');
-    expect(css).toContain('overflow-x:hidden');
-    expect(css).toContain('overflow-y:auto');
-    expect(css).not.toContain('min-width:560px');
+    const rankedCss = readFileSync(new URL('../src/components/ranked/ranked-presentation.css', import.meta.url), 'utf8');
+    expect(rankedCss).toMatch(/\.arena-ranked-leaderboard-scroll\s*\{[^}]*overflow-y:\s*auto/);
+    expect(rankedCss).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
     expect(css).not.toMatch(/body\s*\{[^}]*overflow:\s*hidden/);
   });
 });
