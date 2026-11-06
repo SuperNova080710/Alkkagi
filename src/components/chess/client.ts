@@ -61,7 +61,9 @@ export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'ma
   }, [path, accept]);
 
   useEffect(() => {
-    const load = () => { void refresh(); };
+    const sequenceRef = sequence;
+    let active = true;
+    const load = () => { if (active) void refresh(); };
     queueMicrotask(load);
     const poll = window.setInterval(() => {
       if (document.visibilityState === 'visible') load();
@@ -80,7 +82,8 @@ export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'ma
     }, load);
     channel?.subscribe(status => { if (status === 'SUBSCRIBED') load(); });
     return () => {
-      sequence.current++;
+      active = false;
+      sequenceRef.current++;
       window.clearInterval(poll);
       window.removeEventListener('focus', load);
       window.removeEventListener('online', load);
