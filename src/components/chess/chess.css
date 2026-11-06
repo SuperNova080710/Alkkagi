@@ -1,0 +1,44 @@
+.arena-chess-hero {
+  background-color: #204b3c;
+  background-image: conic-gradient(#173d34 25%, transparent 0 50%, #173d34 0 75%, transparent 0);
+  background-size: 5rem 5rem;
+}
+.arena-chess-hero-piece {
+  position: absolute;
+  inset: auto 8% -18% auto;
+  z-index: -1;
+  font-size: clamp(9rem, 27vw, 27rem);
+  line-height: 1;
+  color: #ffe4a575;
+  transform: rotate(-10deg);
+  pointer-events: none;
+}
+.chess-page { padding: 1rem 0; }
+.chess-actions { display: flex; gap: .65rem; flex-wrap: wrap; align-items: center; }
+.chess-join { display: grid; gap: .65rem; }
+.chess-join input { min-width: 0; width: 100%; border: 1px solid var(--arena-line); border-radius: 8px; padding: .65rem; }
+.chess-join button { width: 100%; }
+.chess-game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, .5fr); gap: 1rem; align-items: start; }
+.chess-board { width: min(100%, 40rem, calc(100dvh - 11rem)); aspect-ratio: 1; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); overflow: hidden;
+  border: .4rem solid #654b32; border-radius: .75rem; box-shadow: var(--arena-shadow); }
+.chess-square { position: relative; display: grid; place-items: center; padding: 0; min-width: 0;
+  border: 0; font-family: 'Segoe UI Symbol', 'DejaVu Sans', serif; font-size: clamp(1rem, 5vw, 3.2rem); line-height: 1; }
+.chess-square--light { background: #f3dfb2; }
+.chess-square--dark { background: #81906c; }
+.chess-square[aria-pressed="true"] { box-shadow: inset 0 0 0 4px #e6a231; }
+.chess-square:focus-visible { z-index: 1; outline: 3px solid #006cc7; outline-offset: -3px; }
+.chess-square[data-target]::after { content: ''; position: absolute; width: 24%; aspect-ratio: 1;
+  border-radius: 50%; background: #214e3c91; pointer-events: none; }
+.chess-piece--w { color: #fff9de; text-shadow: -1px -1px #423326, 1px 1px #423326, 0 2px #423326; }
+.chess-piece--b { color: #272820; text-shadow: 0 1px #fff2cc; }
+.chess-coord { position: absolute; top: 3px; left: 3px; color: #272820; font: 700 clamp(.5rem, 1.1vw, .72rem) system-ui; }
+.chess-history { max-height: 12rem; overflow: auto; padding-left: 1.75rem; columns: 2; }
+.chess-promotion { border: 1px solid var(--arena-line); border-radius: .75rem; padding: .7rem; margin: .7rem auto; }
+@media (max-width: 720px) {
+  .chess-game-layout { grid-template-columns: minmax(0, 1fr); }
+  .chess-board { width: min(100%, 35rem); }
+  .chess-square { font-size: clamp(1rem, 8vw, 3.2rem); }
+}
+.chess-mode-piece { position: absolute; inset: 12% 6% auto auto; color: #fbe2ab99;
+  font-size: clamp(3.2rem, 9vw, 8rem); line-height: 1; text-shadow: 0 4px #162a2380; }

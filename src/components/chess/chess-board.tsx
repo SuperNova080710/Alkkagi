@@ -1,0 +1,74 @@
+'use client';
+
+import { Chess, type Square } from 'chess.js';
+import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import type { ChessMove } from '@/lib/chess/engine';
+
+const symbols = {p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚'};
+const pieces = {p: '폰', n: '나이트', b: '비숍', r: '룩', q: '퀸', k: '킹'};
+
+export function ChessBoard({fen, black, enabled, onMove}: {
+  fen: string; black: boolean; enabled: boolean; onMove: (move: ChessMove) => void;
+}) {
+  const game = useMemo(() => new Chess(fen), [fen]);
+  const [selected, setSelected] = useState<Square | null>(null);
+  const [focusIndex, setFocusIndex] = useState(0);
+  const [promotion, setPromotion] = useState<ChessMove[]>([]);
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const ranks = game.board();
+  const board = (black ? ranks.slice().reverse().map(rank => rank.slice().reverse()) : ranks).flat();
+  const targets = enabled && selected ? game.moves({square: selected, verbose: true}) : [];
+
+  function select(square: Square) {
+    if (!enabled || promotion.length) return;
+    const moves = targets.filter(move => move.to === square);
+    if (moves.length) {
+      const options = moves.map(({from,to,promotion}) => ({from,to,
+        ...(promotion ? {promotion: promotion as NonNullable<ChessMove['promotion']>} : {}),
+      }));
+      if (options.length > 1) setPromotion(options);
+      else { setSelected(null); onMove(options[0]); }
+      return;
+    }
+    setSelected(game.get(square)?.color === game.turn() && selected !== square ? square : null);
+  }
+
+  function navigate(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const row = Math.floor(index / 8);
+    const col = index % 8;
+    const destination = {ArrowUp: Math.max(0, row - 1) * 8 + col, ArrowDown: Math.min(7, row + 1) * 8 + col,
+      ArrowLeft: row * 8 + Math.max(0, col - 1), ArrowRight: row * 8 + Math.min(7, col + 1)}[event.key];
+    if (destination === undefined) return;
+    event.preventDefault();
+    buttons.current[destination]?.focus();
+  }
+
+  return <>
+    <div className="chess-board" role="group" aria-label="체스판. 방향키로 이동하고 Enter로 선택">
+      {board.map((piece, index) => {
+        const row = Math.floor(index / 8);
+        const col = index % 8;
+        const square = ((black ? 'hgfedcba' : 'abcdefgh')[col] + (black ? row + 1 : 8 - row)) as Square;
+        return <button key={square} ref={element => {buttons.current[index] = element;}}
+          type="button" className={'chess-square chess-square--' + ((row + col) % 2 ? 'dark' : 'light')}
+          aria-label={square + (piece ? ` ${piece.color === 'w' ? '백' : '흑'} ${pieces[piece.type]}` : ' 빈 칸')}
+          aria-pressed={selected === square} tabIndex={focusIndex === index ? 0 : -1}
+          data-target={targets.some(move => move.to === square) || undefined}
+          onFocus={() => setFocusIndex(index)} onKeyDown={event => navigate(event, index)} onClick={() => select(square)}>
+          {(col === 0 || row === 7) && <span className="chess-coord" aria-hidden="true">{square}</span>}
+          {piece && <span className={'chess-piece--' + piece.color} aria-hidden="true">{symbols[piece.type]}</span>}
+        </button>;
+      })}
+    </div>
+    {promotion.length > 0 && <fieldset className="chess-promotion">
+      <legend>승격할 기물 선택</legend>
+      <div className="chess-actions">
+        {promotion.map(move => <button key={move.promotion} className="arena-button" disabled={!enabled}
+          type="button" onClick={() => {setPromotion([]); setSelected(null); onMove(move);}}>
+          {pieces[move.promotion!]}
+        </button>)}
+        <button type="button" className="arena-button arena-button--outline" onClick={() => setPromotion([])}>취소</button>
+      </div>
+    </fieldset>}
+  </>;
+}

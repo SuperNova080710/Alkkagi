@@ -16,7 +16,7 @@ export function LobbyView({ data, modes, account, friendsEnabled, cosmeticsEnabl
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaLobbyLayout game="alkkagi" data={data} modes={modes} account={account}
-    showGameSwitcher={omokEnabled} friendsEnabled={friendsEnabled}
+    showGameSwitcher={omokEnabled || process.env.CHESS_UI_ENABLED === 'true'} omokEnabled={omokEnabled} friendsEnabled={friendsEnabled}
     cosmeticsEnabled={cosmeticsEnabled} experienceEnabled={experienceEnabled}
     recovery={<LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
       {data.activeCasual.map((match, index) => <Link key={match.id}
