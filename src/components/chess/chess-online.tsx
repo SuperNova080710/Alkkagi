@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArenaPanel } from '@/components/ui/arena-panel';
 import type { ChessMove } from '@/lib/chess/engine';
+import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
 import { chessRequest, useChessSnapshot, type ChessSnapshot } from './client';
 
@@ -108,6 +109,14 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
     } finally {lock.current = false; setPending(false);}
   }
 
+  const expire = useCallback(async () => {
+    if (lock.current) return;
+    lock.current = true;
+    try {accept(await chessRequest<ChessSnapshot>(path,{action:'expire'}));}
+    catch {await refresh();}
+    finally {lock.current = false;}
+  },[path,accept,refresh]);
+
   if (!match) return <ArenaPanel title="체스 대국">
     {error ? <p role="alert">{error}</p> : <p role="status">대국을 불러오는 중입니다.</p>}
     <Link href="/chess" className="arena-text-link">체스 로비</Link>
@@ -121,6 +130,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       <p role="status">{finished
         ? `${!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · ${reasonText[match.finishReason ?? ''] ?? '대국 종료'}`
         : `${myTurn ? '내 차례' : '상대 차례'}${match.inCheck ? ' · 체크' : ''}`}</p>
+      {!finished && match.deadline && <ChessTurnClock key={match.deadline} deadline={match.deadline} onExpire={expire}/>}
       <p>내 기물 {match.whiteId === userId ? '백' : '흑'}</p>
       {(notice || error) && <p role="alert">{notice || error}</p>}
       <h3>기보</h3>

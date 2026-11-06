@@ -22,6 +22,7 @@ const labels: Record<string, string> = {
   NEED_TWO_PLAYERS: '두 명이 입장하면 시작할 수 있습니다.',
   INVALID_MOVE: '해당 칸으로 이동할 수 없습니다.',
   STALE_TURN: '대국이 갱신됐습니다. 최신 상태를 확인해 주세요.',
+  TURN_EXPIRED: '착수 제한 시간이 지났습니다.',
   NOT_YOUR_TURN: '상대 차례입니다.',
   MATCH_FINISHED: '이미 끝난 대국입니다.',
   REQUEST_CONFLICT: '다른 요청이 먼저 처리됐습니다.',

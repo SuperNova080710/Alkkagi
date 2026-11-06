@@ -75,7 +75,9 @@ export function ArenaModeCard({ mode, children, game = 'alkkagi' }: {
   }[mode] : modeContent[mode];
   return <article className={`arena-mode arena-mode--${mode}${omok ? ' arena-mode--omok' : ''}`}>
     <div className="arena-mode-art">
-      {omok ? <div className="arena-mode-omok-art" aria-hidden="true"><span/><span/><span/><span/><span/></div>
+      {game === 'chess' ? <span className="chess-mode-piece" aria-hidden="true">
+          {mode === 'casual' ? '♜' : mode === 'ranked' ? '♛' : '♞'}
+        </span> : omok ? <div className="arena-mode-omok-art" aria-hidden="true"><span/><span/><span/><span/><span/></div>
         : <Image src={`/art/${mode}.webp`} alt="" fill sizes="(max-width: 639px) 112px, (max-width: 1023px) 33vw, 320px" />}
     </div>
     <div className="arena-mode-heading"><h2>{content.title}</h2><p>{content.description}</p></div>

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { POST as roomsPost } from '../src/app/api/chess/rooms/route';
 import { GET as roomGet, POST as roomPost } from '../src/app/api/chess/rooms/[id]/route';
 import { GET as matchGet, POST as matchPost } from '../src/app/api/chess/matches/[id]/route';
+import { GET as rankGet, POST as rankPost } from '../src/app/api/chess/ranked/route';
 import { initialChessState } from '../src/lib/chess/engine';
 
 vi.mock('server-only', () => ({}));
@@ -200,4 +201,34 @@ describe('chess casual API and authoritative database', () => {
     expect(await rpc('anon', null, 'chess_room_snapshot',{p_room_id:roomId}))
       .toMatchObject({error:{code:'42501'}});
   });
+  it('matches two accounts, expires a turn and settles only chess RP once', async () => {
+    actor = white;
+    expect(await (await rankPost(request({action:'join'}))).json()).toMatchObject({data:{status:'queued'}});
+    expect(await (await rankPost(request({action:'cancel'}))).json()).toMatchObject({data:{status:'idle'}});
+    await rankPost(request({action:'join'}));
+    actor = black;
+    const queued = await (await rankPost(request({action:'join'}))).json();
+    expect(queued).toMatchObject({data:{status:'matched'}});
+    const id = queued.data.matchId as string;
+    actor = white;
+    expect(await (await rankGet()).json()).toEqual(queued);
+    const {data: game} = await (await matchGet(request(),params(id))).json();
+    expect(game).toMatchObject({mode:'ranked',status:'active',roomId:null,deadline:expect.any(String)});
+    expect(await (await matchPost(request({action:'expire'}),params(id))).json())
+      .toMatchObject({data:{status:'active'}});
+    await db.query("update public.chess_matches set turn_deadline=now()-interval '1 second' where id=$1",[id]);
+    actor = game.whiteId;
+    expect(await (await matchPost(request(move(0,'e2','e4')),params(id))).json())
+      .toEqual({error:'TURN_EXPIRED'});
+    const result = await (await matchPost(request({action:'expire'}),params(id))).json();
+    expect(result).toMatchObject({data:{status:'finished',finishReason:'timeout',winnerId:game.blackId,ply:0,deadline:null}});
+    expect(await (await matchPost(request({action:'expire'}),params(id))).json()).toEqual(result);
+    const {rows:[ledger]} = await db.query(
+      'select count(*)::int as entries,sum(delta)::int as net from public.chess_rating_events where match_id=$1',[id],
+    );
+    expect(ledger).toEqual({entries:2,net:0});
+    expect((await db.query('select rating from public.profiles where id in ($1,$2)',[white,black])).rows)
+      .toEqual([{rating:1000},{rating:1000}]);
+  });
+
 });

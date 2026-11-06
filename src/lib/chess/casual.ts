@@ -17,7 +17,9 @@ type StoredMove = {
 type StoredSnapshot = {
   match: {
     id: string;
-    room_id: string;
+    room_id: string | null;
+    mode?: 'casual' | 'ranked';
+    turn_deadline?: string | null;
     white_id: string;
     black_id: string;
     ply: number;
@@ -42,6 +44,7 @@ function publicMatch({ match, moves }: StoredSnapshot) {
   return {
     id: match.id, roomId: match.room_id, whiteId: match.white_id, blackId: match.black_id,
     status: match.finished_at ? 'finished' : 'active',
+    mode: match.mode ?? 'casual', deadline: match.turn_deadline ?? null,
     ply: match.ply, fen: match.fen, inCheck: match.in_check,
     turnUserId: match.finished_at ? null : match.ply % 2 === 0 ? match.white_id : match.black_id,
     winnerId: match.winner_id, finishReason: match.finish_reason, finishedAt: match.finished_at,
@@ -99,6 +102,14 @@ export async function submitChessMove(userId: string, matchId: string, body: Rec
 export async function resignChessMatch(userId: string, matchId: string, requestId: string) {
   const {error} = await createAdminClient().rpc('chess_resign', {
     p_actor: userId, p_match_id: matchId, p_request_id: requestId,
+  });
+  if (error) chessDbError(error);
+  return getChessMatch(matchId);
+}
+
+export async function expireChessRanked(userId: string, matchId: string) {
+  const {error} = await createAdminClient().rpc('chess_expire_ranked', {
+    p_actor: userId, p_match_id: matchId,
   });
   if (error) chessDbError(error);
   return getChessMatch(matchId);
