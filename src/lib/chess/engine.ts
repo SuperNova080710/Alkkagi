@@ -31,7 +31,7 @@ function isSquare(value: unknown): value is Square {
   return typeof value === 'string' && value.length === 2 && /^[a-h][1-8]$/.test(value);
 }
 
-function parseMove(input: unknown): ChessMove | null {
+export function parseChessMove(input: unknown): ChessMove | null {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return null;
   const { from, to, promotion } = input as Record<string, unknown>;
   if (!isSquare(from) || !isSquare(to)) return null;
@@ -92,7 +92,7 @@ export function inspectChessState(state: ChessState): ChessPosition {
 
 /** Use authoritative state. Authorization, clocks and atomic writes belong to the match service. */
 export function playChessMove(state: ChessState, input: unknown): ChessMoveResult {
-  const move = parseMove(input);
+  const move = parseChessMove(input);
   if (!move) return { ok: false, reason: 'invalid-input' };
   const { board, repetitions, countPosition } = restoreBoard(state);
   if (outcomeOf(board, repetitions)) return { ok: false, reason: 'game-finished' };
