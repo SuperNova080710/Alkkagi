@@ -1,0 +1,40 @@
+name: Chess feedback real-browser QA
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop, 'release/**']
+    paths:
+      - '.github/workflows/chess-feedback-browser.yml'
+      - 'scripts/qa/*chess*'
+      - 'scripts/qa/fixtures/chess-*'
+      - 'src/components/chess/**'
+      - 'src/app/arena.css'
+      - 'src/app/globals.css'
+      - 'package*.json'
+permissions:
+  contents: read
+concurrency:
+  group: chess-feedback-browser-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  movement-viewport-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build isolated fixture from actual client components and CSS
+        run: node scripts/qa/build-chess-feedback.mjs
+      - name: Check movement, short viewports, recovery and reduced motion in Chromium
+        run: node scripts/qa/chess-feedback-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chess-feedback-browser-${{ github.run_id }}
+          path: artifacts/chess-feedback-browser/
+          retention-days: 7
+          if-no-files-found: warn

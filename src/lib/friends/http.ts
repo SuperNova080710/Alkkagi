@@ -30,9 +30,10 @@ export async function friendDeletion(request:NextRequest):Promise<NextResponse|n
   return null;
 }
 export async function friendMutation(request:NextRequest):Promise<
-  {ok:true;body:unknown}|{ok:false;response:NextResponse}
+  {ok:true;body:unknown;userId:string}|{ok:false;response:NextResponse}
 >{
-  if(!await getVerifiedUser())return {ok:false,response:friendError('AUTH_REQUIRED',401)};
+  const user=await getVerifiedUser();
+  if(!user)return {ok:false,response:friendError('AUTH_REQUIRED',401)};
   if(request.headers.get('origin')!==request.nextUrl.origin)
     return {ok:false,response:friendError('ORIGIN_NOT_ALLOWED',403)};
   if(!/^application\/json(?:\s*;|\s*$)/i.test(request.headers.get('content-type')??''))
@@ -58,7 +59,7 @@ export async function friendMutation(request:NextRequest):Promise<
       raw+=decoder.decode(value,{stream:true});
     }
     raw+=decoder.decode();
-    return {ok:true,body:JSON.parse(raw) as unknown};
+    return {ok:true,body:JSON.parse(raw) as unknown,userId:user.id};
   }catch{
     return {ok:false,response:friendError('INVALID_REQUEST',400)};
   }

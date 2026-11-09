@@ -6,6 +6,7 @@ import './omok-result-parity.css';
 export type OmokOutcome = '승리' | '패배' | '무승부';
 export type OmokResultOverlayProps = {
   outcome: OmokOutcome;
+  game?: 'omok' | 'chess';
   mode: 'casual' | 'ranked' | 'ai';
   finishReason?: string | null;
   pending?: boolean;
@@ -28,7 +29,7 @@ const reasonLabels: Record<string,string> = {
 };
 /** Shares Alkkagi's result-card visual language; the server owns the outcome. */
 export function OmokResultOverlay({
-  outcome, mode, finishReason, pending = false, error, onReplay, onReturn,
+  outcome, game = 'omok', mode, finishReason, pending = false, error, onReplay, onReturn,
   myRematchVote = false, rematchReadyCount = 0,
 }: OmokResultOverlayProps) {
   const card = useRef<HTMLDivElement>(null);
@@ -40,7 +41,7 @@ export function OmokResultOverlay({
     : mode === 'ranked' ? '재도전 · 새 랭크 매칭'
       : '다시하기 · 난이도 선택';
   return <div className="game-result-overlay arena-omok-result-overlay absolute inset-0 z-10 flex items-center justify-center overflow-y-auto bg-slate-950/70 p-3"
-    aria-label="오목 경기 결과">
+    aria-label={game === 'chess' ? '체스 경기 결과' : '오목 경기 결과'}>
     <div ref={card} tabIndex={-1}
       className="game-result-card w-full max-w-sm rounded-2xl border border-slate-600 bg-slate-950/95 p-5 text-center shadow-2xl sm:p-6"
       role="status" aria-live="polite">
@@ -54,7 +55,7 @@ export function OmokResultOverlay({
         양쪽 모두 수락하면 재대전 · {Math.min(2, Math.max(0, rematchReadyCount))}/2
       </p>}
       {mode === 'ranked' && <p className="mt-3 text-xs text-slate-400">
-        오목 RP 정산은 서버 기록을 기준으로 경기 현황에 표시됩니다.
+        {game === 'chess' ? '체스' : '오목'} RP 정산은 서버 기록을 기준으로 경기 현황에 표시됩니다.
       </p>}
       <div className="mt-4 flex flex-col gap-2">
         {onReturn && <button className="rounded-xl border border-slate-500 px-4 py-2.5 text-sm font-semibold text-slate-100"

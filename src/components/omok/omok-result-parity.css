@@ -1,5 +1,5 @@
 /* #263: Same semantic colors and surface tokens as .arena-match .game-result-card. */
-.arena-omok-board-stage .game-result-overlay.arena-omok-result-overlay {
+:is(.arena-omok-board-stage, .chess-board-stage) .game-result-overlay.arena-omok-result-overlay {
   background: #1d2119b3;
   padding: 12px;
 }
@@ -35,10 +35,10 @@
 .arena-omok-result-overlay .game-result-card button:disabled { opacity: .55; }
 @media(max-width:639px), (max-height:520px) {
   /* Follow Alkkagi's narrow screen rule: never trap the result below a small board. */
-  .arena-omok-board-stage .game-result-overlay.arena-omok-result-overlay {
+  :is(.arena-omok-board-stage, .chess-board-stage) .game-result-overlay.arena-omok-result-overlay {
     position: relative; inset: auto; margin-top: 8px; background: transparent;
   }
-  .arena-omok-board-stage .arena-omok-result-overlay .game-result-card {max-height:none;}
+  :is(.arena-omok-board-stage, .chess-board-stage) .arena-omok-result-overlay .game-result-card {max-height:none;}
 }
 @media(prefers-reduced-motion:reduce) {
   .arena-omok-result-overlay .game-result-card { animation: none; transition:none; }

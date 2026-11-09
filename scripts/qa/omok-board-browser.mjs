@@ -96,13 +96,13 @@ function dimensions() {
   };
 }
 function rankedMetrics() {
-  const wrap=document.querySelector('.arena-omok-ranked-table-scroll');
+  const wrap=document.querySelector('.arena-ranked-leaderboard-scroll');
   const table=wrap?.querySelector('table');
   const head=table?.querySelectorAll('thead th')||[];
   const rows=table?.querySelectorAll('tbody tr')||[];
   const last=rows[rows.length-1]?.querySelector('td:last-child');
-  const longNames=[...(table?.querySelectorAll('.arena-omok-ranked-nickname')||[])];
-  const records=[...(table?.querySelectorAll('.arena-omok-ranked-record')||[])];
+  const longNames=[...(table?.querySelectorAll('.arena-ranked-nickname')||[])];
+  const records=[...(table?.querySelectorAll('.arena-ranked-record')||[])];
   const wr=wrap?.getBoundingClientRect();
   const tr=table?.getBoundingClientRect();
   const lr=last?.getBoundingClientRect();
@@ -213,7 +213,7 @@ async function main(){
       // Test the real shared ranked-grid/table DOM with 100 rows, not CSS strings.
       await cdp.call('Page.navigate',{url:origin+'/omok-ranked-width-qa'},sid);
       await until(()=>cdp.eval(
-        "document.readyState==='complete' && document.querySelectorAll('.arena-omok-ranked-table tbody tr').length===100",sid));
+        "document.readyState==='complete' && document.querySelectorAll('.arena-ranked-leaderboard tbody tr').length===100",sid));
       await sleep(110);
       const rank=await cdp.eval('('+rankedMetrics.toString()+')()',sid);
       if(rank.columns!==3||rank.rows!==100||rank.records!==100)

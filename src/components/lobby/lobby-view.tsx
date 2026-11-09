@@ -1,59 +1,32 @@
 import Link from 'next/link';
-import './lobby-size-parity.css';
-import { ArenaHero, ArenaPanel, ArenaShell } from '@/components/ui/arena';
 import type { ReactNode } from 'react';
-import { LobbyIdentitySummary } from './lobby-identity-summary';
-import { GameSwitcher } from './game-switcher';
+import { ArenaLobbyLayout, type LobbySummary } from './arena-lobby-layout';
 import { LobbyRecoveryInline } from './lobby-recovery-inline';
 
-export type LobbyData = {
-  nickname: string;
-  rating: number | null;
-  leaderboard: { position: number; nickname: string; rating: number }[];
-  rankingUnavailable: boolean;
+export type LobbyData = LobbySummary & {
   activeCasual: { id: string; room_id: string }[];
   activeAi: { room_id: string }[];
   recoveryUnavailable: boolean;
 };
 
 /** Presentation boundary for backend integration and credential-free visual verification. */
-export function LobbyView({ data, modes, account, friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false, omokEnabled = false }: {
+export function LobbyView({ data, modes, account, friendsEnabled, cosmeticsEnabled, experienceEnabled, omokEnabled = false }: {
   data: LobbyData; modes: ReactNode; account?: ReactNode;
   friendsEnabled?: boolean; cosmeticsEnabled?: boolean; experienceEnabled?: boolean; omokEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
-  return <ArenaShell current="lobby" account={account}>
-    <ArenaHero compact />
-    <div className={`arena-lobby-grid${omokEnabled ? ' arena-lobby-grid--multigame' : ''}`}>
-      <div className="arena-play-column">{omokEnabled && <GameSwitcher current="alkkagi"/>}{modes}
-        <LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
-          {data.activeCasual.map((match, index) => <Link key={match.id}
-            href={`/rooms/${match.room_id}`} className="arena-button arena-button--outline">
-            일반전 {index + 1} 계속하기
-          </Link>)}
-          {data.activeAi.map((match, index) => <Link key={match.room_id}
-            href={`/rooms/${match.room_id}/ai`} className="arena-button arena-button--outline">
-            AI 대전 {index + 1} 계속하기
-          </Link>)}
-        </LobbyRecoveryInline>
-      </div>
-      <aside className="arena-sidebar" aria-label="내 정보와 랭킹">
-        <ArenaPanel title="내 정보">
-          <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game="alkkagi"
-            experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
-          <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
-        </ArenaPanel>
-        <ArenaPanel title="랭킹 TOP 3">
-          {data.rankingUnavailable ? <p role="status" className="arena-muted">랭킹을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p> : data.leaderboard.length ? <ol className="arena-leaderboard">{data.leaderboard.slice(0, 3).map(player => <li key={player.position}><span className="arena-rank-number">{player.position}</span><span className="arena-rank-name">{player.nickname}</span><strong>{player.rating.toLocaleString('ko-KR')}<small> RP</small></strong></li>)}</ol> : <p className="arena-muted">아직 등록된 순위가 없어요.</p>}
-          <Link href="/ranked" className="arena-text-link">전체 랭킹 보기 <span aria-hidden="true">›</span></Link>
-        </ArenaPanel>
-        <div className="arena-future">
-          {friendsEnabled ? <Link href="/friends">친구 <small>친구 목록으로 ›</small></Link>
-            : <span>친구 <small>준비 중</small></span>}
-          {cosmeticsEnabled ? <Link href="/cosmetics">꾸미기 <small>아이템 관리하기 ›</small></Link>
-            : <span>꾸미기 <small>준비 중</small></span>}
-        </div>
-      </aside>
-    </div>
-  </ArenaShell>;
+  return <ArenaLobbyLayout game="alkkagi" data={data} modes={modes} account={account}
+    showGameSwitcher={omokEnabled || process.env.CHESS_UI_ENABLED === 'true'} omokEnabled={omokEnabled} friendsEnabled={friendsEnabled}
+    cosmeticsEnabled={cosmeticsEnabled} experienceEnabled={experienceEnabled}
+    recovery={<LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
+      {data.activeCasual.map((match, index) => <Link key={match.id}
+        href={`/rooms/${match.room_id}`} className="arena-button arena-button--outline">
+        일반전 {index + 1} 계속하기
+      </Link>)}
+      {data.activeAi.map((match, index) => <Link key={match.room_id}
+        href={`/rooms/${match.room_id}/ai`} className="arena-button arena-button--outline">
+        AI 대전 {index + 1} 계속하기
+      </Link>)}
+    </LobbyRecoveryInline>}
+  />;
 }

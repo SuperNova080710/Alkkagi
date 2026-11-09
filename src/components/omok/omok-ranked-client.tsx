@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import { ArenaPanel } from '@/components/ui/arena-panel';
+import { RankedLayout, RankedLeaderboard } from '@/components/ranked/ranked-layout';
+import { RankedQueuePanel } from '@/components/ranked/ranked-queue-panel';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isRecord, isUuid, omokErrorText, omokRequest } from './omok-client-api';
@@ -15,26 +15,10 @@ type RankedEntry = {
 };
 export type RankedDashboard = { rating: number; leaderboard: RankedEntry[] };
 
-/** Keep the whole leaderboard in three responsive columns, with W/L/D below the name. */
-export function OmokRankedLeaderboard({ rows }: { rows: RankedEntry[] }) {
-  return <div className="arena-table-scroll arena-omok-ranked-table-scroll">
-    <table className="arena-omok-ranked-table">
-      <caption className="sr-only">오목 랭크 순위, 닉네임, RP 및 승패무 전적</caption>
-      <thead><tr>
-        <th scope="col">순위</th><th scope="col">닉네임 · 전적</th><th scope="col">오목 RP</th>
-      </tr></thead>
-      <tbody>{rows.map(person => <tr key={person.position}>
-        <td><span className="arena-rank-number">{person.position}</span></td>
-        <td>
-          <span className="arena-omok-ranked-nickname">{person.nickname}</span>
-          <small className="arena-omok-ranked-record">
-            {person.wins}승 · {person.losses}패 · {person.draws}무
-          </small>
-        </td>
-        <td>{person.rating.toLocaleString('ko-KR')}</td>
-      </tr>)}</tbody>
-    </table>
-  </div>;
+export function OmokRankedLeaderboard({ rows, emptyMessage }: { rows: RankedEntry[]; emptyMessage?: string }) {
+  return <RankedLeaderboard rows={rows.map(({ position, nickname, rating, wins, losses, draws }) => ({
+    position, nickname, rating, record: `${wins}승 · ${losses}패 · ${draws}무`,
+  }))} caption="오목 랭크 순위, 닉네임, RP 및 승패무 전적" rpLabel="오목 RP" showRecords emptyMessage={emptyMessage}/>;
 }
 
 export function parseQueueState(data: unknown): QueueState {
@@ -177,24 +161,13 @@ export function OmokRankedLobby({ nickname = '닉네임 확인 필요' }: { nick
   const matchingStatus = queue.status === 'queued' ? '상대 검색 중'
     : queue.status === 'matched' ? '매칭 완료' : '대기 안 함';
 
-  return <div className="arena-omok-ranked-view" aria-label="오목 랭킹">
-    <header className="arena-service-heading">
-      <div>
-        <p className="arena-section-kicker">OMOK · RANKED ARENA</p>
-        <h1>한 판씩, 더 높은 곳으로.</h1>
-        <p>오목 랭크 RP는 알까기 RP와 별개로 정산됩니다.<br/>
-          일반전과 AI 대전은 순위에 영향을 주지 않습니다.</p>
-      </div>
-      <Image src="/art/ranked.webp" alt="" width={150} height={150}/>
-    </header>
-    <div className="arena-service-name">
-      <strong>{nickname}</strong>
-      <Link href="/profile">내 프로필 <span aria-hidden="true">›</span></Link>
-    </div>
-    {dashboardError && <p className="arena-service-alert" role="alert">
-      랭킹 정보를 불러오지 못했습니다. {dashboardError}
-    </p>}
-    <div className="arena-stats">
+  return <RankedLayout nickname={nickname} label="오목 랭킹" kicker="OMOK · RANKED ARENA"
+    description={<>오목 랭크 RP는 알까기 RP와 별개로 정산됩니다.<br/>
+      일반전과 AI 대전은 순위에 영향을 주지 않습니다.</>}
+    error={dashboardError ? `랭킹 정보를 불러오지 못했습니다. ${dashboardError}` : undefined}
+    queue={<RankedQueuePanel status={queue.status} loading={loading} pending={pending} error={error}
+      onChange={intent => void change(intent)} onRefresh={() => void refresh()}/>}
+    stats={<>
       <ArenaPanel title="나의 오목 RP">
         <p>{dashboard ? dashboard.rating.toLocaleString('ko-KR') : '—'}<small> RP</small></p>
       </ArenaPanel>
@@ -202,50 +175,18 @@ export function OmokRankedLobby({ nickname = '닉네임 확인 필요' }: { nick
         <p role="status" aria-live="polite">{matchingStatus}</p>
       </ArenaPanel>
       <ArenaPanel title="랭크 제한"><p>90초<small> / 턴</small></p></ArenaPanel>
-    </div>
-    <div className="arena-ranked-main">
-      <div className="arena-service-controls">
-        <section className="arena-omok-ranked-queue" aria-labelledby="omok-ranked-queue-title">
-          <h2 id="omok-ranked-queue-title">랜덤 랭크 매칭</h2>
-          {loading && <p role="status">오목 랭크 정보를 조회하는 중…</p>}
-          <p className="arena-muted" role="status">
-            {queue.status === 'queued'
-              ? '비슷한 RP의 상대를 찾고 있습니다.'
-              : queue.status === 'matched'
-                ? '대전 상대를 찾았습니다. 경기로 이동합니다.'
-                : '랭크 매칭을 시작하면 오목 RP가 비슷한 상대와 대전합니다.'}
-          </p>
-          {error && <p role="alert" className="arena-service-alert">{error}</p>}
-          <div className="arena-omok-ranked-actions">
-            {queue.status !== 'queued' && <button type="button" className="arena-button arena-button--gold"
-              disabled={pending || queue.status === 'matched'} onClick={() => void change('join')}>
-              {pending ? '처리 중…' : '랭크 매칭 시작'}
-            </button>}
-            {queue.status === 'queued' && <button type="button" className="arena-button arena-button--outline"
-              disabled={pending} onClick={() => void change('cancel')}>
-              {pending ? '취소 중…' : '매칭 취소'}
-            </button>}
-            <button type="button" className="arena-button arena-button--outline"
-              disabled={pending} onClick={() => void refresh()}>최신 상태 조회</button>
-          </div>
-          <p className="arena-muted">45초 동안 대기 상태가 갱신되지 않으면 매칭이 만료될 수 있습니다.
-            취소해도 RP는 변경되지 않습니다.</p>
-        </section>
-      </div>
-      <div className="arena-ranking-grid">
-        <ArenaPanel title="리더보드 TOP 100">
-          <OmokRankedLeaderboard rows={dashboard?.leaderboard ?? []}/>
-          {!loading && !dashboardError && dashboard?.leaderboard.length === 0 &&
-            <p className="arena-muted">아직 오목 랭크 순위가 없습니다.</p>}
-        </ArenaPanel>
-        <ArenaPanel title="오목 랭크 안내">
-          <ul className="arena-history arena-omok-ranked-guide">
-            <li><strong>오목 전용 RP</strong><p>알까기와 독립적으로 계산합니다.</p></li>
-            <li><strong>턴당 90초</strong><p>제한 시간 안에 착수해 주세요.</p></li>
-            <li><strong>일반전·AI와 분리</strong><p>일반전과 AI 대전은 오목 랭크 RP를 변경하지 않습니다.</p></li>
-          </ul>
-        </ArenaPanel>
-      </div>
-    </div>
-  </div>;
+    </>}
+  >
+    <ArenaPanel title="리더보드 TOP 100">
+      <OmokRankedLeaderboard rows={dashboard?.leaderboard ?? []}
+        emptyMessage={!loading && !dashboardError && dashboard ? '아직 오목 랭크 순위가 없습니다.' : undefined}/>
+    </ArenaPanel>
+    <ArenaPanel title="오목 랭크 안내">
+      <ul className="arena-history arena-omok-ranked-guide">
+        <li><strong>오목 전용 RP</strong><p>알까기와 독립적으로 계산합니다.</p></li>
+        <li><strong>턴당 90초</strong><p>제한 시간 안에 착수해 주세요.</p></li>
+        <li><strong>일반전·AI와 분리</strong><p>일반전과 AI 대전은 오목 랭크 RP를 변경하지 않습니다.</p></li>
+      </ul>
+    </ArenaPanel>
+  </RankedLayout>;
 }

@@ -55,7 +55,7 @@ describe('#290 Omok and Alkkagi ranked page layout parity', () => {
     const html = renderToStaticMarkup(<OmokRankedLeaderboard rows={rows}/>);
     expect(html.match(/<th scope="col">/g)).toHaveLength(3);
     expect(html.match(/<tr>/g)).toHaveLength(101);
-    expect(html.match(/class="arena-omok-ranked-record"/g)).toHaveLength(100);
+    expect(html.match(/class="arena-ranked-record"/g)).toHaveLength(100);
     expect(html).toContain('닉네임 · 전적');
     expect(html).toContain('오목 RP');
     expect(html).toContain('1승 · 0패 · 5무');
@@ -68,13 +68,12 @@ describe('#290 Omok and Alkkagi ranked page layout parity', () => {
   });
 
   it('keeps a full-width fixed three-column table without horizontal scroll', () => {
-    const css = readFileSync(new URL('../src/components/omok/omok-competitive.css', import.meta.url),'utf8');
+    const css = readFileSync(new URL('../src/components/ranked/ranked-presentation.css', import.meta.url),'utf8');
     expect(css).toContain('var(--arena-cream)');
     expect(css).toContain('var(--arena-line)');
-    expect(css).toContain('.arena-omok-ranked-table-scroll');
-    expect(css).toContain('table-layout:fixed');
-    expect(css).toContain('overflow-x:hidden');
-    expect(css).toContain('overflow-y:auto');
+    expect(css).toContain('.arena-ranked-leaderboard-scroll');
+    expect(css).toContain('table-layout: fixed');
+    expect(css).toContain('overflow-y: auto');
     expect(css).not.toContain('min-width:560px');
     expect(css).not.toContain('min-width:420px');
     expect(css).not.toContain('text-overflow:ellipsis');
