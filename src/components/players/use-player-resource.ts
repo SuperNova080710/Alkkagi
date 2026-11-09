@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export class PlayerRequestError extends Error {
   constructor(public status: number) { super('Player request failed'); }
@@ -28,6 +28,7 @@ export function usePlayerResource<T>(path: string | null, delay = 0) {
     }, delay);
     return () => { clearTimeout(timer); controller.abort(); };
   }, [path, delay, key]);
+  const retry = useCallback(() => setAttempt(value => value + 1), []);
   const current = path && result?.key === key ? result : null;
-  return { data: current?.data, error: current?.error, loading: !!path && !current, retry: () => setAttempt(value => value + 1) };
+  return { data: current?.data, error: current?.error, loading: !!path && !current, retry };
 }

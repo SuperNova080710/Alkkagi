@@ -2,17 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import {
   inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
   validReceivedRoomInvites, type RoomInviteResponded,
 } from './room-invite-api';
 
-export function ReceivedRoomInvites() {
+export function ReceivedRoomInvites({ game, disabled = false, onProcessingChange, onAccepted }: {
+  game?: 'chess'; disabled?: boolean; onProcessingChange?: (processing: boolean) => void; onAccepted?: () => void;
+}) {
+  const titleId = useId();
+  const api = game === 'chess' ? '/api/chess/invites' : '/api/room-invites';
   const router = useRouter();
   const { data, error, loading, retry } =
-    usePlayerResource<unknown>('/api/room-invites');
+    usePlayerResource<unknown>(api);
   const [processing, setProcessing] = useState<string | null>(null);
   const inFlight = useRef(false);
   const [failure, setFailure] = useState<unknown>(null);
@@ -22,22 +26,26 @@ export function ReceivedRoomInvites() {
     const visibility = () => { if (document.visibilityState === 'visible') retry(); };
     window.addEventListener('focus', focus);
     document.addEventListener('visibilitychange', visibility);
+    const poll = game === 'chess' ? window.setInterval(visibility, 20000) : undefined;
     return () => {
       window.removeEventListener('focus', focus);
       document.removeEventListener('visibilitychange', visibility);
+      window.clearInterval(poll);
     };
-  }, [retry]);
+  }, [game, retry]);
 
   async function respond(inviteId: string, accept: boolean) {
-    if (inFlight.current || !isRoomUuid(inviteId)) return;
+    if (disabled || inFlight.current || !isRoomUuid(inviteId)) return;
     inFlight.current = true;
+    onProcessingChange?.(true);
     setProcessing(inviteId); setNotice(''); setFailure(null);
     try {
       const result = await roomInviteMutation<RoomInviteResponded>(
-        '/api/room-invites/' + encodeURIComponent(inviteId) + '/respond', { accept },
+        api + '/' + encodeURIComponent(inviteId) + '/respond', { accept },
       );
       if (accept && result.status === 'accepted' && isRoomUuid(result.roomId)) {
-        router.push('/rooms/' + result.roomId);
+        onAccepted?.();
+        router.push((game === 'chess' ? '/chess/rooms/' : '/rooms/') + result.roomId);
         router.refresh();
       } else if (!accept && result.status === 'declined') {
         setNotice('대전 초대를 거절했습니다.');
@@ -49,13 +57,14 @@ export function ReceivedRoomInvites() {
       setFailure(cause); retry();
     } finally {
       inFlight.current = false; setProcessing(null);
+      onProcessingChange?.(false);
     }
   }
 
   const received = validReceivedRoomInvites(data);
-  return <section className="arena-panel arena-received-invites" aria-labelledby="received-invites-title">
+  return <section className="arena-panel arena-received-invites" aria-labelledby={titleId}>
     <div className="arena-received-heading">
-      <h2 id="received-invites-title">받은 대전 초대 ({received.length})</h2>
+      <h2 id={titleId}>받은 {game === 'chess' ? '체스' : '대전'} 초대 ({received.length})</h2>
       <button type="button" className="arena-button arena-button--outline"
         onClick={retry} disabled={loading || processing !== null}>새로고침</button>
     </div>
@@ -79,11 +88,11 @@ export function ReceivedRoomInvites() {
           </div>
           <div className="arena-received-actions">
             <button type="button" className="arena-button arena-button--gold"
-              disabled={processing !== null} onClick={() => void respond(invite.id, true)}>
+              disabled={disabled || processing !== null} onClick={() => void respond(invite.id, true)}>
               {processing === invite.id ? '처리 중…' : '수락'}
             </button>
             <button type="button" className="arena-button arena-button--outline"
-              disabled={processing !== null} onClick={() => void respond(invite.id, false)}>
+              disabled={disabled || processing !== null} onClick={() => void respond(invite.id, false)}>
               거절
             </button>
           </div>

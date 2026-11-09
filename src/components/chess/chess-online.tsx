@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { CopyInvite } from '@/components/rooms/copy-invite';
+import { SendFriendRoomInvite } from '@/components/rooms/send-friend-room-invite';
 import { ArenaPanel } from '@/components/ui/arena-panel';
 import type { ChessMove } from '@/lib/chess/engine';
 import { ChessTurnClock } from './chess-ranked';
@@ -16,48 +18,20 @@ const reasonText: Record<string, string> = {
   timeout: '시간 초과',
 };
 
-export function ChessRoomEntry() {
-  const router = useRouter();
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const [pending, setPending] = useState(false);
-  const lock = useRef(false);
-  const creation = useRef<string | null>(null);
-  async function submit(action: 'create' | 'join') {
-    if (lock.current) return;
-    lock.current = true; setPending(true); setError('');
-    try {
-      const body = action === 'create'
-        ? {action, requestId: creation.current ??= crypto.randomUUID()}
-        : {action, code};
-      const {roomId} = await chessRequest<{roomId:string}>('/rooms', body);
-      creation.current = null;
-      router.push('/chess/rooms/' + roomId);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '방에 연결하지 못했습니다.'); }
-    finally {lock.current = false; setPending(false);}
-  }
-  function join(event: FormEvent) { event.preventDefault(); void submit('join'); }
-  return <div className="chess-join">
-    <button type="button" className="arena-button arena-button--gold" disabled={pending} onClick={() => void submit('create')}>방 만들기</button>
-    <form onSubmit={join} className="chess-join">
-      <input aria-label="체스 초대 코드" placeholder="초대 코드 8자리" autoComplete="off"
-        maxLength={12} value={code} onChange={event => setCode(event.target.value)} required/>
-      <button className="arena-button arena-button--outline" disabled={pending}>코드로 참가</button>
-    </form>
-    {error && <p role="alert">{error}</p>}
-  </div>;
-}
-
-export function ChessRoomClient({roomId,userId}: {roomId: string; userId: string}) {
+export function ChessRoomClient({roomId, userId, invitesEnabled}: {
+  roomId: string; userId: string; invitesEnabled: boolean;
+}) {
   const router = useRouter();
   const path = '/rooms/' + roomId;
   const {data: room, error, refresh} = useChessSnapshot<Room>(path, roomId, 'room');
   const [notice, setNotice] = useState('');
   const [pending, setPending] = useState(false);
+  const lock = useRef(false);
   useEffect(() => { if (room?.matchId) router.replace('/chess/matches/' + room.matchId); }, [room?.matchId,router]);
 
   async function command(action: 'start' | 'leave') {
-    if (pending) return;
+    if (lock.current) return;
+    lock.current = true;
     setPending(true); setNotice('');
     try {
       const data = await chessRequest<{matchId?:string}>(path,{action});
@@ -65,23 +39,60 @@ export function ChessRoomClient({roomId,userId}: {roomId: string; userId: string
     } catch (cause) {
       setNotice(cause instanceof Error ? cause.message : '요청을 처리하지 못했습니다.');
       await refresh();
-    } finally { setPending(false); }
+    } finally { lock.current = false; setPending(false); }
   }
-  return <ArenaPanel title="체스 일반전 대기실">
-    {!room && !error && <p role="status">대기실을 불러오는 중입니다.</p>}
-    {(error || notice) && <p role="alert">{notice || error}</p>}
-    {room && <>
-      <p>초대 코드 <strong>{room.code}</strong></p>
-      <p role="status">{room.status === 'closed' ? '닫힌 대기실입니다.' : room.guestId ? '두 명이 입장했습니다.' : '상대가 코드로 입장하기를 기다리고 있습니다.'}</p>
-      {room.status === 'waiting' && <div className="chess-actions">
-        {room.hostId === userId && <button type="button" className="arena-button arena-button--gold"
-          disabled={pending || !room.guestId} onClick={() => void command('start')}>대국 시작</button>}
-        <button type="button" className="arena-button arena-button--outline" disabled={pending}
-          onClick={() => void command('leave')}>{room.hostId === userId ? '방 닫기' : '나가기'}</button>
-      </div>}
-    </>}
-    <Link className="arena-text-link" href="/chess">체스 로비</Link>
+  if (!room) return <ArenaPanel title="체스 일반전 대기실">
+    {error ? <><p role="alert">{error}</p>
+      <button type="button" className="arena-button" onClick={() => void refresh()}>다시 조회</button></>
+      : <p role="status">대기실을 불러오는 중입니다.</p>}
   </ArenaPanel>;
+
+  const host = room.hostId === userId;
+  const waiting = room.status === 'waiting';
+  return <>
+    <header className="game-page-header arena-room-heading">
+      <div><p className="arena-section-kicker">CASUAL MATCH · CHESS ARENA</p>
+        <h1>친구와 한 판</h1>
+        <p className="arena-room-lead">친구를 초대해 체스 대국을 시작하세요.</p>
+      </div>
+      <CopyInvite code={room.code}/>
+    </header>
+    <div className="arena-room-wait-layout">
+      <section className="arena-panel arena-room-stage" aria-labelledby="chess-room-stage-title">
+        <div className="arena-room-stage-head">
+          <h2 id="chess-room-stage-title">참가자 <span>{room.guestId ? 2 : 1}/2</span></h2>
+          <span className="arena-room-status">{waiting ? room.guestId ? '시작 준비 완료' : '대기 중' : '대기실 종료'}</span>
+        </div>
+        <ol className="arena-room-seats" aria-label="참가자">
+          {[room.hostId, room.guestId].map((id, index) =>
+            <li key={index} className={id === userId ? 'is-mine' : ''}>
+              <span className="arena-room-seat-number" aria-hidden="true">0{index + 1}</span>
+              <div>
+                <span className="arena-room-seat-role">{index === 0 ? '선공 · 백' : '후공 · 흑'}</span>
+                <strong>{id ? index === 0 ? '방장' : '참가자' : '친구 기다리는 중'}</strong>
+                {id === userId && <span className="arena-room-self">나</span>}
+              </div>
+            </li>)}
+        </ol>
+        <p className="arena-room-wait-note" role="status">{!waiting ? '대기실이 닫혔거나 대국이 시작되었습니다.'
+          : room.guestId ? host ? '두 명이 모였습니다. 경기를 시작할 수 있습니다.' : '방장의 경기 시작을 기다리고 있습니다.'
+            : '두 명이 입장하면 경기를 시작할 수 있습니다.'}</p>
+        {(error || notice) && <p className="arena-invite-error" role="alert">{notice || error}</p>}
+        {waiting && host && <div className="arena-room-main-action">
+          <button type="button" className="arena-button arena-button--gold" disabled={pending || !room.guestId}
+            onClick={() => void command('start')}>경기 시작</button>
+        </div>}
+        {waiting && <div className="arena-room-leave">
+          <button type="button" className="arena-button arena-button--outline" disabled={pending}
+            onClick={() => void command('leave')}>{host ? '방 닫기' : '방 나가기'}</button>
+        </div>}
+      </section>
+      {invitesEnabled && waiting && host && !room.guestId &&
+        <aside className="arena-room-side" aria-label="상대 추가">
+          <SendFriendRoomInvite roomId={roomId} game="chess"/>
+        </aside>}
+    </div>
+  </>;
 }
 
 export function ChessMatchClient({matchId,userId}: {matchId: string; userId: string}) {
