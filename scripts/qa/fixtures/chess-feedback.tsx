@@ -54,6 +54,23 @@ function inspectAnimation(expected: number) {
     }
   }
 }
+function inspectResult(outcome: string, reason: string) {
+  const overlay = document.querySelector<HTMLElement>('[aria-label="체스 경기 결과"]')!;
+  check(Boolean(overlay), 'chess result panel appears');
+  check(overlay.querySelector('h3')?.textContent===outcome, 'result outcome '+outcome);
+  check(overlay.textContent?.includes('종료 사유 · '+reason), 'result reason '+reason);
+  // Measure the final button geometry after the shared scale-in animation.
+  for (const animation of overlay.getAnimations({subtree:true})) animation.finish();
+  const card=overlay.querySelector<HTMLElement>('.game-result-card')!;
+  check(getComputedStyle(card).borderTopWidth==='3px', 'result uses shared cream/gold theme');
+  const button=[...overlay.querySelectorAll('button')].find(node=>node.textContent==='로비로 돌아가기')!;
+  button.scrollIntoView({block:'center'});
+  const rect=button.getBoundingClientRect();
+  check(rect.height>=44 && rect.left>=0 && rect.right<=innerWidth+1, 'result return button fits with 44px target');
+  check(rect.top>=-1 && rect.bottom<=innerHeight+1, 'result return button can scroll into view');
+  check(document.querySelectorAll('.chess-square[aria-disabled="true"]').length===64, 'finished board rejects input');
+  return button;
+}
 async function run() {
   draw();
   const rect = document.querySelector('.chess-board')!.getBoundingClientRect();
@@ -95,7 +112,7 @@ async function run() {
     return Response.json({data:snapshot});
   };
   for (const mode of ['casual','ranked'] as const) {
-    snapshot={...snapshot,mode};failPost=true;
+    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null};failPost=true;
     flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page"><ChessMatchClient key={mode} matchId="qa" userId="me"/></div></ArenaShell>));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     click('e2');click('e4');
@@ -105,7 +122,20 @@ async function run() {
     failGet=false; window.dispatchEvent(new Event('online'));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     check(!document.querySelector('[role="alert"]'),mode+' authoritative GET clears stale alert');
+    for (const [winnerId,outcome,reason,label] of [
+      ['me','승리','checkmate','체크메이트'],['other','패배','resignation','기권'],[null,'무승부','stalemate','스테일메이트'],
+    ]) {
+      snapshot={...snapshot,status:'finished',turnUserId:null,winnerId,finishReason:reason};
+      window.dispatchEvent(new Event('online'));
+      await until(()=>document.querySelector('[aria-label="체스 경기 결과"] h3')?.textContent===outcome);
+      const button=inspectResult(outcome!,label!);
+      flushSync(()=>button.click());
+      check(document.documentElement.dataset.qaNavigation===(mode==='ranked'?'/chess/ranked':'/chess'),mode+' result returns to correct lobby');
+    }
   }
+  snapshot={...snapshot,status:'active',turnUserId:'me',winnerId:null,finishReason:null};
+  window.dispatchEvent(new Event('online'));
+  await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
   failPost=false;click('e2');click('e4');
   await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='opponent');
   inspectAnimation(1);
@@ -116,6 +146,18 @@ async function run() {
   check(document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='opponent','AI thinking state');
   await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
   inspectAnimation(1);
+  const resign=[...document.querySelectorAll('button')].find(node=>node.textContent==='기권')!;
+  flushSync(()=>resign.click());inspectResult('패배','기권');
+  const replay=[...document.querySelectorAll('button')].find(node=>node.textContent==='다시하기 · 난이도 선택')!;
+  flushSync(()=>replay.click());
+  check(Boolean(document.querySelector('dialog[open]')), 'AI result opens difficulty dialog');
+  const start=document.querySelector<HTMLButtonElement>('dialog button[type="submit"]')!;
+  flushSync(()=>start.click());
+  check(!document.querySelector('[aria-label="체스 경기 결과"]'), 'AI replay resets finished panel');
+  check(document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine', 'AI replay starts a new game');
+  // Keep a finished card visible for the saved screenshot.
+  flushSync(()=>[...document.querySelectorAll('button')].find(node=>node.textContent==='기권')!.click());
+  inspectResult('패배','기권');
   document.documentElement.dataset.qaResult=JSON.stringify({passed:true,width:innerWidth,height:innerHeight,boardWidth:rect.width,checks:results});
   const output=document.createElement('pre');output.id='qa-result';output.textContent='PASS '+results.length+' checks · '+innerWidth+'×'+innerHeight+' · board '+rect.width+'px';document.body.prepend(output);
 }
