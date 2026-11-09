@@ -91,5 +91,6 @@ export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'ma
     };
   }, [refresh, id, kind]);
 
-  return {data, error, refresh, accept};
+  // A confirmed snapshot is the recovery boundary for both POST and GET errors.
+  return {data, error, refresh, accept, reportError: setError};
 }

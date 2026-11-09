@@ -8,6 +8,8 @@ import { chooseChessAiMove, type ChessDifficulty } from '@/lib/chess/ai';
 import { initialChessState, inspectChessState, parseChessMove, playChessMove, type ChessMove, type ChessState } from '@/lib/chess/engine';
 import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import { ChessBoard } from './chess-board';
+import { ChessTurnStatus } from './chess-turn-status';
+import { CHESS_MOVE_DURATION } from './move-feedback';
 import { ChessDifficultyForm, chessDifficultyLabels as levels } from './chess-difficulty-form';
 
 type Session = {difficulty:ChessDifficulty; state:ChessState; notation:string[]; resigned:boolean};
@@ -76,7 +78,7 @@ export function ChessAi({userId}: {userId:string}) {
         if (!next || !next.ok) throw Error('AI가 수를 고르지 못했습니다.');
         setSession({...session,state:next.state,notation:[...session.notation,next.san]});
       } catch {setError('AI가 수를 고르지 못했습니다. 다시 시도해 주세요.');}
-    },180);
+    },CHESS_MOVE_DURATION + 180);
     return () => window.clearTimeout(timer);
   },[session,position,error]);
 
@@ -105,14 +107,15 @@ export function ChessAi({userId}: {userId:string}) {
   const reason = session.resigned ? '기권' : position.outcome ? finishReasons[position.outcome.reason] : null;
   return <div className="chess-game-layout">
     <div className="chess-board-stage">
-      <ChessBoard key={session.notation.length} fen={position.fen} black={false}
-        enabled={!finished && position.turn === 'w'} onMove={play}/>
+      <ChessTurnStatus black={false} myTurn={position.turn === 'w'} finished={finished}
+        inCheck={position.inCheck} ai error={Boolean(error)}/>
+      <ChessBoard fen={position.fen} black={false}
+        enabled={!finished && !error && position.turn === 'w'} onMove={play}/>
       {finished && <OmokResultOverlay game="chess" mode="ai" outcome={outcome} finishReason={reason}
         onReplay={() => replay.current?.showModal()} onReturn={() => router.push('/chess')}/>}
     </div>
     <ArenaPanel title={'체스 AI · ' + levels[session.difficulty]}>
-      <p role="status">{finished ? outcome : position.turn === 'w' ? '내 차례' : 'AI가 수를 고르는 중입니다.'}
-        {!finished && position.inCheck ? ' · 체크' : ''}</p>
+      {finished && <p role="status">{outcome}</p>}
       {!finished && error && <><p role="alert">{error}</p>
         <button type="button" className="arena-button" onClick={() => setError('')}>AI 다시 시도</button></>}
       <h3>기보</h3>
