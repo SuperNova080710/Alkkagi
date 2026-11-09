@@ -9,6 +9,7 @@ import { ArenaPanel } from '@/components/ui/arena-panel';
 import type { ChessMove } from '@/lib/chess/engine';
 import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
+import { ChessTurnStatus } from './chess-turn-status';
 import { chessRequest, useChessSnapshot, type ChessSnapshot } from './client';
 
 type Room = {id: string; code: string; hostId: string; guestId: string | null; status: string; matchId: string | null};
@@ -97,8 +98,7 @@ export function ChessRoomClient({roomId, userId, invitesEnabled}: {
 
 export function ChessMatchClient({matchId,userId}: {matchId: string; userId: string}) {
   const path = '/matches/' + matchId;
-  const {data: match, error, refresh, accept} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
-  const [notice, setNotice] = useState('');
+  const {data: match, error, refresh, accept, reportError} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
   const [pending, setPending] = useState(false);
   const [resigning, setResigning] = useState(false);
   const lock = useRef(false);
@@ -106,7 +106,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
 
   async function command(action: 'move' | 'resign', move?: ChessMove) {
     if (!match || lock.current) return;
-    lock.current = true; setPending(true); setNotice('');
+    lock.current = true; setPending(true);
     const body = {action, ...(move ? {ply:match.ply, ...move} : {})};
     const signature = JSON.stringify(body);
     if (retry.current?.signature !== signature) retry.current = {signature, requestId:crypto.randomUUID()};
@@ -115,7 +115,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       retry.current = null;
       setResigning(false);
     } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : '연결을 확인해 주세요.');
+      reportError(cause instanceof Error ? cause.message : '연결을 확인해 주세요.');
       await refresh();
     } finally {lock.current = false; setPending(false);}
   }
@@ -135,15 +135,19 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
   const finished = match.status === 'finished';
   const myTurn = !finished && match.turnUserId === userId;
   return <div className="chess-game-layout">
-    <ChessBoard key={match.ply} fen={match.fen} black={match.blackId === userId}
-      enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
+    <div className="chess-board-stage">
+      <ChessTurnStatus black={match.blackId === userId} myTurn={myTurn} finished={finished}
+        inCheck={match.inCheck} pending={pending} error={Boolean(error)} confirming={resigning}/>
+      <ChessBoard key={match.id} fen={match.fen} black={match.blackId === userId}
+        enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
+    </div>
     <ArenaPanel title={match.mode === 'ranked' ? '체스 랭크전' : '체스 일반전'}>
-      <p role="status">{finished
-        ? `${!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · ${reasonText[match.finishReason ?? ''] ?? '대국 종료'}`
-        : `${myTurn ? '내 차례' : '상대 차례'}${match.inCheck ? ' · 체크' : ''}`}</p>
+      {finished && <p role="status">
+        {!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · {reasonText[match.finishReason ?? ''] ?? '대국 종료'}
+      </p>}
       {!finished && match.deadline && <ChessTurnClock key={match.deadline} deadline={match.deadline} onExpire={expire}/>}
       <p>내 기물 {match.whiteId === userId ? '백' : '흑'}</p>
-      {(notice || error) && <p role="alert">{notice || error}</p>}
+      {error && <p role="alert">{error}</p>}
       <h3>기보</h3>
       <ol className="chess-history">{match.moves.map(move => <li key={move.ply}>{move.san}</li>)}</ol>
       <div className="chess-actions">
