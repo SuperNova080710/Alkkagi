@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CopyInvite } from '@/components/rooms/copy-invite';
 import { SendFriendRoomInvite } from '@/components/rooms/send-friend-room-invite';
 import { ArenaPanel } from '@/components/ui/arena-panel';
+import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import type { ChessMove } from '@/lib/chess/engine';
 import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
@@ -97,6 +98,7 @@ export function ChessRoomClient({roomId, userId, invitesEnabled}: {
 }
 
 export function ChessMatchClient({matchId,userId}: {matchId: string; userId: string}) {
+  const router = useRouter();
   const path = '/matches/' + matchId;
   const {data: match, error, refresh, accept, reportError} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
   const [pending, setPending] = useState(false);
@@ -134,20 +136,26 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
   </ArenaPanel>;
   const finished = match.status === 'finished';
   const myTurn = !finished && match.turnUserId === userId;
+  const outcome = !match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배';
+  const reason = reasonText[match.finishReason ?? ''] ?? '대국 종료';
+  const lobby = match.mode === 'ranked' ? '/chess/ranked' : '/chess';
   return <div className="chess-game-layout">
     <div className="chess-board-stage">
       <ChessTurnStatus black={match.blackId === userId} myTurn={myTurn} finished={finished}
         inCheck={match.inCheck} pending={pending} error={Boolean(error)} confirming={resigning}/>
       <ChessBoard key={match.id} fen={match.fen} black={match.blackId === userId}
         enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
+      {finished && <OmokResultOverlay game="chess" mode={match.mode ?? 'casual'}
+        outcome={outcome} finishReason={reason} error={error}
+        onReturn={() => router.push(lobby)}/>}
     </div>
     <ArenaPanel title={match.mode === 'ranked' ? '체스 랭크전' : '체스 일반전'}>
       {finished && <p role="status">
-        {!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · {reasonText[match.finishReason ?? ''] ?? '대국 종료'}
+        {outcome} · {reason}
       </p>}
       {!finished && match.deadline && <ChessTurnClock key={match.deadline} deadline={match.deadline} onExpire={expire}/>}
       <p>내 기물 {match.whiteId === userId ? '백' : '흑'}</p>
-      {error && <p role="alert">{error}</p>}
+      {!finished && error && <p role="alert">{error}</p>}
       <h3>기보</h3>
       <ol className="chess-history">{match.moves.map(move => <li key={move.ply}>{move.san}</li>)}</ol>
       <div className="chess-actions">
@@ -157,7 +165,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
           <button type="button" className="arena-button" disabled={pending} onClick={() => void command('resign')}>기권 확정</button>
           <button type="button" className="arena-button arena-button--outline" disabled={pending} onClick={() => setResigning(false)}>취소</button>
         </>}
-        <Link href={match.mode === 'ranked' ? '/chess/ranked' : '/chess'} className="arena-button arena-button--outline">로비</Link>
+        <Link href={lobby} className="arena-button arena-button--outline">로비</Link>
       </div>
     </ArenaPanel>
   </div>;

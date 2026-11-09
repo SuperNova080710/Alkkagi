@@ -38,7 +38,7 @@ try {
   server=createServer(async (request,response)=>{
     const name=new URL(request.url,'http://localhost').pathname;
     // Serve only the known compiled test files.
-    if(!['/','/index.html','/chess-feedback.js','/chess.css'].includes(name)){response.writeHead(404).end();return;}
+    if(!['/','/index.html','/chess-feedback.js','/chess.css','/chess-feedback.css'].includes(name)){response.writeHead(404).end();return;}
     try {
       response.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');
       response.end(await readFile(join(directory,name==='/'?'index.html':name.slice(1))));
