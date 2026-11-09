@@ -9,6 +9,7 @@ import { ArenaPanel } from '@/components/ui/arena-panel';
 import type { ChessMove } from '@/lib/chess/engine';
 import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
+import { ChessTurnStatus } from './chess-turn-status';
 import { chessRequest, useChessSnapshot, type ChessSnapshot } from './client';
 
 type Room = {id: string; code: string; hostId: string; guestId: string | null; status: string; matchId: string | null};
@@ -135,12 +136,16 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
   const finished = match.status === 'finished';
   const myTurn = !finished && match.turnUserId === userId;
   return <div className="chess-game-layout">
-    <ChessBoard key={match.ply} fen={match.fen} black={match.blackId === userId}
-      enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
+    <div className="chess-board-stage">
+      <ChessTurnStatus black={match.blackId === userId} myTurn={myTurn} finished={finished}
+        inCheck={match.inCheck} pending={pending} error={Boolean(error)} confirming={resigning}/>
+      <ChessBoard key={match.id} fen={match.fen} black={match.blackId === userId}
+        enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
+    </div>
     <ArenaPanel title={match.mode === 'ranked' ? '체스 랭크전' : '체스 일반전'}>
-      <p role="status">{finished
-        ? `${!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · ${reasonText[match.finishReason ?? ''] ?? '대국 종료'}`
-        : `${myTurn ? '내 차례' : '상대 차례'}${match.inCheck ? ' · 체크' : ''}`}</p>
+      {finished && <p role="status">
+        {!match.winnerId ? '무승부' : match.winnerId === userId ? '승리' : '패배'} · {reasonText[match.finishReason ?? ''] ?? '대국 종료'}
+      </p>}
       {!finished && match.deadline && <ChessTurnClock key={match.deadline} deadline={match.deadline} onExpire={expire}/>}
       <p>내 기물 {match.whiteId === userId ? '백' : '흑'}</p>
       {(notice || error) && <p role="alert">{notice || error}</p>}
