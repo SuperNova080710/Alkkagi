@@ -16,7 +16,7 @@
 .chess-page { padding: 1rem 0; }
 .chess-actions { display: flex; gap: .65rem; flex-wrap: wrap; align-items: center; }
 .chess-game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, .5fr); gap: 1rem; align-items: start; }
-.chess-board { width: min(100%, 40rem, calc(100dvh - 11rem)); aspect-ratio: 1; margin: 0 auto;
+.chess-board { width: min(100%, 40rem, max(22rem, calc(100dvh - 11rem))); aspect-ratio: 1; margin: 0 auto;
   display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr));
   container-type: inline-size; overflow: hidden;
   border: .4rem solid #654b32; border-radius: .75rem; box-shadow: var(--arena-shadow); }
@@ -43,9 +43,11 @@
 .chess-board-stage { position: relative; min-width: 0; }
 .chess-casual-entry { display: grid; gap: .8rem; }
 
-/* Shared feedback for AI, casual and ranked games. */
+/* Shared feedback for AI, casual and ranked games.
+   Short viewports scroll rather than shrinking the board below 22rem.
+   The outer min(100%, ...) still fits phones narrower than that floor. */
 .chess-board-stage { display: grid; gap: .65rem; }
-.chess-turn-status { width: min(100%, 40rem, calc(100dvh - 18rem)); margin-inline: auto;
+.chess-turn-status { width: min(100%, 40rem, max(22rem, calc(100dvh - 18rem))); margin-inline: auto;
   padding: .8rem 1rem; border: 2px solid #ccc5b4; border-radius: .85rem; background: #f6f2e8; color: #343b31; }
 .chess-turn-status[data-state="mine"] { border-color: #26734e; background: #e7f4e9; box-shadow: 0 0 0 3px #26734e13; }
 .chess-turn-status[data-state="opponent"] { border-color: #b79a58; background: #f8f0dd; }
@@ -60,7 +62,7 @@
   border: 1px solid #c9c5b7; border-radius: 2rem; background: #fff8; }
 .chess-turn-players > span[data-active] { border-color: #526845; background: #fff; box-shadow: inset 0 -2px #526845; }
 .chess-turn-players i { font-style: normal; font-size: 1.25rem; }
-.chess-board-stage .chess-board { width: min(100%, 40rem, calc(100dvh - 18rem)); }
+.chess-board-stage .chess-board { width: min(100%, 40rem, max(22rem, calc(100dvh - 18rem))); }
 .chess-square { isolation: auto; }
 .chess-square[data-movable] { cursor: pointer; }
 .chess-square[aria-disabled="true"] { cursor: default; }

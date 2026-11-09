@@ -98,8 +98,7 @@ export function ChessRoomClient({roomId, userId, invitesEnabled}: {
 
 export function ChessMatchClient({matchId,userId}: {matchId: string; userId: string}) {
   const path = '/matches/' + matchId;
-  const {data: match, error, refresh, accept} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
-  const [notice, setNotice] = useState('');
+  const {data: match, error, refresh, accept, reportError} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
   const [pending, setPending] = useState(false);
   const [resigning, setResigning] = useState(false);
   const lock = useRef(false);
@@ -107,7 +106,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
 
   async function command(action: 'move' | 'resign', move?: ChessMove) {
     if (!match || lock.current) return;
-    lock.current = true; setPending(true); setNotice('');
+    lock.current = true; setPending(true);
     const body = {action, ...(move ? {ply:match.ply, ...move} : {})};
     const signature = JSON.stringify(body);
     if (retry.current?.signature !== signature) retry.current = {signature, requestId:crypto.randomUUID()};
@@ -116,7 +115,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       retry.current = null;
       setResigning(false);
     } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : '연결을 확인해 주세요.');
+      reportError(cause instanceof Error ? cause.message : '연결을 확인해 주세요.');
       await refresh();
     } finally {lock.current = false; setPending(false);}
   }
@@ -148,7 +147,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       </p>}
       {!finished && match.deadline && <ChessTurnClock key={match.deadline} deadline={match.deadline} onExpire={expire}/>}
       <p>내 기물 {match.whiteId === userId ? '백' : '흑'}</p>
-      {(notice || error) && <p role="alert">{notice || error}</p>}
+      {error && <p role="alert">{error}</p>}
       <h3>기보</h3>
       <ol className="chess-history">{match.moves.map(move => <li key={move.ply}>{move.san}</li>)}</ol>
       <div className="chess-actions">
