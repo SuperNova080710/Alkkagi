@@ -1,9 +1,14 @@
+import { NextRequest } from 'next/server';
 import { PGlite } from '@electric-sql/pglite';
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { POST as roomsPost } from '../src/app/api/chess/rooms/route';
 import { GET as roomGet, POST as roomPost } from '../src/app/api/chess/rooms/[id]/route';
 import { GET as matchGet, POST as matchPost } from '../src/app/api/chess/matches/[id]/route';
+import { GET as rankGet, POST as rankPost } from '../src/app/api/chess/ranked/route';
+import { GET as invitesGet, POST as invitesPost } from '../src/app/api/chess/invites/route';
+import { POST as inviteRespond } from '../src/app/api/chess/invites/[id]/respond/route';
+import { GET as invitesSent } from '../src/app/api/chess/invites/sent/route';
 import { initialChessState } from '../src/lib/chess/engine';
 
 vi.mock('server-only', () => ({}));
@@ -43,6 +48,11 @@ async function rpc(role: string, user: string | null, name: string, args: Record
 const request = (body?: Record<string, unknown>) => new Request('https://example.test/api/chess', body ? {
   method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
 } : undefined);
+const inviteRequest = (body: Record<string, unknown>, origin = 'https://example.test') =>
+  new NextRequest('https://example.test/api/chess/invites', {
+    method: 'POST', headers: {'Content-Type': 'application/json', Origin: origin}, body: JSON.stringify(body),
+  });
+const sentRequest = (roomId: string) => new NextRequest('https://example.test/api/chess/invites/sent?roomId=' + roomId);
 const params = (id: string) => ({params: Promise.resolve({id})});
 const move = (ply: number, from: string, to: string, n = ply + 10) =>
   ({action: 'move', ply, from, to, requestId: requestId(n)});
@@ -68,6 +78,8 @@ async function start(roomId: string, code: string) {
 describe('chess casual API and authoritative database', () => {
   beforeAll(async () => {
     vi.stubEnv('CHESS_UI_ENABLED', 'true');
+    vi.stubEnv('FRIENDS_UI_ENABLED', 'true');
+    vi.stubEnv('ROOM_INVITES_UI_ENABLED', 'true');
     db = new PGlite();
     await db.exec(`
       create role anon nologin;
@@ -200,4 +212,103 @@ describe('chess casual API and authoritative database', () => {
     expect(await rpc('anon', null, 'chess_room_snapshot',{p_room_id:roomId}))
       .toMatchObject({error:{code:'42501'}});
   });
+  it('matches two accounts, expires a turn and settles only chess RP once', async () => {
+    actor = white;
+    expect(await (await rankPost(request({action:'join'}))).json()).toMatchObject({data:{status:'queued'}});
+    expect(await (await rankPost(request({action:'cancel'}))).json()).toMatchObject({data:{status:'idle'}});
+    await rankPost(request({action:'join'}));
+    actor = black;
+    const queued = await (await rankPost(request({action:'join'}))).json();
+    expect(queued).toMatchObject({data:{status:'matched'}});
+    const id = queued.data.matchId as string;
+    actor = white;
+    expect(await (await rankGet()).json()).toEqual(queued);
+    const {data: game} = await (await matchGet(request(),params(id))).json();
+    expect(game).toMatchObject({mode:'ranked',status:'active',roomId:null,deadline:expect.any(String)});
+    expect(await (await matchPost(request({action:'expire'}),params(id))).json())
+      .toMatchObject({data:{status:'active'}});
+    await db.query("update public.chess_matches set turn_deadline=now()-interval '1 second' where id=$1",[id]);
+    actor = game.whiteId;
+    expect(await (await matchPost(request(move(0,'e2','e4')),params(id))).json())
+      .toEqual({error:'TURN_EXPIRED'});
+    const result = await (await matchPost(request({action:'expire'}),params(id))).json();
+    expect(result).toMatchObject({data:{status:'finished',finishReason:'timeout',winnerId:game.blackId,ply:0,deadline:null}});
+    expect(await (await matchPost(request({action:'expire'}),params(id))).json()).toEqual(result);
+    const {rows:[ledger]} = await db.query(
+      'select count(*)::int as entries,sum(delta)::int as net from public.chess_rating_events where match_id=$1',[id],
+    );
+    expect(ledger).toEqual({entries:2,net:0});
+    expect((await db.query('select rating from public.profiles where id in ($1,$2)',[white,black])).rows)
+      .toEqual([{rating:1000},{rating:1000}]);
+  });
+
+  it('limits invitations to friends and their own inbox, then joins and starts the same room', async () => {
+    const {roomId} = await create(6);
+    const send = () => invitesPost(inviteRequest({roomId, targetId:black}));
+    expect((await send()).status).toBe(404);
+    await db.query("insert into public.friend_links(requester_id,recipient_id,status) values($1,$2,'accepted')", [white,black]);
+    expect((await invitesPost(inviteRequest({roomId,targetId:black}, 'https://other.test'))).status).toBe(403);
+    const {data: invite} = await (await send()).json();
+    expect(invite).toMatchObject({inviteId:expect.any(String),alreadyPending:false});
+    expect(await (await send()).json()).toMatchObject({data:{inviteId:invite.inviteId,alreadyPending:true}});
+    expect(await (await invitesSent(sentRequest(roomId))).json()).toMatchObject({data:[{id:invite.inviteId,status:'pending'}]});
+    const accept = () => inviteRespond(inviteRequest({accept:true}),params(invite.inviteId));
+    actor = outsider;
+    expect(await (await invitesGet()).json()).toEqual({data:[]});
+    expect((await accept()).status).toBe(404);
+    expect((await invitesSent(sentRequest(roomId))).status).toBe(404);
+    expect(await rpc('authenticated', outsider, 'chess_list_received_invites', {actor:black}))
+      .toMatchObject({error:{code:'42501'}});
+    actor = black;
+    expect(await (await invitesGet()).json()).toMatchObject({data:[{id:invite.inviteId,roomId,inviterId:white}]});
+    expect(await (await accept()).json()).toEqual({data:{inviteId:invite.inviteId,status:'accepted',roomId}});
+    expect((await accept()).status).toBe(200);
+    expect(await (await invitesGet()).json()).toEqual({data:[]});
+    expect(await (await roomGet(request(),params(roomId))).json()).toMatchObject({data:{guestId:black}});
+    actor = white;
+    expect(await (await invitesSent(sentRequest(roomId))).json()).toMatchObject({data:[{status:'accepted'}]});
+    expect((await roomPost(request({action:'start'}),params(roomId))).status).toBe(200);
+  });
+
+  it('rechecks blocks, invitation expiry and room capacity before accepting', async () => {
+    const {roomId,code} = await create(7);
+    const {data: invite} = await (await invitesPost(inviteRequest({roomId,targetId:black}))).json();
+    const accept = () => inviteRespond(inviteRequest({accept:true}),params(invite.inviteId));
+    actor = black;
+    await db.query('insert into public.player_blocks(blocker_id,blocked_id) values($1,$2)', [black,white]);
+    expect(await (await invitesGet()).json()).toEqual({data:[]});
+    expect((await accept()).status).toBe(404);
+    await db.query('delete from public.player_blocks where blocker_id=$1 and blocked_id=$2', [black,white]);
+    await db.query("update public.chess_friend_invites set expires_at=now()-interval '1 minute',created_at=now()-interval '6 minutes' where id=$1", [invite.inviteId]);
+    expect((await accept()).status).toBe(404);
+    await db.query("update public.chess_friend_invites set expires_at=now()+interval '5 minutes',created_at=now() where id=$1", [invite.inviteId]);
+    const joinArgs = {p_actor:outsider,p_code:code};
+    const acceptArgs = {actor:black,p_invite_id:invite.inviteId,p_accept:true};
+    const competing = await Promise.all([
+      rpc('service_role',null,'chess_join_room',joinArgs),
+      rpc('service_role',null,'chess_respond_friend_invite',acceptArgs),
+    ]);
+    expect(competing.filter(reply => !reply.error)).toHaveLength(1);
+    actor = white;
+    expect(await (await roomGet(request(),params(roomId))).json()).toMatchObject({
+      data:{guestId:competing[0].error ? black : outsider},
+    });
+    await roomPost(request({action:'leave'}),params(roomId));
+  });
+
+  it('honors the invitation feature flag and records a decline without joining', async () => {
+    const {roomId} = await create(8);
+    vi.stubEnv('ROOM_INVITES_UI_ENABLED', 'false');
+    expect((await invitesGet()).status).toBe(404);
+    vi.stubEnv('ROOM_INVITES_UI_ENABLED', 'true');
+    const {data: invite} = await (await invitesPost(inviteRequest({roomId,targetId:black}))).json();
+    actor = black;
+    expect(await (await inviteRespond(inviteRequest({accept:false}),params(invite.inviteId))).json())
+      .toEqual({data:{inviteId:invite.inviteId,status:'declined',roomId:null}});
+    expect((await roomGet(request(),params(roomId))).status).toBe(404);
+    actor = white;
+    expect((await invitesPost(inviteRequest({roomId,targetId:black}))).status).toBe(409);
+    await roomPost(request({action:'leave'}),params(roomId));
+  });
+
 });

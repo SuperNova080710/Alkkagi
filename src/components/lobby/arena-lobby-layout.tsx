@@ -19,33 +19,36 @@ type ArenaLobbyLayoutProps = {
   recovery: ReactNode;
   account?: ReactNode;
   showGameSwitcher: boolean;
+  omokEnabled?: boolean;
   friendsEnabled?: boolean;
   cosmeticsEnabled?: boolean;
   experienceEnabled?: boolean;
 };
 
 export function ArenaLobbyLayout({
-  game, data, modes, recovery, account, showGameSwitcher,
+  game, data, modes, recovery, account, showGameSwitcher, omokEnabled,
   friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false,
 }: ArenaLobbyLayoutProps) {
   const omok = game === 'omok';
+  const chess = game === 'chess';
+  const gameLabel = chess ? '체스 ' : omok ? '오목 ' : '';
   return <ArenaShell current="lobby" game={game} account={account}>
     <ArenaHero compact game={game}/>
     <div className={`arena-lobby-grid${showGameSwitcher ? ' arena-lobby-grid--multigame' : ''}`}>
       <div className="arena-play-column">
-        {showGameSwitcher && <GameSwitcher current={game}/>}
+        {showGameSwitcher && <GameSwitcher current={game} omokEnabled={omokEnabled}/>}
         {modes}
         {recovery}
       </div>
-      <aside className="arena-sidebar" aria-label={omok ? '오목 내 정보와 랭킹' : '내 정보와 랭킹'}>
+      <aside className="arena-sidebar" aria-label={gameLabel + '내 정보와 랭킹'}>
         <ArenaPanel title="내 정보">
           <LobbyIdentitySummary nickname={data.nickname} rating={data.rating} game={game}
             experienceEnabled={experienceEnabled} cosmeticsEnabled={cosmeticsEnabled}/>
           <Link href="/profile" className="arena-text-link">내 프로필 <span aria-hidden="true">›</span></Link>
         </ArenaPanel>
-        <ArenaPanel title={omok ? '오목 랭킹 TOP 3' : '랭킹 TOP 3'}>
+        <ArenaPanel title={gameLabel + '랭킹 TOP 3'}>
           {data.rankingUnavailable
-            ? <p role="status" className="arena-muted">{omok ? '오목 ' : ''}랭킹을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p>
+            ? <p role="status" className="arena-muted">{gameLabel}랭킹을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p>
             : data.leaderboard.length
               ? <ol className="arena-leaderboard">{data.leaderboard.slice(0, 3).map(player =>
                 <li key={player.position}>
@@ -55,8 +58,8 @@ export function ArenaLobbyLayout({
                 </li>,
               )}</ol>
               : <p className="arena-muted">{omok ? '아직 오목 순위가 없어요.' : '아직 등록된 순위가 없어요.'}</p>}
-          <Link href={omok ? '/omok/ranked' : '/ranked'} className="arena-text-link">
-            {omok ? '오목 ' : ''}전체 랭킹 보기 <span aria-hidden="true">›</span>
+          <Link href={chess ? '/chess/ranked' : omok ? '/omok/ranked' : '/ranked'} className="arena-text-link">
+            {gameLabel}전체 랭킹 보기 <span aria-hidden="true">›</span>
           </Link>
         </ArenaPanel>
         <div className="arena-future">

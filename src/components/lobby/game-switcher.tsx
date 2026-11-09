@@ -1,11 +1,12 @@
 import Link from 'next/link';
 
-export type ArenaGame = 'alkkagi' | 'omok';
+export type ArenaGame = 'alkkagi' | 'omok' | 'chess';
 
 /** Native page navigation; ranked switchers stay on ranking pages. */
-export function GameSwitcher({ current, section = 'lobby' }: {
+export function GameSwitcher({ current, section = 'lobby', omokEnabled = true }: {
   current: ArenaGame;
   section?: 'lobby' | 'ranked';
+  omokEnabled?: boolean;
 }) {
   const alkkagiHref = section === 'ranked' ? '/ranked' : '/lobby';
   const omokHref = section === 'ranked' ? '/omok/ranked' : '/omok';
@@ -16,10 +17,14 @@ export function GameSwitcher({ current, section = 'lobby' }: {
       <span className="arena-game-switcher-puck" aria-hidden="true">●</span>
       알까기
     </Link>
-    <Link href={omokHref} className={current === 'omok' ? 'is-active' : ''}
+    {omokEnabled && <Link href={omokHref} className={current === 'omok' ? 'is-active' : ''}
       aria-current={current === 'omok' ? 'page' : undefined}>
       <span className="arena-game-switcher-stones" aria-hidden="true">●<b>●</b></span>
       오목
-    </Link>
+    </Link>}
+    {process.env.CHESS_UI_ENABLED === 'true' && <Link href={section === 'ranked' ? '/chess/ranked' : '/chess'}
+      className={current === 'chess' ? 'is-active' : ''} aria-current={current === 'chess' ? 'page' : undefined}>
+      <span aria-hidden="true">♞</span> 체스
+    </Link>}
   </nav>;
 }
