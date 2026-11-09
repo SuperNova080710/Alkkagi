@@ -21,5 +21,5 @@ const inputs = ['src/app/globals.css','src/app/arena.css','src/components/chess/
 const css = (await Promise.all(inputs.map(p=>readFile(p,'utf8')))).join('\n');
 const compiled = await postcss([tailwind()]).process(css,{from:resolve(inputs[0])});
 await writeFile(resolve(output,'chess.css'),compiled.css);
-await writeFile(resolve(output,'index.html'),'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>체스 UI 회귀 검증</title><link rel="stylesheet" href="chess.css"><body><div id="root"></div><script type="module" src="chess-feedback.js"></script></body></html>');
+await writeFile(resolve(output,'index.html'),'<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>체스 UI 회귀 검증</title><link rel="stylesheet" href="chess.css"><link rel="stylesheet" href="chess-feedback.css"><body><div id="root"></div><script type="module" src="chess-feedback.js"></script></body></html>');
 console.log(output);
