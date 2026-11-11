@@ -3,11 +3,12 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ArenaGame } from '@/components/lobby/game-switcher';
 
-export function ArenaShell({ children, current, account, game = 'alkkagi' }: {
+export function ArenaShell({ children, current, account, game = 'alkkagi', publicHome = false }: {
   children: ReactNode;
   current?: 'lobby' | 'ranked' | 'profile' | 'players' | 'friends' | 'messages' | 'cosmetics';
   account?: ReactNode;
   game?: ArenaGame;
+  publicHome?: boolean;
 }) {
   const omokEnabled = process.env.OMOK_UI_ENABLED === 'true';
   const currentGame = game === 'chess' && process.env.CHESS_UI_ENABLED === 'true' ? 'chess'
@@ -18,25 +19,35 @@ export function ArenaShell({ children, current, account, game = 'alkkagi' }: {
     <a className="arena-skip" href="#arena-content">본문으로 이동</a>
     <div className="arena-wrap">
       <header className="arena-header">
-        <Link href="/" className="arena-brand" aria-label="ALKKAGI ARENA 홈">
-          <span>ALKKAGI</span><span>ARENA</span>
+        <Link href="/" className="arena-brand" aria-label="한판아레나 홈">
+          <span>한판아레나</span><span lang="en">HANPAN ARENA</span>
         </Link>
         <nav aria-label="주요 메뉴" className="arena-nav">
-          <Link href={lobbyHref} aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
-          <Link href={rankedHref} aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
-          <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
-          <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
-          {process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true' &&
-            <Link href="/messages" aria-current={current === 'messages' ? 'page' : undefined}>메신저</Link>}
-          <Link href="/profile" aria-current={current === 'profile' ? 'page' : undefined}>내 프로필</Link>
-          {process.env.COSMETICS_UI_ENABLED === 'true' && <Link href="/cosmetics" aria-current={current === 'cosmetics' ? 'page' : undefined}>꾸미기</Link>}
+          {publicHome ? <>
+            <Link href="#games">게임 선택</Link>
+            <Link href="/how-to-play">조작법</Link>
+            <Link href="/signup">회원가입</Link>
+          </> : <>
+            <Link href={lobbyHref} aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
+            <Link href={rankedHref} aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
+            <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
+            <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
+            {process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true' &&
+              <Link href="/messages" aria-current={current === 'messages' ? 'page' : undefined}>메신저</Link>}
+            <Link href="/profile" aria-current={current === 'profile' ? 'page' : undefined}>내 프로필</Link>
+            {process.env.COSMETICS_UI_ENABLED === 'true' && <Link href="/cosmetics" aria-current={current === 'cosmetics' ? 'page' : undefined}>꾸미기</Link>}
+          </>}
         </nav>
         {account && <div className="arena-account">{account}</div>}
       </header>
       <main id="arena-content" tabIndex={-1}>{children}</main>
-      <footer className="arena-footer">ALKKAGI ARENA <span>작은 알 하나, 큰 승부 한 판.</span></footer>
+      <footer className="arena-footer">한판아레나 <span>오목 · 체스 · 알까기</span></footer>
     </div>
   </div>;
+}
+
+export function ArenaHomeShell({ children, account }: { children: ReactNode; account: ReactNode }) {
+  return <ArenaShell publicHome account={account}>{children}</ArenaShell>;
 }
 
 export function ArenaHero({ children, compact = false, game = 'alkkagi' }: {

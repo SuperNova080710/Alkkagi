@@ -1,7 +1,10 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import robots from '../src/app/robots';
 import sitemap from '../src/app/sitemap';
-import {SITE_ORIGIN,SITE_TITLE,SITE_DESCRIPTION} from '../src/lib/seo/site';
+import {SITE_ORIGIN,SITE_NAME,SITE_TITLE,SITE_DESCRIPTION} from '../src/lib/seo/site';
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import Home, {metadata as homeMetadata} from '../src/app/page';
 import nextConfig from '../next.config';
 
 afterEach(()=>{vi.unstubAllEnvs();});
@@ -12,6 +15,9 @@ describe('Public search indexing policy',()=>{
     expect(sitemap()).toEqual([
       {url:SITE_ORIGIN,changeFrequency:'weekly',priority:1},
       {url:SITE_ORIGIN+'/how-to-play',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/omok',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/chess',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/alkkagi',changeFrequency:'monthly',priority:0.7},
     ]);
     expect(SITE_ORIGIN).toBe('https://alkkagi-alpha.vercel.app');
   });
@@ -32,7 +38,7 @@ describe('Public search indexing policy',()=>{
     });
     // A Disallow for HTML routes would hide their X-Robots-Tag from Googlebot.
     const serialized=JSON.stringify(rule);
-    for(const path of ['/login','/signup','/lobby','/ranked','/rooms',
+    for(const path of ['/login','/signup','/lobby','/ranked','/rooms','/omok','/chess',
       '/profile','/players','/friends']){
       expect(serialized).not.toContain('"' + path + '"');
     }
@@ -53,7 +59,7 @@ describe('Public search indexing policy',()=>{
     const h=await nextConfig.headers?.();
     const expected=[
       '/login','/signup','/lobby/:path*','/ranked/:path*',
-      '/rooms/:path*','/profile/:path*','/players/:path*',
+      '/rooms/:path*','/omok/:path*','/chess/:path*','/profile/:path*','/players/:path*',
       '/friends/:path*','/messages/:path*','/cosmetics/:path*','/qa/:path*','/api/:path*','/auth/:path*',
     ];
     expect(h?.map(x=>x.source)).toEqual(expected);
@@ -81,8 +87,25 @@ describe('Public search indexing policy',()=>{
   });
 
   it('uses real game content rather than irrelevant keyword stuffing',()=>{
-    expect(SITE_TITLE).toContain('알까기');
-    expect(SITE_DESCRIPTION).toContain('온라인 1:1 알까기');
-    expect(SITE_DESCRIPTION).toContain('AI');
+    expect(SITE_NAME).toBe('한판아레나');
+    expect(SITE_TITLE).toBe('무료 온라인 오목·체스·알까기 게임 | 한판아레나');
+    expect(homeMetadata.title).toEqual({absolute:SITE_TITLE});
+    expect(homeMetadata.alternates?.canonical).toBe('/');
+    for (const term of ['오목','체스','알까기','친구','AI','랭크전']) {
+      expect(SITE_DESCRIPTION).toContain(term);
+    }
+  });
+
+  it('emits one WebSite object on the home with the canonical origin and actual brand',()=>{
+    const html=renderToStaticMarkup(createElement(Home));
+    const scripts=[...html.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)];
+    expect(scripts).toHaveLength(1);
+    expect(JSON.parse(scripts[0][1])).toEqual({
+      '@context':'https://schema.org',
+      '@type':'WebSite',
+      name:'한판아레나',
+      alternateName:'HANPAN ARENA',
+      url:SITE_ORIGIN+'/',
+    });
   });
 });

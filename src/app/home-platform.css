@@ -1,0 +1,151 @@
+.arena-platform-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin-top: clamp(12px, 2vh, 24px);
+  padding: clamp(22px, 4vh, 44px) clamp(22px, 4vw, 56px);
+  border: 1px solid #68836b;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 90% 0, #3c7054 0, transparent 58%), #153d2c;
+  color: var(--arena-cream);
+  box-shadow: var(--arena-shadow);
+}
+
+.arena-platform-copy h1 {
+  margin: 5px 0 8px;
+  color: #ffe29a;
+  font-size: clamp(2.5rem, 5.8vw, 5rem);
+  font-weight: 1000;
+  line-height: 1.12;
+  letter-spacing: -.07em;
+  text-shadow: 0 4px #0d291e;
+}
+
+.arena-platform-copy p:first-child { color: #cde5ca; font-weight: 700; }
+.arena-platform-copy p:last-child { font-size: clamp(.9rem, 1.7vw, 1.15rem); }
+.arena-platform-emblems { display: flex; gap: clamp(8px, 1.5vw, 22px); }
+.arena-platform-emblems > span {
+  display: grid;
+  place-items: center;
+  width: clamp(52px, 8vw, 114px);
+  aspect-ratio: 1;
+  border-radius: 25%;
+  box-shadow: inset 0 0 0 1px #fff8, 0 5px #0c291f, 0 10px 14px #071b1455;
+}
+.arena-emblem--omok { background: #e5b878; transform: rotate(-10deg); }
+.arena-emblem--chess { background: #cedcc1; color: #274535; font: 700 clamp(36px, 6vw, 84px)/1 Georgia, serif; }
+.arena-emblem--alkkagi { background: #87c4a6; transform: rotate(10deg); }
+.arena-platform-emblems i, .arena-platform-art i { display: block; width: 53%; aspect-ratio: 1; border-radius: 50%; }
+.arena-emblem--omok i, .arena-platform-art--omok i {
+  background: radial-gradient(circle at 35% 26%, #58616a, #232b30 48%, #12171b 82%);
+  box-shadow: 0 4px 8px #26190870;
+}
+.arena-emblem--alkkagi i, .arena-platform-art--alkkagi i {
+  background: radial-gradient(circle at 35% 25%, #e5fff4, #63d8a5 34%, #136348 78%);
+  box-shadow: 0 4px 9px #13281e85, inset 0 -2px 6px #052a26a0;
+}
+
+.arena-platform-games { margin-top: clamp(12px, 2.5vh, 26px); }
+.arena-platform-games > h2 {
+  margin: 0 0 8px;
+  color: var(--arena-forest);
+  font-size: clamp(1.25rem, 2.25vw, 1.7rem);
+  font-weight: 900;
+}
+.arena-platform-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.arena-platform-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  height: 100%;
+  padding: 7px;
+  border: 1px solid var(--arena-line);
+  border-radius: 20px;
+  background: var(--arena-cream);
+  box-shadow: var(--arena-shadow);
+}
+.arena-platform-art {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(105px, 18vh, 196px);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.arena-platform-art > span {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  left: 12px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: #16382be8;
+  color: #fff4dd;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+.arena-platform-art i {
+  position: absolute;
+  width: clamp(28px, 5.2vw, 70px);
+}
+.arena-platform-art i:nth-of-type(1) { top: 20%; left: 34%; }
+.arena-platform-art i:nth-of-type(2) { top: 41%; left: 51%; }
+.arena-platform-art i:nth-of-type(3) { top: 23%; left: 68%; }
+.arena-platform-art--omok {
+  background: linear-gradient(90deg, #75452545 1px, transparent 1px) 50% / 24px 24px,
+    linear-gradient(#75452545 1px, transparent 1px) 50% / 24px 24px,
+    linear-gradient(145deg, #f6d7a1, #cd965e);
+}
+.arena-platform-art--omok i:nth-of-type(2) { background: radial-gradient(circle at 30% 25%, #fffdf2, #ead9bb 58%, #b69b71); }
+.arena-platform-art--chess {
+  display: grid;
+  place-items: center;
+  background: conic-gradient(#779980 25%, #c3d5ad 0 50%, #779980 0 75%, #c3d5ad 0) center / 70px 70px;
+}
+.arena-platform-art--chess b {
+  color: #213b31;
+  font: 700 clamp(70px, 11vh, 128px)/1 Georgia, serif;
+  text-shadow: 0 2px #edf4dc, 2px 5px 6px #193c2b70;
+  transform: rotate(-9deg);
+}
+.arena-platform-art--alkkagi {
+  background: radial-gradient(ellipse at 50% 135%, #4a866a00 58%, #faf0c69c 59% 60%, #4a866a00 61%),
+    radial-gradient(ellipse at 25% 18%, #b7deb6, #74a884 62%, #3d775d);
+}
+.arena-platform-art--alkkagi i:nth-of-type(2) { background: radial-gradient(circle at 30% 25%, #fff0b4, #e0aa57 44%, #92582a 80%); }
+.arena-platform-details { display: flex; flex-direction: column; align-items: start; padding: 9px 12px 12px; }
+.arena-platform-details h3 { color: var(--arena-forest); font-size: 1.45rem; font-weight: 900; }
+.arena-platform-details > p { color: var(--arena-muted); font-size: .9rem; margin-bottom: 10px; text-wrap: pretty; }
+.arena-platform-details .arena-button, .arena-platform-details .arena-platform-unavailable { margin-top: auto; }
+.arena-platform-details .arena-platform-unavailable { margin-bottom: 0; padding-block: 10px; font-weight: 700; }
+
+@media (max-width: 1023px) {
+  .arena-platform-grid { grid-template-columns: minmax(0, 1fr); }
+  .arena-platform-card { grid-template: auto / minmax(80px, 30%) minmax(0, 1fr); }
+  .arena-platform-art i { width: clamp(19px, 6vw, 47px); }
+  .arena-platform-art i:nth-of-type(1) { left: 16%; }
+  .arena-platform-art i:nth-of-type(2) { left: 42%; }
+  .arena-platform-art i:nth-of-type(3) { left: 63%; }
+  .arena-platform-art > span { top: 6px; left: 6px; font-size: .61rem; }
+}
+
+@media (max-width: 639px) {
+  .arena-platform-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .arena-platform-emblems { justify-content: flex-start; gap: 14px; }
+  .arena-platform-details { padding: 2px 6px 8px 10px; }
+  .arena-platform-details h3 { font-size: 1.25rem; }
+  .arena-platform-details > p { font-size: .83rem; }
+}
+
+/* Compact only the public game selection on short desktop viewports.
+   Preserve normal flow/scroll on narrow and zoomed layouts; never clip content. */
+@media (min-width: 1024px) and (max-height: 800px) {
+  .arena-platform-hero { margin-top: 12px; padding-block: 18px; }
+  .arena-platform-games { margin-top: 12px; }
+  .arena-platform-art { min-height: 110px; }
+  .arena-platform-details { padding-block: 6px 8px; }
+  .arena:has(.arena-platform-grid) .arena-footer { padding-block: 12px; }
+}
