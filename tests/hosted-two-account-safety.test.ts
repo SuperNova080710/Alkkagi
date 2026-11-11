@@ -85,8 +85,10 @@ describe('browser-only production A/B QA safe integration (#196)',()=>{
     expect(guards).toContain('rpc.players.length!==expectedSeats');
     expect(view).toContain('qaDailyCounts(userId,peer,now)');
     expect(view).toContain('UTC_DAY_CHANGED_BASELINE_EXPIRED');
-    expect(view).toContain("base().in('source_kind',['casual','ranked'])");
-    expect(view).toContain("base().eq('source_kind','casual').eq('opponent_id',peerId)");
+    expect(view).toContain("const casualSources=['casual','omok_casual','chess_casual']");
+    expect(view).toContain("base().in('source_kind',[...casualSources,'ranked','omok_ranked','chess_ranked'])");
+    expect(view).toContain("base().in('source_kind',casualSources).eq('opponent_id',peerId)");
+    expect(view).toContain(".select('source_id,xp_amount').eq('source_kind','casual')");
     expect(view).toContain("rewards?.length!==1");
     expect(view).toContain('qaReward(snapshot,');
     expect(view).toContain('current.totalXp!==snapshot.totalXp+gained');

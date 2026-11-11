@@ -188,3 +188,5 @@ begin
 end;
 $final$;
 select 'PASS: PostgreSQL17 full Omok migrations and legacy XP regression' as result;
+
+\ir chess-pg17-xp.sql
