@@ -165,3 +165,95 @@ update public.omok_matches set turn_deadline=clock_timestamp()-interval '1 secon
   where id=:'match_id'::uuid and status='active';
 select public.verify_omok_ranked_timeout_race(:'match_id'::uuid);
 select 'PASS: Omok ranked PostgreSQL17 concurrent queue, timeout, ACL, Elo isolation' as result;
+
+-- Model an existing row so the migration must hide ranked chat without deleting it.
+insert into public.omok_match_messages(match_id,sender_id,request_id,body,created_at)
+  values(:'match_id'::uuid,'11111111-1111-4111-8111-111111111111',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','Archived ranked message',now()-interval '1 day');
+\i supabase/migrations/20261111025029_omok_ranked_chat_boundary.sql
+
+do $chat_acl$
+begin
+ if has_function_privilege('anon','public.send_omok_match_message(uuid,text,uuid)','EXECUTE')
+   or has_table_privilege('authenticated','public.omok_match_messages','INSERT')
+   or not exists(select 1 from pg_publication_tables where pubname='supabase_realtime'
+     and schemaname='public' and tablename='omok_match_messages') then
+   raise exception 'Chat ACL or Realtime publication changed';
+ end if;
+end;
+$chat_acl$;
+
+set role authenticated;
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+do $ranked_chat$
+declare ranked_id uuid; request uuid;
+begin
+ select id into strict ranked_id from public.omok_matches where mode='ranked';
+ if exists(select 1 from public.omok_match_messages where match_id=ranked_id) then
+   raise exception 'Ranked chat row visible to participant';
+ end if;
+ foreach request in array array['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid,gen_random_uuid()] loop
+   begin
+     perform public.send_omok_match_message(ranked_id,'Archived ranked message',request);
+     raise exception 'Ranked chat accepted a request';
+   exception when raise_exception then
+     if sqlerrm<>'CHAT_NOT_AVAILABLE' then raise; end if;
+   end;
+ end loop;
+end;
+$ranked_chat$;
+select public.create_omok_room('CHATT234') as chat_room_id \gset
+set request.jwt.claim.sub='22222222-2222-4222-8222-222222222222';
+select public.join_omok_room('CHATT234');
+set request.jwt.claim.sub='11111111-1111-4111-8111-111111111111';
+select public.start_omok_match(:'chat_room_id'::uuid);
+
+do $casual_chat$
+declare casual_id uuid; request uuid:=gen_random_uuid(); first_send jsonb; retry jsonb;
+begin
+ select id into strict casual_id from public.omok_matches where mode='casual';
+ first_send:=public.send_omok_match_message(casual_id,'Casual message',request);
+ retry:=public.send_omok_match_message(casual_id,'Casual message',request);
+ if first_send->>'replayed' is distinct from 'false' or retry->>'replayed' is distinct from 'true'
+   or retry->>'id' is distinct from first_send->>'id' then
+   raise exception 'Casual chat replay changed';
+ end if;
+end;
+$casual_chat$;
+
+set request.jwt.claim.sub='22222222-2222-4222-8222-222222222222';
+do $guest_chat$
+begin
+ if (select array_agg(body) from public.omok_match_messages) is distinct from array['Casual message'] then
+   raise exception 'Casual chat guest visibility changed';
+ end if;
+end;
+$guest_chat$;
+
+set request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';
+select set_config('test.omok_chat_ranked_id',:'match_id',false);
+do $outsider_chat$
+begin
+ if exists(select 1 from public.omok_match_messages) then
+   raise exception 'Chat visible to nonparticipant';
+ end if;
+ begin
+   perform public.send_omok_match_message(current_setting('test.omok_chat_ranked_id')::uuid,
+     'Private match',gen_random_uuid());
+   raise exception 'Nonparticipant chat request accepted';
+ exception when raise_exception then
+   if sqlerrm<>'MATCH_NOT_FOUND' then raise; end if;
+ end;
+end;
+$outsider_chat$;
+reset role;
+
+do $chat_storage$
+begin
+ if (select count(*) from public.omok_match_messages msg
+   join public.omok_matches m on m.id=msg.match_id where m.mode='ranked')<>1 then
+   raise exception 'Archived ranked chat changed';
+ end if;
+ raise notice 'PASS: ranked chat RPC and RLS blocked, casual chat and replay preserved';
+end;
+$chat_storage$;

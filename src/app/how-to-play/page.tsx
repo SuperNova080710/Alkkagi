@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArenaShell } from '@/components/ui/arena';
 
 export const metadata: Metadata = {
-  title: '알까기 게임 규칙·조작법 | 알까기 아레나',
+  title: '알까기 게임 규칙·조작법',
   description: '온라인 알까기 게임을 처음 시작하나요? 알 5개로 승부하는 규칙, 마우스·터치·키보드 조작, 방 코드 참가, AI 연습전과 랭크전의 차이를 알아보세요.',
   alternates: { canonical: 'https://alkkagi-alpha.vercel.app/how-to-play' },
   robots: process.env.VERCEL_ENV === 'production'
@@ -40,7 +40,7 @@ const modes = [
   {
     label: 'AI 연습전',
     headline: '내 속도로 조준 연습',
-    body: '로비에서 AI 연습방을 만든 다음 대기실에서 AI 상대를 추가하세요. 쉬움·보통·어려움 중 난이도를 고를 수 있으며 랭크 RP에는 반영되지 않습니다.',
+    body: '알까기 로비에서 「AI 연습방 만들기」를 열고 「연습방 만들기」를 누르세요. 대기실의 「AI 상대 추가」에서 쉬움·보통·어려움 중 하나를 고르고 「AI 대전 시작」을 누르세요. 오목과 체스는 각 로비에서 「AI 연습 시작」을 열어 난이도를 고른 뒤 시작 버튼을 누르면 바로 대국에 들어갑니다. AI 연습전은 랭크 RP에 영향을 주지 않습니다.',
     tone: 'ai',
   },
   {
