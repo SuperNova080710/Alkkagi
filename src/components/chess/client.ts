@@ -10,6 +10,7 @@ export type ChessSnapshot = {
   moves: {ply: number; san: string}[];
   mode?: 'casual' | 'ranked';
   deadline?: string | null;
+  rematch?: {whiteVoted: boolean; blackVoted: boolean; nextMatchId: string | null} | null;
 };
 
 const labels: Record<string, string> = {
@@ -25,6 +26,8 @@ const labels: Record<string, string> = {
   TURN_EXPIRED: '착수 제한 시간이 지났습니다.',
   NOT_YOUR_TURN: '상대 차례입니다.',
   MATCH_FINISHED: '이미 끝난 대국입니다.',
+  REMATCH_NOT_AVAILABLE: '종료된 일반전에서 재대결을 신청할 수 있습니다.',
+  REMATCH_EXPIRED: '재대결 신청 시간이 지났습니다.',
   REQUEST_CONFLICT: '다른 요청이 먼저 처리됐습니다.',
   ROOM_ACTIVE_LIMIT: '열린 대기실을 정리한 후 새 방을 만들어 주세요.',
   ROOM_RATE_LIMIT: '잠시 후 방 만들기를 다시 시도해 주세요.',
@@ -79,6 +82,9 @@ export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'ma
     }, load);
     if (kind === 'room') channel?.on('postgres_changes', {
       event: 'UPDATE', schema: 'public', table: 'chess_rooms', filter: 'id=eq.' + id,
+    }, load);
+    if (kind === 'match') channel?.on('postgres_changes', {
+      event: '*', schema: 'public', table: 'chess_rematches', filter: 'match_id=eq.' + id,
     }, load);
     channel?.subscribe(status => { if (status === 'SUBSCRIBED') load(); });
     return () => {

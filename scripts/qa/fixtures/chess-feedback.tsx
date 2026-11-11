@@ -105,14 +105,23 @@ async function run() {
   window.fetch = async (_input,options) => {
     await sleep(80);
     if (options?.method==='POST') {
+      const body = JSON.parse(options.body as string);
+      if (body.action==='rematch' && snapshot.rematch) {
+        const peer=String(_input).endsWith('/qa-peer');
+        const whiteVoted=snapshot.rematch.whiteVoted || !peer;
+        const blackVoted=snapshot.rematch.blackVoted || peer;
+        snapshot={...snapshot,rematch:{whiteVoted,blackVoted,
+          nextMatchId:whiteVoted && blackVoted ? 'successor' : null}};
+        return Response.json({data:snapshot});
+      }
       if (failPost) {failGet=true; throw Error('테스트 착수 응답 유실');}
-      const game=new Chess(snapshot.fen); game.move(JSON.parse(options.body as string));
+      const game=new Chess(snapshot.fen); game.move(body);
       snapshot={...snapshot,fen:game.fen(),ply:1,turnUserId:'other',moves:[{ply:1,san:'e4'}]};
     } else if (failGet) throw Error('테스트 재동기화 실패');
     return Response.json({data:snapshot});
   };
   for (const mode of ['casual','ranked'] as const) {
-    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null};failPost=true;
+    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null,rematch:null};failPost=true;
     flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page"><ChessMatchClient key={mode} matchId="qa" userId="me"/></div></ArenaShell>));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     click('e2');click('e4');
@@ -131,6 +140,46 @@ async function run() {
       const button=inspectResult(outcome!,label!);
       flushSync(()=>button.click());
       check(document.documentElement.dataset.qaNavigation===(mode==='ranked'?'/chess/ranked':'/chess'),mode+' result returns to correct lobby');
+    }
+    if (mode==='casual') {
+      snapshot={...snapshot,rematch:{whiteVoted:false,blackVoted:false,nextMatchId:null}};
+      window.dispatchEvent(new Event('online'));
+      const selector='button[aria-label="재대결 신청"]';
+      await until(()=>Boolean(document.querySelector(selector)));
+      const replay = document.querySelector<HTMLButtonElement>(selector)!;
+      replay.scrollIntoView({block:'nearest'});
+      const {top,bottom} = replay.getBoundingClientRect();
+      check(top>=0 && bottom<=innerHeight,'casual rematch is reachable in the result overlay');
+      flushSync(()=>replay.click());
+      await until(()=>replay.textContent==='상대 수락 대기 중');
+      check(replay.disabled && Boolean(replay.closest('.game-result-card')?.textContent?.includes('1/2')),
+        'one casual rematch vote waits for the second player');
+      flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page">
+        <ChessMatchClient key="casual-reconnect" matchId="qa" userId="me"/>
+      </div></ArenaShell>));
+      await until(()=>document.querySelector(selector)?.textContent==='상대 수락 대기 중');
+      check(Boolean(document.querySelector<HTMLButtonElement>(selector)?.disabled),
+        'reconnected first player still waits');
+
+      const peerElement=document.createElement('div');
+      document.body.append(peerElement);
+      const peerRoot=createRoot(peerElement);
+      document.documentElement.dataset.qaReplaceCount='0';
+      try {
+        flushSync(()=>peerRoot.render(<ChessMatchClient matchId="qa-peer" userId="other"/>));
+        await until(()=>Boolean(peerElement.querySelector(selector)));
+        check(Boolean(peerElement.querySelector('.game-result-card')?.textContent?.includes('1/2')),
+          'the second player sees one vote');
+        flushSync(()=>peerElement.querySelector<HTMLButtonElement>(selector)!.click());
+        await until(()=>document.documentElement.dataset.qaNavigation==='/chess/matches/successor');
+        window.dispatchEvent(new Event('online'));
+        await until(()=>Number(document.documentElement.dataset.qaReplaceCount)>=2);
+        check(document.documentElement.dataset.qaNavigation==='/chess/matches/successor',
+          'both casual players open the same new match');
+      } finally {
+        flushSync(()=>peerRoot.unmount());
+        peerElement.remove();
+      }
     }
   }
   snapshot={...snapshot,status:'active',turnUserId:'me',winnerId:null,finishReason:null};

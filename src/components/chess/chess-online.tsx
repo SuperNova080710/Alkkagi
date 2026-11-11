@@ -103,8 +103,15 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
   const {data: match, error, refresh, accept, reportError} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
   const [pending, setPending] = useState(false);
   const [resigning, setResigning] = useState(false);
+  const [rematchError, setRematchError] = useState('');
   const lock = useRef(false);
   const retry = useRef<{signature:string; requestId:string} | null>(null);
+  const rematch = match?.status === 'finished' && match.mode === 'casual' ? match.rematch : null;
+  const myRematchVote = match?.whiteId === userId ? rematch?.whiteVoted : rematch?.blackVoted;
+  const nextMatchId = rematch?.nextMatchId;
+  useEffect(() => {
+    if (nextMatchId) router.replace('/chess/matches/' + nextMatchId);
+  }, [nextMatchId,router]);
 
   async function command(action: 'move' | 'resign', move?: ChessMove) {
     if (!match || lock.current) return;
@@ -130,6 +137,22 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
     finally {lock.current = false;}
   },[path,accept,refresh]);
 
+  async function voteRematch() {
+    if (!rematch || myRematchVote || lock.current) return;
+    lock.current = true;
+    setPending(true);
+    setRematchError('');
+    try {
+      accept(await chessRequest<ChessSnapshot>(path,{action:'rematch'}));
+    } catch (cause) {
+      setRematchError(cause instanceof Error ? cause.message : '재대결을 신청하지 못했습니다.');
+      await refresh();
+    } finally {
+      lock.current = false;
+      setPending(false);
+    }
+  }
+
   if (!match) return <ArenaPanel title="체스 대국">
     {error ? <p role="alert">{error}</p> : <p role="status">대국을 불러오는 중입니다.</p>}
     <Link href="/chess" className="arena-text-link">체스 로비</Link>
@@ -146,7 +169,10 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       <ChessBoard key={match.id} fen={match.fen} black={match.blackId === userId}
         enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
       {finished && <OmokResultOverlay game="chess" mode={match.mode ?? 'casual'}
-        outcome={outcome} finishReason={reason} error={error}
+        outcome={outcome} finishReason={reason} error={(myRematchVote ? '' : rematchError) || error} pending={pending}
+        onReplay={rematch ? () => void voteRematch() : undefined}
+        myRematchVote={myRematchVote}
+        rematchReadyCount={rematch ? Number(rematch.whiteVoted) + Number(rematch.blackVoted) : 0}
         onReturn={() => router.push(lobby)}/>}
     </div>
     <ArenaPanel title={match.mode === 'ranked' ? '체스 랭크전' : '체스 일반전'}>

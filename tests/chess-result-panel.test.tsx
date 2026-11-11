@@ -7,8 +7,9 @@ import { ChessMatchClient } from '../src/components/chess/chess-online';
 import { ChessAi } from '../src/components/chess/chess-ai';
 import type { ChessSnapshot } from '../src/components/chess/client';
 
-const {push} = vi.hoisted(() => ({push:vi.fn()}));
-vi.mock('next/navigation', () => ({useRouter: () => ({push,replace:vi.fn()})}));
+const router = vi.hoisted(() => ({push:vi.fn(),replace:vi.fn()}));
+const {push,replace} = router;
+vi.mock('next/navigation', () => ({useRouter: () => router}));
 vi.mock('next/link', () => ({default: ({children, href}: {children:React.ReactNode; href:string}) => <a href={href}>{children}</a>}));
 const active: ChessSnapshot = {
   id:'result-test',whiteId:'me',blackId:'other',turnUserId:'me',status:'active',fen:DEFAULT_POSITION,
@@ -20,7 +21,7 @@ let root: Root;
 beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);
   container=document.createElement('div');document.body.append(container);root=createRoot(container);
-  push.mockClear();
+  push.mockClear();replace.mockClear();
 });
 afterEach(async () => {
   await act(async () => {root.unmount();});
@@ -70,6 +71,25 @@ describe('v0.4.1 online chess result panel', () => {
       whiteId:'other',blackId:'me',winnerId:'me',finishReason:'timeout'})));
     await act(async () => {root.render(<ChessMatchClient matchId="result-test" userId="me"/>);});
     expect(overlay()?.querySelector('h3')?.textContent).toBe('승리');
+  });
+
+  it('waits after one casual vote and follows the shared successor from a refreshed snapshot', async () => {
+    const finish: ChessSnapshot = {...active,status:'finished',turnUserId:null,winnerId:'me',
+      finishReason:'resignation',rematch:{whiteVoted:false,blackVoted:false,nextMatchId:null}};
+    const fetcher = vi.fn().mockResolvedValueOnce(response(finish))
+      .mockResolvedValueOnce(response({...finish,rematch:{whiteVoted:true,blackVoted:false,nextMatchId:null}}))
+      .mockResolvedValue(response({...finish,rematch:{whiteVoted:true,blackVoted:true,nextMatchId:'next-match'}}));
+    vi.stubGlobal('fetch',fetcher);
+    await act(async () => {root.render(<ChessMatchClient matchId="result-test" userId="me"/>);});
+    expect(overlay()?.textContent).toContain('0/2');
+    await act(async () => {button('재도전 · 다시하기').click();});
+    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({action:'rematch'});
+    expect(overlay()?.textContent).toContain('1/2');
+    expect(button('상대 수락 대기 중').disabled).toBe(true);
+    expect(replace).not.toHaveBeenCalled();
+    await act(async () => {window.dispatchEvent(new Event('online'));});
+    expect(replace).toHaveBeenCalledOnce();
+    expect(replace).toHaveBeenCalledWith('/chess/matches/next-match');
   });
 
   it('does not show a result on an active game connection failure', async () => {

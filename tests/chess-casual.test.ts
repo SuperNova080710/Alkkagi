@@ -174,6 +174,59 @@ describe('chess casual API and authoritative database', () => {
     expect(await (await send(resign)).json()).toEqual({error:'REQUEST_CONFLICT'});
   });
 
+  it('requires two eligible players for one rematch and preserves the previous game', async () => {
+    const {roomId, code} = await create(105);
+    const matchId = await start(roomId, code);
+    const vote = () => matchPost(request({action:'rematch'}), params(matchId));
+    expect(await (await vote()).json()).toEqual({error:'REMATCH_NOT_AVAILABLE'});
+    expect((await matchPost(request(move(0,'e2','e4')),params(matchId))).status).toBe(200);
+    expect((await matchPost(request({action:'resign',requestId:requestId(106)}),params(matchId))).status).toBe(200);
+
+    actor = null;
+    expect((await vote()).status).toBe(401);
+    actor = outsider;
+    expect((await vote()).status).toBe(404);
+    const denied = await rpc('authenticated', white, 'chess_vote_rematch', {
+      p_actor:white,p_match_id:matchId,p_code:code,
+    });
+    expect(denied.error).toMatchObject({code:'42501'});
+
+    actor = white;
+    const first = await (await vote()).json();
+    expect(first.data.rematch).toEqual({whiteVoted:true,blackVoted:false,nextMatchId:null});
+    expect(await (await vote()).json()).toEqual(first);
+    actor = black;
+    const collision = await rpc('service_role',null,'chess_vote_rematch',{
+      p_actor:black,p_match_id:matchId,p_code:code,
+    });
+    expect(collision.error).toMatchObject({message:'ROOM_CODE_CONFLICT'});
+    expect(await (await matchGet(request(),params(matchId))).json()).toEqual(first);
+
+    const both = await (await vote()).json();
+    const nextId = both.data.rematch.nextMatchId;
+    expect(nextId).toBeTruthy();
+    expect(nextId).not.toBe(matchId);
+    expect(both.data.rematch).toEqual({whiteVoted:true,blackVoted:true,nextMatchId:nextId});
+    expect(await (await vote()).json()).toEqual(both);
+    actor = white;
+    expect(await (await matchGet(request(),params(matchId))).json()).toEqual(both);
+    expect(both).toMatchObject({data:{status:'finished',winnerId:black,moves:[{san:'e4'}]}});
+    expect(await (await matchGet(request(),params(nextId))).json()).toMatchObject({data:{
+      status:'active',whiteId:black,blackId:white,turnUserId:black,ply:0,moves:[],rematch:null,
+    }});
+    expect(await (await roomGet(request(),params(roomId))).json()).toMatchObject({data:{matchId}});
+
+    const privateVotes = await db.transaction(async tx => {
+      await tx.exec('set local role authenticated');
+      await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[outsider]);
+      return (await tx.query('select match_id from public.chess_rematches')).rows;
+    });
+    expect(privateVotes).toHaveLength(0);
+    await db.query("update public.chess_matches set finished_at=now()-interval '31 minutes' where id=$1",[matchId]);
+    expect(await (await vote()).json()).toEqual({error:'REMATCH_EXPIRED'});
+    expect(await (await matchGet(request(),params(matchId))).json()).toMatchObject({data:{rematch:null}});
+  });
+
   it('persists a repetition draw without a winner', async () => {
     const {roomId, code} = await create(5);
     const matchId = await start(roomId, code);
@@ -208,7 +261,7 @@ describe('chess casual API and authoritative database', () => {
     const {rows: publications} = await db.query(
       "select tablename from pg_publication_tables where pubname='supabase_realtime' and tablename like 'chess_%' order by tablename",
     );
-    expect(publications).toEqual([{tablename:'chess_matches'},{tablename:'chess_rooms'}]);
+    expect(publications).toEqual([{tablename:'chess_matches'},{tablename:'chess_rematches'},{tablename:'chess_rooms'}]);
     expect(await rpc('anon', null, 'chess_room_snapshot',{p_room_id:roomId}))
       .toMatchObject({error:{code:'42501'}});
   });
@@ -232,8 +285,9 @@ describe('chess casual API and authoritative database', () => {
     expect(await (await matchPost(request(move(0,'e2','e4')),params(id))).json())
       .toEqual({error:'TURN_EXPIRED'});
     const result = await (await matchPost(request({action:'expire'}),params(id))).json();
-    expect(result).toMatchObject({data:{status:'finished',finishReason:'timeout',winnerId:game.blackId,ply:0,deadline:null}});
+    expect(result).toMatchObject({data:{status:'finished',finishReason:'timeout',winnerId:game.blackId,ply:0,deadline:null,rematch:null}});
     expect(await (await matchPost(request({action:'expire'}),params(id))).json()).toEqual(result);
+    expect(await (await matchPost(request({action:'rematch'}),params(id))).json()).toEqual({error:'REMATCH_NOT_AVAILABLE'});
     const {rows:[ledger]} = await db.query(
       'select count(*)::int as entries,sum(delta)::int as net from public.chess_rating_events where match_id=$1',[id],
     );

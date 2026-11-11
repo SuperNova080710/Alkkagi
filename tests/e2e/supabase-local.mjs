@@ -48,6 +48,64 @@ async function bounded(promise,timeoutMs,label) {
     ]);
   } finally {clearTimeout(timer);}
 }
+
+async function chessRematch({a,b,outsider,privileged,userA,userB,suffix}) {
+  const code=suffix.slice(0,7).toUpperCase().replaceAll('0','2').replaceAll('1','3');
+  const chessRpc=(name,args)=>privileged.rpc('chess_'+name,args);
+  const room=requireData(await chessRpc('create_room',{
+    p_actor:userA,p_request_id:randomUUID(),p_code:'C'+code,
+  }),'chess room create');
+  requireData(await chessRpc('join_room',{p_actor:userB,p_code:'C'+code}),'chess room join');
+  const match=requireData(await chessRpc('start_match',{p_actor:userA,p_room_id:room}),'chess start');
+  assert.ok(!(await chessRpc('resign',{
+    p_actor:userA,p_match_id:match,p_request_id:randomUUID(),
+  })).error,'chess resign failed');
+  const vote=(actor,letter)=>chessRpc('vote_rematch',{p_actor:actor,p_match_id:match,p_code:letter+code});
+  rejected(await a.rpc('chess_vote_rematch',{
+    p_actor:userA,p_match_id:match,p_code:'B'+code,
+  }),'authenticated rematch mutation');
+
+  let notifyInsert,notifyUpdate;
+  const inserted=new Promise(resolve=>{notifyInsert=resolve;});
+  const updated=new Promise(resolve=>{notifyUpdate=resolve;});
+  let channel;
+  try {
+    const filter={schema:'public',table:'chess_rematches',filter:'match_id=eq.'+match};
+    await bounded(new Promise((resolve,reject)=>{
+      channel=b.channel('chess-rematch-'+suffix)
+        .on('postgres_changes',{...filter,event:'INSERT'},event=>notifyInsert(event.new))
+        .on('postgres_changes',{...filter,event:'UPDATE'},event=>notifyUpdate(event.new))
+        .subscribe(status=>{
+          if(status==='SUBSCRIBED')resolve();
+          if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')
+            reject(Error('Chess rematch Realtime '+status));
+        });
+    }),20000,'Chess rematch subscription');
+    assert.ok(!(await vote(userA,'B')).error,'First chess rematch vote failed');
+    const first=await bounded(inserted,12000,'Chess rematch Realtime INSERT');
+    assert.ok(first.white_voted && !first.black_voted && !first.next_match_id);
+    const hidden=requireData(await outsider.from('chess_rematches').select('match_id').eq('match_id',match),
+      'outsider chess rematch read');
+    assert.equal(hidden.length,0);
+    assert.ok(!(await vote(userB,'D')).error,'Second chess rematch vote failed');
+    const complete=await bounded(updated,12000,'Chess rematch Realtime UPDATE');
+    assert.ok(complete.white_voted && complete.black_voted && complete.next_match_id);
+    assert.ok(!(await vote(userB,'E')).error,'Duplicate chess rematch vote failed');
+    for(const client of [a,b]) {
+      const snapshot=requireData(await client.rpc('chess_match_snapshot',{p_match_id:match}),'chess rematch snapshot');
+      assert.equal(snapshot.rematch.nextMatchId,complete.next_match_id);
+      const next=requireData(await client.rpc('chess_match_snapshot',{
+        p_match_id:complete.next_match_id,
+      }),'chess successor snapshot');
+      assert.equal(next.match.white_id,userB);
+      assert.equal(next.match.black_id,userA);
+    }
+    console.log('PASS Chess rematch: two JWT participants, Realtime INSERT/UPDATE, outsider RLS and one successor');
+  } finally {
+    if(channel)await b.removeChannel(channel);
+  }
+}
+
 async function run() {
   // Check the *database* endpoint before even creating the service-role client.
   const url=requireLocalApi(process.env.API_URL);
@@ -59,6 +117,7 @@ async function run() {
   const guest=createClient(url,anon,clientOptions);
   const a=createClient(url,anon,clientOptions);
   const b=createClient(url,anon,clientOptions);
+  const outsider=createClient(url,anon,clientOptions);
   const privileged=createClient(url,service,clientOptions);
   const suffix=randomUUID().slice(0,10);
   const password='E2e-Only-Local-'+randomUUID()+'!';
@@ -210,6 +269,9 @@ async function run() {
     assert.equal(otherInventory.length,0);
     console.log('PASS Game/XP/Cosmetics: unique game settlement, level 2 unlock, cross-user RLS');
 
+    await register(outsider,'outsider');
+    await chessRematch({a,b,outsider,privileged,userA,userB,suffix});
+
     requireData(await b.rpc('set_player_block',{p_target:userA,p_block:true}),'B blocks A');
     rejected(await a.rpc('send_direct_message',{
       p_peer:userB,p_body:'blocked message',p_request_id:randomUUID(),
@@ -217,10 +279,10 @@ async function run() {
     console.log('PASS Block: messaging rejected immediately after friend block');
   } finally {
     if(channel)await b.removeChannel(channel);
-    for(const client of [a,b,guest,privileged])await client.removeAllChannels();
+    for(const client of [a,b,outsider,guest,privileged])await client.removeAllChannels();
     // Test users live only inside the runner's disposable local DB, which the
     // workflow deletes with supabase stop --no-backup.
   }
 }
 await bounded(run(),125000,'Complete local Supabase E2E');
-console.log('PASS LOCAL SUPABASE E2E: Auth / RLS / Friends / DM Realtime / Invite / XP / Cosmetics');
+console.log('PASS LOCAL SUPABASE E2E: Auth / RLS / Friends / DM Realtime / Invite / XP / Cosmetics / Chess rematch');
