@@ -181,12 +181,12 @@ async function main() {
         if (m.path !== path) failures.push('Unexpected redirect: ' + m.path);
         if (m.horizontalOverflowPx > 1) failures.push('Horizontal overflow ' + m.horizontalOverflowPx + 'px');
         if (m.h1Count !== 1 || m.mainCount !== 1 || !m.skipLink) failures.push('Missing h1/main/skip-link semantics');
-        const safePath = path === '/' ? 'home' : path.slice(1).replaceAll('/', '-');
+        const safePath = path === '/' ? 'home' : path.slice(1);
         if (failures.length || ['wide-1920x900', 'mobile-320x720', 'zoom-equivalent-960x540'].includes(label)) {
           const screenshot = await session.call('Page.captureScreenshot', {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
-          await writeFile(join(outdir, safePath + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
+          await writeFile(join(outdir, safePath.replaceAll('/', '-') + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
         }
         results.push({ viewport: label, cssPixels: [width, height], path,
           httpStatus: response.status, ...m, failures });
