@@ -53,7 +53,7 @@
 
 - [ ] 최종 RC `src/app/page.tsx`에서 **3종 게임 선택 + 세 게임 소개 링크 + 절대 SEO title + 단일 WebSite JSON-LD** 모두 존재하는지 확인합니다.
 - [ ] `scripts/qa/public-viewport.mjs`의 공개 7개 경로·실제 Chrome 200% 검사·1024×768/1366×768 홈 세로 넘침 0px를 새 RC SHA 기준으로 확인합니다.
-- [ ] Production은 홈·가이드 4개 공개 HTML 경로와 sitemap 5개 URL이 색인 가능, Preview는 전체 noindex·보호 게임 로비와 인증 정보는 비색인 처리합니다.
+- [ ] Production은 홈·조작법·게임별 소개를 합친 5개 공개 HTML 경로와 sitemap 5개 URL이 색인 가능, Preview는 전체 noindex·보호 게임 로비와 인증 정보는 비색인 처리합니다.
 - [ ] 홈의 게임 선택 링크는 기존 로그인 보호 로비로만 연결하고, 기능 OFF 시 시작 CTA를 숨깁니다. 게임별 공개 소개는 인증/DB 없이 렌더링합니다.
 - [ ] 기존 RC `b06431c3`와 Preview `dpl_5wx5D7FVu9kKTskJUkak4BM5navf`는 **브랜드 3개 PR 이전 빌드**입니다. 새 RC HEAD로 재검증·Preview 재배포 후 인수합니다.
 
