@@ -10,7 +10,7 @@ import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const viewports = [
-  ['desktop-1280x720', 1280, 720], ['desktop-1366x768', 1366, 768],
+  ['desktop-1280x720', 1280, 720], ['desktop-1024x768', 1024, 768], ['desktop-1366x768', 1366, 768],
   ['desktop-1440x900', 1440, 900], ['wide-1920x900', 1920, 900],
   ['wide-1920x960', 1920, 960], ['wide-1920x1080', 1920, 1080],
   ['mobile-320x720', 320, 720], ['mobile-390x844', 390, 844],
@@ -21,6 +21,7 @@ const viewports = [
 ];
 const routes = ['/', '/how-to-play', '/login', '/signup'];
 const base = (process.env.QA_BASE_URL || 'http://127.0.0.1:3107').replace(/\/$/, '');
+const realZoom = process.env.QA_CHROME_ZOOM === '200';
 const outdir = resolve(process.env.QA_OUTPUT_DIR || 'artifacts/ui-viewport-qa');
 
 function browserExecutable() {
@@ -136,7 +137,8 @@ async function main() {
         (await fetch(base, { redirect: 'manual' })).status === 200);
     }
     const browser = spawn(browserExecutable(), [
-      '--headless=new', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage',
+      ...(realZoom ? ['--window-size=1920,1080', '--window-position=0,0'] : ['--headless=new']),
+      '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage',
       '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=0',
       '--user-data-dir=' + temporary, 'about:blank',
     ], { stdio: 'ignore' });
@@ -158,8 +160,12 @@ async function main() {
     await session.call('Runtime.enable', {}, sessionId);
 
     const results = [];
-    for (const [label, width, height] of viewports.slice(0, Number(process.env.QA_VIEWPORT_LIMIT || viewports.length))) {
-      await session.call('Emulation.setDeviceMetricsOverride', {
+    const selectedViewports = realZoom
+      ? [['chrome-zoom-200', 1920, 1080]]
+      : viewports.slice(0, Number(process.env.QA_VIEWPORT_LIMIT || viewports.length));
+    let expectedZoomRatio;
+    for (const [label, width, height] of selectedViewports) {
+      if (!realZoom) await session.call('Emulation.setDeviceMetricsOverride', {
         width, height, deviceScaleFactor: label.startsWith('mobile-') ? 2 : 1,
         mobile: label.startsWith('mobile-'),
       }, sessionId);
@@ -168,6 +174,19 @@ async function main() {
         const response = await fetch(url, { redirect: 'follow' });
         await session.call('Page.navigate', { url }, sessionId);
         await until(async () => (await session.eval('document.readyState', sessionId)) === 'complete', 18000);
+        if (realZoom && expectedZoomRatio === undefined) {
+          const initialRatio = await session.eval('devicePixelRatio', sessionId);
+          await session.call('Page.bringToFront', {}, sessionId);
+          const windows = execFileSync('xdotool', ['search', '--sync', '--onlyvisible', '--class', 'chrom'], {
+            encoding: 'utf8', timeout: 10000,
+          }).trim().split('\n');
+          execFileSync('xdotool', ['windowfocus', '--sync', windows.at(-1)], { timeout: 10000 });
+          execFileSync('xdotool', ['key', '--clearmodifiers', '--delay', '180', ...Array(5).fill('ctrl+equal')], {
+            timeout: 10000,
+          });
+          expectedZoomRatio = initialRatio * 2;
+          await until(async () => await session.eval('devicePixelRatio', sessionId) === expectedZoomRatio, 10000);
+        }
         await sleep(250);
         await session.call('Input.dispatchKeyEvent', {
           type: 'keyDown', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9,
@@ -177,12 +196,37 @@ async function main() {
         }, sessionId);
         const m = await session.eval('(' + measure.toString() + ')()', sessionId);
         const failures = [];
+        if (realZoom && await session.eval('devicePixelRatio', sessionId) !== expectedZoomRatio) {
+          failures.push('Chrome tab zoom is no longer 200%');
+        }
+        if (m.focus.href !== '#arena-content') failures.push('Skip link is not the first keyboard focus target');
+        if (path === '/') {
+          const home = await session.eval(`(() => {
+            const grid = document.querySelector('.arena-platform-grid');
+            if (!grid) return null;
+            const links = [...grid.querySelectorAll('a')].map(link => link.getAttribute('href'));
+            return {
+              columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+              wide: matchMedia('(min-width: 1024px)').matches,
+              links,
+            };
+          })()`, sessionId);
+          if (!home) failures.push('Missing platform game grid');
+          if (home && home.columns !== (home.wide ? 3 : 1)) failures.push('Unexpected game grid columns');
+          if (home && process.env.QA_EXPECT_ALL_GAMES === 'true' &&
+              JSON.stringify(home.links) !== JSON.stringify(['/omok', '/chess', '/lobby'])) {
+            failures.push('Missing or reordered lobby destinations');
+          }
+          if (home?.wide && m.viewport.height >= 768 && m.verticalOverflowPx > 1) {
+            failures.push('Home vertical overflow ' + m.verticalOverflowPx + 'px');
+          }
+        }
         if (response.status !== 200) failures.push('HTTP ' + response.status);
         if (m.path !== path) failures.push('Unexpected redirect: ' + m.path);
         if (m.horizontalOverflowPx > 1) failures.push('Horizontal overflow ' + m.horizontalOverflowPx + 'px');
         if (m.h1Count !== 1 || m.mainCount !== 1 || !m.skipLink) failures.push('Missing h1/main/skip-link semantics');
         const safePath = path === '/' ? 'home' : path.slice(1);
-        if (failures.length || ['wide-1920x900', 'mobile-320x720', 'zoom-equivalent-960x540'].includes(label)) {
+        if (realZoom || failures.length || ['wide-1920x900', 'mobile-320x720', 'zoom-equivalent-960x540'].includes(label)) {
           const screenshot = await session.call('Page.captureScreenshot', {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
@@ -197,7 +241,9 @@ async function main() {
     }
     const summary = {
       generatedAt: new Date().toISOString(),
-      scope: 'Local Next.js production PUBLIC routes only. Not authenticated/production/browser-zoom=200%.',
+      scope: realZoom
+        ? 'Local Next.js public routes at actual Chrome tab zoom 200%.'
+        : 'Local Next.js public routes at fixed CSS viewports. Zoom-equivalent width is not browser tab zoom.',
       total: results.length, failed: results.filter(r => r.failures.length).length, results,
     };
     await writeFile(join(outdir, 'results.json'), JSON.stringify(summary, null, 2) + '\n');
