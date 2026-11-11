@@ -202,4 +202,47 @@ describe('Cosmetics V1: immutable unlocks, equip authorization and RLS',()=>{
     await as(b);
     expect(await rpc('get_public_player_cosmetics',['99999999-9999-4999-8999-999999999999'])).toBeNull();
   },30000);
+
+  it('upgrades legacy selections and enforces independent ownership and visibility for both new slots',async()=>{
+    await db.query('update public.profiles set ranked_wins=1 where id=$1',[a]);
+    await as(a);
+    await equip('piece-forest');
+    await db.exec('reset role;');
+    await db.exec(readFileSync(new URL(
+      '../supabase/migrations/20261111050715_omok_chess_cosmetics.sql',import.meta.url),'utf8'));
+    await as(a);
+    const initial=await mine();
+    expect(initial.loadout).toEqual({
+      pieceCode:'piece-forest',avatarCode:'avatar-classic',omokCode:'omok-classic',chessCode:'chess-classic',
+    });
+    expect(initial.items.filter(item=>item.equipped).map(item=>item.code))
+      .toEqual(['avatar-classic','chess-classic','omok-classic','piece-forest']);
+    expect(await rpc('get_public_player_cosmetics',[b]))
+      .toMatchObject({userId:b,omokCode:'omok-classic',chessCode:'chess-classic'});
+    await expect(equip('omok-jade')).rejects.toThrow('COSMETIC_LOCKED');
+    await expect(equip('chess-sapphire')).rejects.toThrow('COSMETIC_LOCKED');
+    await db.exec('reset role;');
+    await db.exec('create table public.player_progress(user_id uuid primary key,total_xp bigint not null)');
+    await db.query('insert into public.player_progress values($1,100)',[a]);
+    await as(a);
+    expect(await equip('omok-jade')).toMatchObject({omokCode:'omok-jade',chessCode:'chess-classic'});
+    expect(await equip('chess-sapphire')).toEqual({
+      pieceCode:'piece-forest',avatarCode:'avatar-classic',omokCode:'omok-jade',chessCode:'chess-sapphire',
+    });
+    await expect(db.exec("update public.player_cosmetic_loadouts set omok_code=null")).rejects.toThrow(/permission denied/i);
+    await as(b);
+    expect(await rpc('get_public_player_cosmetics',[a]))
+      .toMatchObject({userId:a,omokCode:'omok-jade',chessCode:'chess-sapphire'});
+    await as(a);
+    await rpc('set_my_player_profile_settings',[false,false]);
+    await as(b);
+    expect(await rpc('get_public_player_cosmetics',[a])).toBeNull();
+    await db.exec('reset role;');
+    await expect(db.query("update public.player_cosmetic_loadouts set omok_code='chess-sapphire' where user_id=$1",[a]))
+      .rejects.toThrow(/foreign key/i);
+    await db.exec("update public.cosmetic_items set published=false where code='omok-jade'");
+    await as(a);
+    expect((await mine()).loadout).toMatchObject({omokCode:'omok-classic',chessCode:'chess-sapphire'});
+    await expect(equip('omok-jade')).rejects.toThrow('COSMETIC_NOT_AVAILABLE');
+  },30000);
 });

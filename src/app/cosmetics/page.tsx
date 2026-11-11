@@ -6,7 +6,7 @@ import { CosmeticWardrobe } from '@/components/cosmetics/cosmetic-wardrobe';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
-  title: '나의 알·캐릭터 꾸미기',
+  title: '게임 외형 꾸미기',
   robots: { index: false, follow: false },
 };
 
@@ -18,8 +18,8 @@ export default async function CosmeticsPage() {
       <header className="arena-service-heading">
         <div>
           <p className="arena-section-kicker">MY COLLECTION · COSMETICS</p>
-          <h1>나만의 알, 나만의 캐릭터</h1>
-          <p>획득한 외형을 고르고 나만의 모습으로 꾸며보세요. 승부의 규칙은 그대로입니다.</p>
+          <h1>게임 외형 꾸미기</h1>
+          <p>알까기 알, 캐릭터, 오목돌, 체스 기물의 외형을 고르세요.</p>
         </div>
         <Link href="/profile" className="arena-button arena-button--outline">내 프로필</Link>
       </header>

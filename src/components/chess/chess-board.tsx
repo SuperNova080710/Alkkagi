@@ -3,13 +3,16 @@
 import { Chess, type Square } from 'chess.js';
 import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import type { ChessMove } from '@/lib/chess/engine';
+import { chessPieceGlyphs } from '@/lib/chess/pieces';
+import { safeCosmeticCode } from '@/components/cosmetics/cosmetic-api';
+import '@/components/cosmetics/game-skins.css';
 import { chessMoveOffset, chessTransition } from './move-feedback';
 
-const symbols = {p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚'};
 const pieces = {p: '폰', n: '나이트', b: '비숍', r: '룩', q: '퀸', k: '킹'};
 
-export function ChessBoard({fen, black, enabled, onMove}: {
+export function ChessBoard({fen, black, enabled, onMove, pieceSkins}: {
   fen: string; black: boolean; enabled: boolean; onMove: (move: ChessMove) => void;
+  pieceSkins?: Partial<Record<'w' | 'b',string>>;
 }) {
   const [view, setView] = useState(() => ({fen, black, lastMove: null as ReturnType<typeof chessTransition>}));
   const game = useMemo(() => new Chess(fen), [fen]);
@@ -27,6 +30,8 @@ export function ChessBoard({fen, black, enabled, onMove}: {
   const ranks = game.board();
   const board = (black ? ranks.slice().reverse().map(rank => rank.slice().reverse()) : ranks).flat();
   const targets = enabled && selected ? game.moves({square: selected, verbose: true}) : [];
+  const whiteSkin = safeCosmeticCode(pieceSkins?.w, 'chess');
+  const blackSkin = safeCosmeticCode(pieceSkins?.b, 'chess');
 
   function select(square: Square) {
     if (!enabled || promotion.length) return;
@@ -73,8 +78,9 @@ export function ChessBoard({fen, black, enabled, onMove}: {
           onFocus={() => setFocusIndex(index)} onKeyDown={event => navigate(event, index)} onClick={() => select(square)}>
           {(col === 0 || row === 7) && <span className="chess-coord" aria-hidden="true">{square}</span>}
           {piece && <span key={fen + square} className={'chess-piece chess-piece--' + piece.color + (moving ? ' chess-piece--moving' : '')}
+            data-chess-skin={piece.color === 'w' ? whiteSkin : blackSkin}
             style={offset ? {'--chess-move-x': `${offset.x}%`, '--chess-move-y': `${offset.y}%`} as CSSProperties : undefined}
-            aria-hidden="true">{symbols[piece.type]}</span>}
+            aria-hidden="true">{chessPieceGlyphs[piece.type]}</span>}
         </button>;
       })}
     </div>

@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
+import { DEFAULT_POSITION } from 'chess.js';
 import { GamePieces } from '../src/components/game/game-pieces';
 import { GameIdentityHeading } from '../src/components/game/game-identity-heading';
+import { ChessBoard } from '../src/components/chess/chess-board';
+import { OmokBoardView } from '../src/components/omok/omok-board-view';
 import { getPlayerIdentities, type IdentityMatch } from '../src/lib/game/player-identity';
 import { RADIUS, type Board } from '../src/lib/game/engine';
 import {
@@ -87,13 +90,13 @@ describe('cosmetic piece rendering without game physics changes', () => {
   it('reads viewer private inventory and opponent public cosmetics, preserving fallback on 404', async () => {
     const request = vi.fn(async (url: string) => url === '/api/cosmetics/me'
       ? { ok: true, json: async () => ({ data: {
-        loadout: { pieceCode: 'piece-forest', avatarCode: 'avatar-orbit' },
+        loadout: { pieceCode: 'piece-forest', avatarCode: 'avatar-orbit', omokCode:'omok-jade', chessCode:'chess-sapphire' },
         rankedWins: 0, level: 1, items: [],
       } }) }
       : { ok: false, status: 404, json: async () => ({ error: 'PLAYER_NOT_FOUND' }) });
     vi.stubGlobal('fetch', request);
     expect(await fetchMatchCosmeticLooks(a, b)).toEqual({
-      [a]: { pieceCode: 'piece-forest', avatarCode: 'avatar-orbit' },
+      [a]: { pieceCode: 'piece-forest', avatarCode: 'avatar-orbit', omokCode:'omok-jade', chessCode:'chess-sapphire' },
       [b]: DEFAULT_MATCH_LOOK,
     });
     expect(request).toHaveBeenCalledTimes(2);
@@ -109,6 +112,23 @@ describe('cosmetic piece rendering without game physics changes', () => {
     expect(await fetchMatchCosmeticLooks(a, null)).toEqual({ [a]: DEFAULT_MATCH_LOOK });
     expect(request).toHaveBeenCalledTimes(1);
     expect(request.mock.calls[0][0]).toBe('/api/cosmetics/me');
+  });
+
+  it('keeps the game colors, names and marks when applying or falling back from a skin', () => {
+    const stones = Array.from({length:15},() => Array<string | null>(15).fill(null));
+    stones[7][7]='black';
+    stones[7][8]='white';
+    const omok = renderToStaticMarkup(<OmokBoardView board={stones}
+      lastMove={{row:7,col:7}} stoneSkins={{black:'omok-jade',white:'chess-sapphire'}}/>);
+    expect(omok).toContain('arena-omok-stone--black" data-omok-skin="omok-jade"');
+    expect(omok).toContain('arena-omok-stone--white" data-omok-skin="omok-classic"');
+    expect(omok).toContain('8행 8열, 흑돌, 마지막 착수');
+    const chess = renderToStaticMarkup(<ChessBoard fen={DEFAULT_POSITION} black enabled
+      onMove={() => {}} pieceSkins={{w:'omok-jade',b:'chess-sapphire'}}/>);
+    expect(chess).toContain('chess-piece--w" data-chess-skin="chess-classic"');
+    expect(chess).toContain('chess-piece--b" data-chess-skin="chess-sapphire"');
+    expect(chess).toContain('e8 흑 킹');
+    expect(chess).toContain('e1 백 킹');
   });
 
   it('keeps Board/Shot/physics and SVG viewBox geometry untouched in all modes', () => {

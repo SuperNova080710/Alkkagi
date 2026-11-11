@@ -28,8 +28,8 @@
 .chess-square:focus-visible { z-index: 1; outline: 3px solid #006cc7; outline-offset: -3px; }
 .chess-square[data-target]::after { content: ''; position: absolute; width: 24%; aspect-ratio: 1;
   border-radius: 50%; background: #214e3c91; pointer-events: none; }
-.chess-piece--w { color: #fff9de; text-shadow: -1px -1px #423326, 1px 1px #423326, 0 2px #423326; }
-.chess-piece--b { color: #272820; text-shadow: 0 1px #fff2cc; }
+.chess-piece--w { color: var(--chess-piece-fill, #fff9de); text-shadow: var(--chess-piece-outline, -1px -1px #423326, 1px 1px #423326, 0 2px #423326); }
+.chess-piece--b { color: var(--chess-piece-fill, #272820); text-shadow: var(--chess-piece-outline, 0 1px #fff2cc); }
 .chess-coord { position: absolute; top: 3px; left: 3px; color: #272820; font: 700 clamp(.5rem, 1.1vw, .72rem) system-ui; }
 .chess-history { max-height: 12rem; overflow: auto; padding-left: 1.75rem; columns: 2; }
 .chess-promotion { border: 1px solid var(--arena-line); border-radius: .75rem; padding: .7rem; margin: .7rem auto; }

@@ -1,4 +1,4 @@
-export type CosmeticSlot = 'piece' | 'avatar';
+export type CosmeticSlot = 'piece' | 'avatar' | 'omok' | 'chess';
 export type CosmeticItem = {
   code: string;
   slot: CosmeticSlot;
@@ -10,7 +10,7 @@ export type CosmeticItem = {
   equipped: boolean;
   unlockedAt: string | null;
 };
-export type CosmeticLoadout = { pieceCode: string; avatarCode: string };
+export type CosmeticLoadout = { pieceCode: string; avatarCode: string; omokCode?: string; chessCode?: string };
 export type CosmeticInventory = {
   loadout: CosmeticLoadout;
   items: CosmeticItem[];
@@ -26,6 +26,8 @@ export function isCosmeticInventory(value: unknown): value is CosmeticInventory 
   const loadout = inventory.loadout;
   if (!loadout || typeof loadout !== 'object' || Array.isArray(loadout) ||
       typeof loadout.pieceCode !== 'string' || typeof loadout.avatarCode !== 'string' ||
+      (loadout.omokCode !== undefined && typeof loadout.omokCode !== 'string') ||
+      (loadout.chessCode !== undefined && typeof loadout.chessCode !== 'string') ||
       !Number.isSafeInteger(inventory.rankedWins) || inventory.rankedWins! < 0 ||
       !Number.isSafeInteger(inventory.level) || inventory.level! < 1 ||
       !Array.isArray(inventory.items)) return false;
@@ -33,7 +35,7 @@ export function isCosmeticInventory(value: unknown): value is CosmeticInventory 
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
     const item = value as Partial<CosmeticItem>;
     return typeof item.code === 'string' && item.code.length > 0 &&
-      (item.slot === 'piece' || item.slot === 'avatar') &&
+      (item.slot === 'piece' || item.slot === 'avatar' || item.slot === 'omok' || item.slot === 'chess') &&
       typeof item.name === 'string' && typeof item.description === 'string' &&
       (item.unlockKind === 'starter' || item.unlockKind === 'ranked_wins' || item.unlockKind === 'xp_level') &&
       Number.isSafeInteger(item.requiredValue) && item.requiredValue! >= 0 &&
@@ -50,11 +52,19 @@ export const COSMETIC_STYLES = {
   'avatar-classic': { slot: 'avatar', name: '기본 캐릭터' },
   'avatar-bronze': { slot: 'avatar', name: '청동 캐릭터' },
   'avatar-orbit': { slot: 'avatar', name: '궤도 캐릭터' },
+  'omok-classic': { slot: 'omok', name: '기본 오목돌' },
+  'omok-jade': { slot: 'omok', name: '비취 오목돌' },
+  'chess-classic': { slot: 'chess', name: '기본 체스 기물' },
+  'chess-sapphire': { slot: 'chess', name: '사파이어 체스 기물' },
 } as const;
 
-export function safeCosmeticCode(code: string, slot: CosmeticSlot): keyof typeof COSMETIC_STYLES {
-  const fallback = slot === 'piece' ? 'piece-classic' : 'avatar-classic';
-  if (!Object.prototype.hasOwnProperty.call(COSMETIC_STYLES, code)) return fallback;
+const starterCodes = {
+  piece: 'piece-classic', avatar: 'avatar-classic', omok: 'omok-classic', chess: 'chess-classic',
+} as const satisfies Record<CosmeticSlot, keyof typeof COSMETIC_STYLES>;
+
+export function safeCosmeticCode(code: unknown, slot: CosmeticSlot): keyof typeof COSMETIC_STYLES {
+  const fallback = starterCodes[slot];
+  if (typeof code !== 'string' || !Object.hasOwn(COSMETIC_STYLES, code)) return fallback;
   const item = COSMETIC_STYLES[code as keyof typeof COSMETIC_STYLES];
   return item.slot === slot ? code as keyof typeof COSMETIC_STYLES : fallback;
 }

@@ -93,12 +93,12 @@
   pointer-events: none;
 }
 .arena-omok-stone--black {
-  border: 1px solid #141312;
-  background: radial-gradient(circle at 32% 25%, #77716d 0%, #2c2a28 36%, #070707 83%);
+  border: 1px solid var(--omok-stone-edge, #141312);
+  background: var(--omok-stone-fill, radial-gradient(circle at 32% 25%, #77716d 0%, #2c2a28 36%, #070707 83%));
 }
 .arena-omok-stone--white {
-  border: 1px solid #968e7f;
-  background: radial-gradient(circle at 32% 25%, #fff 0%, #fffefa 40%, #d2cbbd 87%);
+  border: 1px solid var(--omok-stone-edge, #968e7f);
+  background: var(--omok-stone-fill, radial-gradient(circle at 32% 25%, #fff 0%, #fffefa 40%, #d2cbbd 87%));
 }
 .arena-omok-last-dot {
   position: absolute;

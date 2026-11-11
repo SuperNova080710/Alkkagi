@@ -8,6 +8,7 @@ import { SendFriendRoomInvite } from '@/components/rooms/send-friend-room-invite
 import { ArenaPanel } from '@/components/ui/arena-panel';
 import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import type { ChessMove } from '@/lib/chess/engine';
+import { useMatchCosmetics } from '@/components/game/use-match-cosmetics';
 import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
 import { ChessTurnStatus } from './chess-turn-status';
@@ -101,6 +102,10 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
   const router = useRouter();
   const path = '/matches/' + matchId;
   const {data: match, error, refresh, accept, reportError} = useChessSnapshot<ChessSnapshot>(path, matchId, 'match');
+  const viewer = match?.id === matchId.toLowerCase() && [match.whiteId,match.blackId].includes(userId) ? userId : '';
+  const opponent = viewer && match?.mode === 'casual'
+    ? match.whiteId === viewer ? match.blackId : match.whiteId : null;
+  const cosmetics = useMatchCosmetics(viewer, opponent);
   const [pending, setPending] = useState(false);
   const [resigning, setResigning] = useState(false);
   const lock = useRef(false);
@@ -144,6 +149,7 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
       <ChessTurnStatus black={match.blackId === userId} myTurn={myTurn} finished={finished}
         inCheck={match.inCheck} pending={pending} error={Boolean(error)} confirming={resigning}/>
       <ChessBoard key={match.id} fen={match.fen} black={match.blackId === userId}
+        pieceSkins={{w:cosmetics[match.whiteId]?.chessCode,b:cosmetics[match.blackId]?.chessCode}}
         enabled={myTurn && !pending && !error && !resigning} onMove={move => void command('move',move)}/>
       {finished && <OmokResultOverlay game="chess" mode={match.mode ?? 'casual'}
         outcome={outcome} finishReason={reason} error={error}

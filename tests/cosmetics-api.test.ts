@@ -30,6 +30,8 @@ describe('Cosmetic V1 authenticated HTTP contract',()=>{
   it('accepts only exact item code schema and rejects spoofed owner fields',()=>{
     expect(validEquipCosmetic({itemCode:'piece-classic'})).toBe(true);
     expect(validEquipCosmetic({itemCode:'avatar-orbit'})).toBe(true);
+    expect(validEquipCosmetic({itemCode:'omok-jade'})).toBe(true);
+    expect(validEquipCosmetic({itemCode:'chess-sapphire'})).toBe(true);
     expect(validEquipCosmetic({itemCode:'piece-classic',userId:b})).toBe(false);
     expect(validEquipCosmetic({itemCode:'unexpected item'})).toBe(false);
     expect(validEquipCosmetic({itemCode:1})).toBe(false);
