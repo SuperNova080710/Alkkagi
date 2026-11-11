@@ -12,7 +12,7 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 
 ### Planned / Pending — 아직 미병합·미구현
 - [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) **미병합:** 체스 일반전 종료 30분 내 양측 수락 재대결·색 교대/원본 기록 보존/동시 요청 중복 방지. 신규 `20261111025703_chess_casual_rematch.sql` 적용·운영 E2E 전에는 출시 기능이 아닙니다.
-- [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 체스 참가자 전용 채팅, [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 체스 온라인 공통 XP, [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 오목 돌/체스 기물 꾸미기: 별도 개발 범위. 출시 포함 여부는 #345에서 명시적으로 결정합니다.
+- [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 체스 참가자 전용 채팅([Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350)), [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 체스 온라인 공통 XP([Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349)): **코드 PR 제출·미병합**, v0.4.2 포함 여부는 #345에서 결정하며 출시 완료로 표기하지 않습니다. [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 오목 돌/체스 기물 꾸미기는 후속 별도 범위입니다.
 
 **릴리스 STOP:** 적용 이력 없는 새 SQL에 대한 운영 승인, 분리된 DB/RLS·Realtime 검사와 실제 두 계정 E2E, 최신 SHA의 CI, 사용자 Preview/Production 승인 전 배포·태그 발행 금지. 이미 적용된 SQL 재실행 금지.
 
