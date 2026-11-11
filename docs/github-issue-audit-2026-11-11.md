@@ -130,3 +130,9 @@
 - 운영 PostgreSQL 17.11의 기존 적용 이력을 문서화했지만 **이번 작업에서는 운영 DB에 연결해 SQL을 실행하지 않았습니다**.
 - 이슈 상태 변경은 `completed` 근거가 확인된 구현 이슈에만 수행했습니다. QA·보안·FIDE/AI 남은 요구·릴리스/Tag·Preview 키 문제는 이슈가 계속 OPEN입니다.
 - 기능 코드/환경변수/Vercel 설정/Preview/Production/기존 PR 병합에는 손대지 않았습니다.
+
+## 7. 감사 도중 생성된 미병합 PR (2026-11-11)
+
+본 문서의 **48건 구현 완료 종료**와는 별개로, 체스 온라인 공통 XP [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) / [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 일반전 채팅 [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) / [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350)이 `develop` 대상 open 상태로 생성됐습니다. 체스 양측 수락 재대결 [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) 역시 open입니다.
+
+**이 세 이슈는 해결됨으로 닫지 않습니다.** PR이 실제 병합되고 수용 기준이 충족됐다는 근거가 있어야 기능 구현 완료 판정이 가능하며, 운영 검증·v0.4.2 배포는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에 별도 기록합니다.
