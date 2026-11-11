@@ -28,6 +28,7 @@ afterEach(async () => {
   container.remove();vi.unstubAllGlobals();
   localStorage.removeItem('chess-practice-v040:result-test');
 });
+vi.mock('../src/components/chess/chess-match-chat', () => ({ChessMatchChat: () => null}));
 const overlay = () => container.querySelector('[aria-label="체스 경기 결과"]');
 const button = (label: string) => [...container.querySelectorAll('button')].find(node => node.textContent===label)!;
 

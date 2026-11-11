@@ -10,6 +10,7 @@ import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import type { ChessMove } from '@/lib/chess/engine';
 import { ChessTurnClock } from './chess-ranked';
 import { ChessBoard } from './chess-board';
+import { ChessMatchChat } from './chess-match-chat';
 import { ChessTurnStatus } from './chess-turn-status';
 import { chessRequest, useChessSnapshot, type ChessSnapshot } from './client';
 
@@ -193,6 +194,8 @@ export function ChessMatchClient({matchId,userId}: {matchId: string; userId: str
         </>}
         <Link href={lobby} className="arena-button arena-button--outline">로비</Link>
       </div>
+      {match.id === matchId && match.mode === 'casual' &&
+        <ChessMatchChat key={matchId} matchId={matchId} userId={userId}/>}
     </ArenaPanel>
   </div>;
 }

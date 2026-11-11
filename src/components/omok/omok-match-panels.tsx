@@ -195,6 +195,7 @@ export function OmokMatchPanel({
 
 export type OmokChatMessage = { id: string; senderId: string; senderName: string; body: string };
 export type OmokChatPanelProps = {
+  game?: 'omok' | 'chess';
   messages: readonly OmokChatMessage[];
   currentUserId: string;
   disabled?: boolean;
@@ -203,7 +204,7 @@ export type OmokChatPanelProps = {
   onSend?: (message: string) => Promise<boolean> | boolean;
 };
 export function OmokChatPanel({
-  messages, currentUserId, disabled = false, sending = false, error, onSend,
+  game = 'omok', messages, currentUserId, disabled = false, sending = false, error, onSend,
 }: OmokChatPanelProps) {
   const [draft, setDraft] = useState('');
   const [localPending, setLocalPending] = useState(false);
@@ -235,7 +236,7 @@ export function OmokChatPanel({
     event.preventDefault();
     if (canSend) event.currentTarget.form?.requestSubmit();
   }
-  return <section className="arena-omok-panel arena-omok-chat" aria-label="오목 경기 채팅">
+  return <section className="arena-omok-panel arena-omok-chat" aria-label={game === 'chess' ? '체스 경기 채팅' : '오목 경기 채팅'}>
     <header className="arena-omok-panel-heading"><h2>대전 채팅</h2><span>참가자 전용</span></header>
     <ol aria-label="채팅 메시지" aria-live="polite" aria-relevant="additions text" className="arena-omok-chat-list">
       {messages.length === 0 && <li className="arena-omok-panel-hint">아직 메시지가 없습니다.</li>}

@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { POST as roomsPost } from '../src/app/api/chess/rooms/route';
 import { GET as roomGet, POST as roomPost } from '../src/app/api/chess/rooms/[id]/route';
 import { GET as matchGet, POST as matchPost } from '../src/app/api/chess/matches/[id]/route';
+import { GET as chatGet, POST as chatPost } from '../src/app/api/chess/matches/[id]/messages/route';
 import { GET as rankGet, POST as rankPost } from '../src/app/api/chess/ranked/route';
 import { GET as invitesGet, POST as invitesPost } from '../src/app/api/chess/invites/route';
 import { POST as inviteRespond } from '../src/app/api/chess/invites/[id]/respond/route';
@@ -57,8 +58,8 @@ const params = (id: string) => ({params: Promise.resolve({id})});
 const move = (ply: number, from: string, to: string, n = ply + 10) =>
   ({action: 'move', ply, from, to, requestId: requestId(n)});
 
-async function create(n: number) {
-  actor = white;
+async function create(n: number, host = white) {
+  actor = host;
   const created = await roomsPost(request({action: 'create', requestId: requestId(n)}));
   expect(created.status).toBe(200);
   const {data: {roomId}} = await created.json();
@@ -66,11 +67,11 @@ async function create(n: number) {
   return {roomId: roomId as string, code: room.code as string};
 }
 
-async function start(roomId: string, code: string) {
-  actor = black;
+async function start(roomId: string, code: string, host = white, guest = black) {
+  actor = guest;
   const join = await roomsPost(request({action: 'join', code}));
   expect(await join.json()).toEqual({data: {roomId}});
-  actor = white;
+  actor = host;
   const {data: {matchId}} = await (await roomPost(request({action: 'start'}), params(roomId))).json();
   return matchId as string;
 }
@@ -259,7 +260,7 @@ describe('chess casual API and authoritative database', () => {
     `);
     expect(privileges).toEqual({commit:false,resign:false});
     const {rows: publications} = await db.query(
-      "select tablename from pg_publication_tables where pubname='supabase_realtime' and tablename like 'chess_%' order by tablename",
+      "select tablename from pg_publication_tables where pubname='supabase_realtime' and tablename like 'chess_%' and tablename<>'chess_match_messages' order by tablename",
     );
     expect(publications).toEqual([{tablename:'chess_matches'},{tablename:'chess_rematches'},{tablename:'chess_rooms'}]);
     expect(await rpc('anon', null, 'chess_room_snapshot',{p_room_id:roomId}))
@@ -363,6 +364,64 @@ describe('chess casual API and authoritative database', () => {
     actor = white;
     expect((await invitesPost(inviteRequest({roomId,targetId:black}))).status).toBe(409);
     await roomPost(request({action:'leave'}),params(roomId));
+  });
+
+  it('sends private casual chat, preserves retry IDs and isolates each match', async () => {
+    const firstRoom = await create(91);
+    const first = await start(firstRoom.roomId,firstRoom.code);
+    const nextRoom = await create(92,black);
+    const next = await start(nextRoom.roomId,nextRoom.code,black,white);
+    const send = (id:string,body:string,req:number) => chatPost(request({body,requestId:requestId(req)}),params(id));
+    const read = (id:string) => chatGet(request(),params(id));
+
+    actor = null;
+    expect((await read(first)).status).toBe(401);
+    actor = outsider;
+    expect((await read(first)).status).toBe(404);
+    expect((await send(first,'hello',101)).status).toBe(404);
+    expect(await rpc('authenticated',outsider,'chess_send_chat_message',{
+      p_actor:white,p_match_id:first,p_body:'hello',p_request_id:requestId(101),
+    })).toMatchObject({error:{code:'42501'}});
+
+    actor = white;
+    expect((await send(first,'  ',101)).status).toBe(400);
+    const created = await (await send(first,'  victory  ',101)).json();
+    expect(created).toEqual({data:{id:expect.any(String)}});
+    expect(await (await send(first,'victory',101)).json()).toEqual(created);
+    expect(await (await send(first,'different',101)).json()).toEqual({error:'REQUEST_CONFLICT'});
+    expect((await send(next,'too soon',102)).status).toBe(429);
+    actor = black;
+    expect((await send(first,'good game',102)).status).toBe(200);
+    expect(await (await read(first)).json()).toMatchObject({data:[
+      {id:created.data.id,sender_id:white,body:'victory'},
+      {sender_id:black,body:'good game'},
+    ]});
+    expect(await (await read(next)).json()).toEqual({data:[]});
+
+    expect((await matchPost(request({action:'resign',requestId:requestId(103)}),params(first))).status).toBe(200);
+    await db.query("update public.chess_matches set finished_at=now()-interval '31 minutes' where id=$1",[first]);
+    expect(await (await send(first,'closed',104)).json()).toEqual({error:'CHAT_CLOSED'});
+    expect(await (await send(first,'good game',102)).json()).toMatchObject({data:{id:expect.any(String)}});
+  });
+
+  it('denies ranked chat at the API and RLS layers', async () => {
+    expect((await db.query("select 1 from pg_publication_tables where pubname='supabase_realtime' and tablename='chess_match_messages'")).rows)
+      .toHaveLength(1);
+    const {rows:[ranked]} = await db.query<{id:string}>(`
+      insert into public.chess_matches(mode,white_id,black_id) values('ranked',$1,$2) returning id
+    `,[white,black]);
+    actor = white;
+    expect((await chatGet(request(),params(ranked.id))).status).toBe(403);
+    expect((await chatPost(request({body:'hello',requestId:requestId(105)}),params(ranked.id))).status).toBe(403);
+    // Privileged fixture to assert the table policy independently of the write RPC.
+    await db.query("insert into public.chess_match_messages(match_id,sender_id,request_id,body) values($1,$2,$3,'hidden')",
+      [ranked.id,white,requestId(105)]);
+    const messages = await db.transaction(async tx => {
+      await tx.exec('set local role authenticated');
+      await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[white]);
+      return tx.query('select id from public.chess_match_messages where match_id=$1',[ranked.id]);
+    });
+    expect(messages.rows).toEqual([]);
   });
 
 });
