@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Chess, DEFAULT_POSITION } from 'chess.js';
 import { ChessMatchClient } from '../src/components/chess/chess-online';
+vi.mock('../src/components/chess/chess-match-chat', () => ({ChessMatchChat: () => null}));
 import type { ChessSnapshot } from '../src/components/chess/client';
 
 vi.mock('next/navigation', () => ({useRouter: () => ({replace: vi.fn()})}));

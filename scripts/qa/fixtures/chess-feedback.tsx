@@ -102,8 +102,20 @@ async function run() {
     fen:DEFAULT_POSITION,inCheck:false,ply:0,winnerId:null,finishReason:null,moves:[],mode:'casual'};
   let failPost = true;
   let failGet = false;
+  let loseChatResponse=true;
+  const chatMessages:{id:string;sender_id:string;body:string}[]=[];
   window.fetch = async (_input,options) => {
     await sleep(80);
+    if (String(_input).endsWith('/messages')) {
+      if (options?.method==='POST') {
+        const {body,requestId}=JSON.parse(options.body as string);
+        if (!chatMessages.some(message=>message.id===requestId))
+          chatMessages.push({id:requestId,sender_id:'me',body});
+        if (loseChatResponse) {loseChatResponse=false; throw Error('채팅 응답 유실');}
+        return Response.json({data:{id:requestId}});
+      }
+      return Response.json({data:chatMessages});
+    }
     if (options?.method==='POST') {
       if (failPost) {failGet=true; throw Error('테스트 착수 응답 유실');}
       const game=new Chess(snapshot.fen); game.move(JSON.parse(options.body as string));
@@ -122,6 +134,31 @@ async function run() {
     failGet=false; window.dispatchEvent(new Event('online'));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     check(!document.querySelector('[role="alert"]'),mode+' authoritative GET clears stale alert');
+    const chat=document.querySelector('[aria-label="체스 경기 채팅"]');
+    if (mode==='casual') {
+      const input=chat?.querySelector('textarea');
+      check(Boolean(input),'casual match shows chat alongside notation');
+      input!.scrollIntoView({block:'center',behavior:'instant'});
+      const chatRect=input!.getBoundingClientRect();
+      check(chatRect.top>=-1 && chatRect.bottom<=innerHeight+1 && chatRect.left>=-1 && chatRect.right<=innerWidth+1,
+        'chat is reachable without horizontal overflow: '+JSON.stringify(chatRect.toJSON()));
+      flushSync(()=>{
+        Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(input,'좋은 경기!');
+        input!.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      const send=chat!.querySelector<HTMLButtonElement>('form button')!;
+      await until(()=>!send.disabled);
+      flushSync(()=>send.click());
+      await until(()=>Boolean(chat!.querySelector('[role="alert"]')?.textContent?.includes('응답 유실')));
+      check(input!.value==='좋은 경기!','chat keeps the draft when its send response is lost');
+      flushSync(()=>send.click());
+      await until(()=>Boolean(chat!.querySelector('ol')?.textContent?.includes('좋은 경기!')));
+      chatMessages.push({id:'peer-chat',sender_id:'other',body:'다음에도 만나요'});
+      window.dispatchEvent(new Event('online'));
+      await until(()=>Boolean(chat!.querySelector('ol')?.textContent?.includes('다음에도 만나요')));
+      check(chat!.querySelectorAll('ol li').length===2,'chat POST and reconnect show both participants');
+      window.scrollTo(0,0);
+    } else check(!chat,'ranked match does not render chat');
     for (const [winnerId,outcome,reason,label] of [
       ['me','승리','checkmate','체크메이트'],['other','패배','resignation','기권'],[null,'무승부','stalemate','스테일메이트'],
     ]) {
