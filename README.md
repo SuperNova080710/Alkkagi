@@ -1,4 +1,4 @@
-# Alkkagi Arena
+# 한판아레나 (Alkkagi Arena)
 
 **브라우저에서 즐기는 1:1 온라인 보드게임 서비스 — 알까기 · 오목 · 체스**
 
@@ -31,7 +31,7 @@
 
 [릴리스 이슈 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) · [RC 인수 체크리스트](docs/release-v0.4.2-handoff.md).
 
-`develop`에 기능 PR을 통합했으며 `release/v0.4.2`에서 **통합 CI 및 Preview 검증을 준비 중**입니다. 운영 Production은 여전히 **v0.4.1**이고, 새 SQL 5개는 운영에 아직 적용되지 않았습니다.
+`develop`에 기능과 브랜드 개편 PR을 통합했으며 `release/v0.4.2`에서 **최신 RC CI·Preview를 재검증 중**입니다. 운영 웹 Production은 여전히 **v0.4.1**이고, 새 SQL 5개는 사용자 승인으로 운영 DB에 적용 완료했습니다(재실행 금지).
 
 - **[#342](https://github.com/SuperNova080710/Alkkagi/pull/342)**: 오목 랭크전 채팅 데이터베이스 조회/쓰기 RLS·RPC 제한.
 - **[#343](https://github.com/SuperNova080710/Alkkagi/pull/343)**: 게임별 실제 AI 시작 흐름과 공개 조작법·SEO 제목 개선.
@@ -39,8 +39,11 @@
 - **[#349](https://github.com/SuperNova080710/Alkkagi/pull/349)**: 체스 일반·랭크전 서버 XP 지급, 3게임 공통 XP 상한.
 - **[#350](https://github.com/SuperNova080710/Alkkagi/pull/350)**: 체스 일반전 참가자 채팅 및 Realtime·재접속.
 - **[#354](https://github.com/SuperNova080710/Alkkagi/pull/354)**: 오목돌·체스 기물의 장착·미리보기·게임판 꾸미기.
+- **[#361](https://github.com/SuperNova080710/Alkkagi/pull/361)**: 종합 플랫폼 홈·한판아레나 공통 브랜드·3게임 선택 UI.
+- **[#362](https://github.com/SuperNova080710/Alkkagi/pull/362)**: 검색 대표 제목·WebSite JSON-LD·canonical·보호 경로 비색인.
+- **[#363](https://github.com/SuperNova080710/Alkkagi/pull/363)**: 공개 게임별 소개 3페이지·사이트맵·모바일/200% QA.
 
-**주의:** 개별 PR의 테스트 성공만으로 통합 기능의 운영 정상 동작을 보장하지 않습니다. 신규 DB SQL은 사용자 승인과 운영 적용 이력 확인 후 한 번씩만 실행해야 하며, Preview 실제 두 계정 검증과 별도의 Production 승인이 필요합니다.
+**주의:** 개별 PR의 테스트 성공만으로 통합 기능의 운영 정상 동작을 보장하지 않습니다. 신규 DB SQL 5개는 **이미 운영에 적용**됐으며 원본 SQL 타임스탬프와 Supabase 기록 버전이 달라 CLI 자동 재실행을 방지해야 합니다. Preview는 현재 운영 DB를 공유하므로 실제 두 계정 테스트가 기록을 생성하며, Production 코드 배포는 별도의 사용자 승인이 필요합니다.
 
 ## 기술 구조
 
