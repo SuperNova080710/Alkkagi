@@ -10,7 +10,7 @@
 | 공개 AI 조작법·title | [PR #343](https://github.com/SuperNova080710/Alkkagi/pull/343) `develop` 병합 | 공개 /how-to-play·SEO/robots/canonical·모바일 Preview 확인 |
 | 체스 일반전 양쪽 수락 재대결 | [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) **미병합** · [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) | PR 최신 SHA 리뷰, 독립 PG17 경합·RLS, 두 계정 브라우저 실제 수락·재접속 검증 |
 | 체스 일반전 채팅 | [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) / [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350) **미병합** | 참여자/RLS·Realtime/기존 대국 호환 CI 및 두 계정 QA, v0.4.2 포함 여부 승인 필요 |
-| 체스 온라인 XP | [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 별도 미구현 | 중복 지급·랭크 RP 격리 검증 전 출시 기능으로 표기 금지 |
+| 체스 온라인 XP | [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) / [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349) **미병합** | 게임 종료 멱등·일별 상한/RP 격리 CI 및 운영 PG17 적용/두 계정 E2E 전 출시 금지 |
 | 오목 돌/체스 기물 꾸미기 | [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 후속 | 범위 밖으로 유지. 현재 일반 알·캐릭터 꾸미기와 구별 |
 
 ## 2. SQL 적용 사전 차단
