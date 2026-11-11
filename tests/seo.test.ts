@@ -15,6 +15,9 @@ describe('Public search indexing policy',()=>{
     expect(sitemap()).toEqual([
       {url:SITE_ORIGIN,changeFrequency:'weekly',priority:1},
       {url:SITE_ORIGIN+'/how-to-play',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/omok',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/chess',changeFrequency:'monthly',priority:0.7},
+      {url:SITE_ORIGIN+'/games/alkkagi',changeFrequency:'monthly',priority:0.7},
     ]);
     expect(SITE_ORIGIN).toBe('https://alkkagi-alpha.vercel.app');
   });

@@ -19,7 +19,7 @@ const viewports = [
   // NOT a measurement of Chrome's actual browser Zoom 200% behaviour.
   ['zoom-equivalent-960x540', 960, 540],
 ];
-const routes = ['/', '/how-to-play', '/login', '/signup'];
+const routes = ['/', '/how-to-play', '/login', '/signup', '/games/omok', '/games/chess', '/games/alkkagi'];
 const base = (process.env.QA_BASE_URL || 'http://127.0.0.1:3107').replace(/\/$/, '');
 const realZoom = process.env.QA_CHROME_ZOOM === '200';
 const outdir = resolve(process.env.QA_OUTPUT_DIR || 'artifacts/ui-viewport-qa');
@@ -230,7 +230,7 @@ async function main() {
           const screenshot = await session.call('Page.captureScreenshot', {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
-          await writeFile(join(outdir, safePath + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
+          await writeFile(join(outdir, safePath.replaceAll('/', '-') + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
         }
         results.push({ viewport: label, cssPixels: [width, height], path,
           httpStatus: response.status, ...m, failures });
