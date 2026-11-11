@@ -20,5 +20,10 @@ export default function Home() {
       <ArenaModeCard mode="ai"><Link href="/lobby" className="arena-button arena-button--blue">AI와 연습하기 <span aria-hidden="true">›</span></Link></ArenaModeCard>
     </div>
     <p className="arena-home-note">로그인 후 일반전·랭크전·AI 연습전을 즐길 수 있습니다. <Link href="/how-to-play" className="arena-home-guide-link">알까기 규칙과 조작법 보기 <span aria-hidden="true">›</span></Link></p>
+    <nav aria-label="게임별 규칙과 소개" className="arena-home-note">
+      <Link href="/games/omok" className="arena-home-guide-link">오목 소개</Link>{' '}
+      <Link href="/games/chess" className="arena-home-guide-link">체스 소개</Link>{' '}
+      <Link href="/games/alkkagi" className="arena-home-guide-link">알까기 소개</Link>
+    </nav>
   </ArenaShell>;
 }

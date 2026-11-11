@@ -19,7 +19,7 @@ const viewports = [
   // NOT a measurement of Chrome's actual browser Zoom 200% behaviour.
   ['zoom-equivalent-960x540', 960, 540],
 ];
-const routes = ['/', '/how-to-play', '/login', '/signup'];
+const routes = ['/', '/how-to-play', '/login', '/signup', '/games/omok', '/games/chess', '/games/alkkagi'];
 const base = (process.env.QA_BASE_URL || 'http://127.0.0.1:3107').replace(/\/$/, '');
 const outdir = resolve(process.env.QA_OUTPUT_DIR || 'artifacts/ui-viewport-qa');
 
@@ -181,7 +181,7 @@ async function main() {
         if (m.path !== path) failures.push('Unexpected redirect: ' + m.path);
         if (m.horizontalOverflowPx > 1) failures.push('Horizontal overflow ' + m.horizontalOverflowPx + 'px');
         if (m.h1Count !== 1 || m.mainCount !== 1 || !m.skipLink) failures.push('Missing h1/main/skip-link semantics');
-        const safePath = path === '/' ? 'home' : path.slice(1);
+        const safePath = path === '/' ? 'home' : path.slice(1).replaceAll('/', '-');
         if (failures.length || ['wide-1920x900', 'mobile-320x720', 'zoom-equivalent-960x540'].includes(label)) {
           const screenshot = await session.call('Page.captureScreenshot', {
             format: 'png', captureBeyondViewport: false,
