@@ -46,9 +46,10 @@ async function qaDailyCounts(userId:string,peerId:string,now:Date){
   const utcStart=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())).toISOString();
   const base=()=>db.from('xp_events').select('id',{count:'exact',head:true})
     .eq('user_id',userId).gte('created_at',utcStart);
+  const casualSources=['casual','omok_casual','chess_casual'];
   const [pvp,casual]=await Promise.all([
-    base().in('source_kind',['casual','ranked']),
-    base().eq('source_kind','casual').eq('opponent_id',peerId),
+    base().in('source_kind',[...casualSources,'ranked','omok_ranked','chess_ranked']),
+    base().in('source_kind',casualSources).eq('opponent_id',peerId),
   ]);
   if(pvp.error||casual.error||pvp.count===null||casual.count===null)
     throw Error('QA_XP_CAP_QUERY_FAILED');
