@@ -37,11 +37,14 @@ jobs:
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
-      - name: Measure public routes in headless Chrome (10 viewports)
+          OMOK_UI_ENABLED: 'true'
+          CHESS_UI_ENABLED: 'true'
+      - name: Measure public routes in headless Chrome
         run: node scripts/qa/public-viewport.mjs
         env:
           NEXT_TELEMETRY_DISABLED: '1'
           QA_OUTPUT_DIR: artifacts/ui-viewport-qa
+          QA_EXPECT_ALL_GAMES: 'true'
       - name: Save pixel diagnostics and public-only screenshots
         if: always()
         uses: actions/upload-artifact@v4

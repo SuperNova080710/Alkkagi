@@ -10,7 +10,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
   if (await getVerifiedUser()) redirect('/lobby');
   const params = await searchParams;
   return <ArenaShell><section className="arena-auth"><div className="arena-auth-art" aria-hidden="true" /><div className="arena-auth-form">
-    <p className="arena-section-kicker">ALKKAGI ARENA</p>
+    <p className="arena-section-kicker">한판아레나</p>
     <h1 className="mt-8 text-3xl font-bold">다시 오셨군요</h1>
     <p className="mt-3 text-slate-300">로그인하고 대전을 준비하세요.</p>
     {params.error === 'callback' && <p role="alert" className="mt-4 text-rose-300">인증 링크가 만료되었거나 유효하지 않습니다. 이메일 인증이 완료됐다면 로그인해 주세요. 링크는 가입한 브라우저에서 열어 주세요.</p>}

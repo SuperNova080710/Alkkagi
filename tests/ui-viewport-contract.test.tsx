@@ -30,7 +30,7 @@ describe('issue #104 responsive accessibility regression contract (not a screens
     expect(html).toContain('class="arena-footer"');
     expect(html).toContain('href="/lobby"');
     expect(html).toContain('href="/how-to-play"');
-    expect(html.match(/class="arena-mode arena-mode--/g)).toHaveLength(3);
+    expect(html.match(/class="arena-platform-card"/g)).toHaveLength(3);
   });
 
   it('keeps all recovery destinations and only the first 3 leaderboard users in long-content lobby', () => {
