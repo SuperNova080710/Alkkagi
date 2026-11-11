@@ -8,9 +8,9 @@
 
 | 구분 | 건수 |
 | --- | ---: |
-| 일반 이슈 전체 | **213** |
+| 일반 이슈 전체 | **215** |
 | 현재 CLOSED | **186** |
-| 현재 OPEN | **27** |
+| 현재 OPEN | **29** |
 | 이번 2026-11-11 작업으로 추가 종료한 기존 구현/문서 이슈 | **48** |
 
 기존 PR #228/#229의 문서 작업도 병합돼 있었는데 이슈 #216/#225/#227이 열린 상태로 남아 있어 이번에 정리했습니다. 반면 **현행 최신 `main`은 v0.4.1**이고, `develop`만의 #342/#343·아직 미병합 #344는 별도로 관리합니다.
@@ -101,6 +101,8 @@
 | [#346](https://github.com/SuperNova080710/Alkkagi/issues/346) | [Docs 11/11] v0.4.1 기준 PR·이슈 전수 정리 및 운영 문서 최신화 | 이번 문서 PR 리뷰·병합 대기 |
 | [#347](https://github.com/SuperNova080710/Alkkagi/issues/347) | [Docs #346.1] 병합 PR 기반 이슈 종료 판정과 남은 QA 분리 | 병합 PR 기준 이슈 분류 수행 기록 |
 | [#348](https://github.com/SuperNova080710/Alkkagi/issues/348) | [Docs #346.2] v0.4.1 운영 문서·CHANGELOG·README·릴리스 인수 갱신 | 운영·릴리스 문서 PR 리뷰·병합 대기 |
+| [#352](https://github.com/SuperNova080710/Alkkagi/issues/352) | [#323] 오목·체스 외형 카탈로그와 장착 권한 | 게임별 슬롯·카탈로그·소유권/RLS·기존 계정 호환 구현 전; #323의 신규 하위 이슈 |
+| [#353](https://github.com/SuperNova080710/Alkkagi/issues/353) | [#323] 오목·체스 미리보기와 대국 외형 표시 | 꾸미기 미리보기·PvP/AI/랭크 렌더링·접근성 QA 구현 전; #323의 신규 하위 이슈 |
 
 ## 4. 병합되지 않은 PR 처리 원칙
 
@@ -136,3 +138,9 @@
 본 문서의 **48건 구현 완료 종료**와는 별개로, 체스 온라인 공통 XP [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) / [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 일반전 채팅 [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) / [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350)이 `develop` 대상 open 상태로 생성됐습니다. 체스 양측 수락 재대결 [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) 역시 open입니다.
 
 **이 세 이슈는 해결됨으로 닫지 않습니다.** PR이 실제 병합되고 수용 기준이 충족됐다는 근거가 있어야 기능 구현 완료 판정이 가능하며, 운영 검증·v0.4.2 배포는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에 별도 기록합니다.
+
+## 8. 최신 추가 이슈 반영 (2026-11-11, 문서 PR #351 보완)
+
+- 11/11 최초 감사 뒤 [#352](https://github.com/SuperNova080710/Alkkagi/issues/352)(오목·체스 외형 카탈로그와 장착 권한)와 [#353](https://github.com/SuperNova080710/Alkkagi/issues/353)(미리보기·실제 대국 외형 표시)가 상위 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323)의 세부 작업으로 생성됐습니다. **병합된 구현 PR이 없으므로 세 이슈 모두 OPEN**입니다.
+- 전체 일반 이슈는 **215건 / CLOSED 186건 / OPEN 29건**으로 갱신했습니다. 이번에 완료로 닫았던 기존 **48건**의 판정·근거는 그대로 유지합니다.
+- #352/#353은 **v0.4.2 #345 릴리스에 자동 포함하지 않습니다**. 구현·검증·병합 및 출시 범위를 별도 승인받아야 하며, #344/#349/#350은 여전히 병합 전 상태입니다.
