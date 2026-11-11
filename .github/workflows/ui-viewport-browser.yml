@@ -41,11 +41,23 @@ jobs:
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
-      - name: Measure public routes in headless Chrome (10 viewports)
+          OMOK_UI_ENABLED: 'true'
+          CHESS_UI_ENABLED: 'true'
+      - name: Measure public routes in headless Chrome
         run: node scripts/qa/public-viewport.mjs
         env:
           NEXT_TELEMETRY_DISABLED: '1'
           QA_OUTPUT_DIR: artifacts/ui-viewport-qa
+          QA_EXPECT_ALL_GAMES: 'true'
+      - name: Verify real Chrome tab zoom at 200%
+        run: |
+          sudo apt-get install -y --no-install-recommends xvfb xdotool xauth
+          xvfb-run -a -s '-screen 0 1920x1080x24' node scripts/qa/public-viewport.mjs
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          QA_OUTPUT_DIR: artifacts/ui-viewport-qa/chrome-zoom-200
+          QA_EXPECT_ALL_GAMES: 'true'
+          QA_CHROME_ZOOM: '200'
       - name: Save pixel diagnostics and public-only screenshots
         if: always()
         uses: actions/upload-artifact@v4

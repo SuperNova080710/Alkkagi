@@ -27,7 +27,7 @@
 .arena-header { display: flex; align-items: center; gap: 32px; min-height: 88px; padding: 12px 24px; background: #113e2eea; color: #fff9ec; border: 1px solid #ffffff1a; border-top: 0; border-radius: 0 0 20px 20px; }
 .arena-brand { flex: 0 0 auto; display: flex; flex-direction: column; font-weight: 1000; font-size: 25px; line-height: .9; letter-spacing: -.05em; transform: rotate(-4deg); text-shadow: 2px 3px 0 #0b261c; }
 .arena-brand span:first-child { color: #ffd05a; }
-.arena-brand span:last-child { color: #76d8a5; font-size: .83em; text-align: center; }
+.arena-brand span:last-child { color: #76d8a5; font-size: .53em; line-height: 1.35; text-align: center; letter-spacing: .035em; }
 .arena-nav { display: flex; align-self: stretch; justify-content: center; gap: clamp(12px, 3vw, 48px); margin: 0 auto; }
 .arena-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border-bottom: 3px solid transparent; font-weight: 800; }
 .arena-nav a:hover, .arena-nav a[aria-current] { color: #ffd05a; border-bottom-color: #e8b745; }
