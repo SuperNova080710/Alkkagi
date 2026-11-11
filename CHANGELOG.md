@@ -10,9 +10,9 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 - [PR #342](https://github.com/SuperNova080710/Alkkagi/pull/342): 오목 랭크전 메시지의 **Supabase RPC INSERT/과거 SELECT RLS** 차단. 일반전 채팅 보존 및 일회용 PG17.11 검증. 신규 `20261111025029_omok_ranked_chat_boundary.sql`은 **운영 적용 전**이며 0.3.1의 앱 API/UI 채팅 차단과 다릅니다.
 - [PR #343](https://github.com/SuperNova080710/Alkkagi/pull/343): 공개 조작법의 알까기 연습방 AI 진입, 오목/체스 로비 AI 즉시 시작 흐름을 정정하고 중복된 서비스명 페이지 제목을 수정. 공개 SEO/canonical·Chromium 회귀 확인.
 
-### Planned / Pending — 아직 미병합·미구현
+### Pending — 구현 Draft 검토 중
 - [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) **미병합:** 체스 일반전 종료 30분 내 양측 수락 재대결·색 교대/원본 기록 보존/동시 요청 중복 방지. 신규 `20261111025703_chess_casual_rematch.sql` 적용·운영 E2E 전에는 출시 기능이 아닙니다.
-- [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 체스 참가자 전용 채팅([Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350)), [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 체스 온라인 공통 XP([Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349)): **코드 PR 제출·미병합**, v0.4.2 포함 여부는 #345에서 결정하며 출시 완료로 표기하지 않습니다. [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 오목 돌/체스 기물 꾸미기는 후속 별도 범위입니다.
+- 체스 온라인 공통 XP [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 참가자 전용 채팅 [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [Draft PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354)는 미병합이며 v0.4.2 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
 
 **릴리스 STOP:** 적용 이력 없는 새 SQL에 대한 운영 승인, 분리된 DB/RLS·Realtime 검사와 실제 두 계정 E2E, 최신 SHA의 CI, 사용자 Preview/Production 승인 전 배포·태그 발행 금지. 이미 적용된 SQL 재실행 금지.
 

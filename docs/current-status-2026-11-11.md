@@ -12,8 +12,9 @@
 | 현행 릴리스 | **v0.4.1 코드** | [PR #336](https://github.com/SuperNova080710/Alkkagi/pull/336) `main` 병합·배포, [PR #337](https://github.com/SuperNova080710/Alkkagi/pull/337) `develop` 역반영 |
 | `main` | `d40e1101c32bb30143ca9728a248860376093d45` | Production 코드 기준; v0.4.2 변경은 미반영 |
 | `develop` | `1fc3bf437a2d41d066afee8ff56009e6ac98e527` | [PR #342](https://github.com/SuperNova080710/Alkkagi/pull/342)·[#343](https://github.com/SuperNova080710/Alkkagi/pull/343) 병합됨. Production **미반영** |
-| 진행 중 PR | [#344 체스 일반전 재대결](https://github.com/SuperNova080710/Alkkagi/pull/344) (`develop` 대상, 아직 미병합) | 개발 CI 기록은 있으나 독립 사용자 운영 E2E·SQL 적용·v0.4.2 릴리스 승인 전 |
-| 예정 릴리스 | [v0.4.2 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) | 개발/QA/운영 배포 준비 단계. **Production은 현재 v0.4.1 유지** |
+| 진행 중 PR | [#344 체스 일반전 재대결](https://github.com/SuperNova080710/Alkkagi/pull/344) | 기존 v0.4.2 계획. `develop` 대상 Draft, 미병합 |
+| 진행 중 PR | [#349 체스 온라인 XP](https://github.com/SuperNova080710/Alkkagi/pull/349) · [#350 체스 일반전 채팅](https://github.com/SuperNova080710/Alkkagi/pull/350) · [#354 오목 돌·체스 기물 꾸미기](https://github.com/SuperNova080710/Alkkagi/pull/354) | `develop` 대상 Draft, 미병합. v0.4.2 포함 여부는 #345에서 결정 |
+| 예정 릴리스 | [v0.4.2 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) | 기존 계획은 #342·#343·#344. 최종 범위 및 RC SHA 확정 전. **Production은 v0.4.1 유지** |
 | 공식 GitHub Release | GitHub Releases API 조회 결과 **0건** | 공식 `v0.4.1` Git tag의 존재·실제 두 계정 Smoke는 별도로 확인 필요([#338](https://github.com/SuperNova080710/Alkkagi/issues/338)). Release 목록이 비어 있다는 사실만으로 태그 부재를 단정하지 않음 |
 
 ## 2. 구현·릴리스 변동
@@ -26,15 +27,15 @@
 | v0.4.0 | [#330](https://github.com/SuperNova080710/Alkkagi/pull/330) | 체스 일반전 코드방·친구 초대·서버 착수, 체스 90초 랭크/RP, 세 난이도 AI, 이동 애니메이션·차례 표시, 공통 3게임 UI | 신규 오목 대국의 흑 33·44·장목 금수 도입([#320](https://github.com/SuperNova080710/Alkkagi/pull/320)); 기존 자유룰 대국은 종전 규칙 유지 |
 | v0.4.1 | [#333](https://github.com/SuperNova080710/Alkkagi/pull/333), [#336](https://github.com/SuperNova080710/Alkkagi/pull/336) | 체스 일반전/랭크전의 서버 확정 승패·종료 사유·재접속 공통 결과 패널, 모드별 로비 복귀 | Quality **571 tests**, Chromium 10/10([#333](https://github.com/SuperNova080710/Alkkagi/pull/333)); 운영 두 계정 실측은 [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) 미완료 |
 
-**운영 기능 설명:** 알까기는 일반전·랭크전·AI·RP·친구/프로필/XP·알/캐릭터 꾸미기 기반입니다. 오목은 일반전·랭크전·AI·소셜 진입을 제공하며, 게임별 RP는 분리됩니다. 체스는 일반전·랭크전·AI 및 온라인 결과 패널이 구현됐습니다. **체스 일반전 양쪽 수락 재대결·대국 채팅·서버 확정 XP는 현재 출시 기능으로 안내하지 않습니다.**
+**운영 기능 설명:** 알까기는 일반전·랭크전·AI·RP·친구/프로필/XP·알/캐릭터 꾸미기 기반입니다. 오목은 일반전·랭크전·AI·소셜 진입을 제공하며, 게임별 RP는 분리됩니다. 체스는 일반전·랭크전·AI 및 온라인 결과 패널이 구현됐습니다. **체스 일반전 양쪽 수락 재대결·대국 채팅·서버 확정 XP와 오목 돌·체스 기물 꾸미기는 v0.4.1 운영 미출시 상태입니다.**
 
-## 3. 현재 `develop`만의 변화 / v0.4.2 STOP
+## 3. `develop` 병합 현황과 v0.4.2 릴리스 준비
 
 - **[#342 오목 채팅 DB 경계](https://github.com/SuperNova080710/Alkkagi/pull/342)** — 원 이슈 [#305](https://github.com/SuperNova080710/Alkkagi/issues/305) 구현. 랭크전 메시지 INSERT RPC·과거 메시지 SELECT RLS 차단, 일반전 채팅 보존, 일회용 PostgreSQL 17.11 검증. 신규 SQL `supabase/migrations/20261111025029_omok_ranked_chat_boundary.sql`은 **develop에는 있으나 운영 SQL 적용·Data API/Realtime 검증을 아직 확인하지 않았습니다**. 이력 삭제·마이그레이션 재실행·독단적 운영 적용 금지.
 - **[#343 공개 AI 조작법/title](https://github.com/SuperNova080710/Alkkagi/pull/343)** — 원 이슈 [#306](https://github.com/SuperNova080710/Alkkagi/issues/306) 구현. 알까기 AI는 연습방에서 난이도 선택, 오목/체스 AI는 로비에서 난이도 선택 후 바로 시작. 공개 가이드의 중복 페이지 제목 수정. **Production에 아직 없음**.
-- **[#344 체스 양쪽 수락 재대결](https://github.com/SuperNova080710/Alkkagi/pull/344)** — 원 이슈 [#341](https://github.com/SuperNova080710/Alkkagi/issues/341). 종료 30분 이내 양측 수락→새 대국 1건, 색 교대, 중복 요청 보호, Chromium·격리 PG17 검사 기록. **PR 미병합**, 신규 `20261111025703_chess_casual_rematch.sql`도 운영 적용되지 않았으므로 v0.4.1 기능 아님.
-- **후속 개발 중·미병합:** [#340 체스 일반전 채팅 / PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), [#339 체스 온라인 XP / PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 상위 [#327](https://github.com/SuperNova080710/Alkkagi/issues/327). PR 제출은 구현 완료·`develop` 병합·Production 출시를 뜻하지 않습니다. [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 오목 돌·체스 기물 꾸미기는 새 세부 이슈 [#352 카탈로그/장착 권한](https://github.com/SuperNova080710/Alkkagi/issues/352)와 [#353 미리보기/대국 표시](https://github.com/SuperNova080710/Alkkagi/issues/353)로 분리됐으며 이번 v0.4.2 출시 대상에서 제외합니다.
-- **릴리스 #345의 STOP:** 위 PR/SQL/테스트·기능 범위 확정 → 실제 운영 DB 상태·권한 검토 → 사용자 승인된 Preview/두 계정 QA → `release/v0.4.2` 필수 CI → 별도 `main`/Production 승인 및 배포 후 Smoke. 자동화 통과만으로 운영 E2E PASS나 승인으로 적지 않습니다.
+- **[#344 체스 양쪽 수락 재대결](https://github.com/SuperNova080710/Alkkagi/pull/344)** — 원 이슈 [#341](https://github.com/SuperNova080710/Alkkagi/issues/341). 종료 30분 이내 양측 수락, 새 대국 한 건 생성, 색 교대와 중복 요청 보호. 독립 PG17 연결의 동시 수락과 테스트 API를 사용한 Chromium 검증이 통과했습니다. Draft 검토와 실제 두 계정 QA는 남아 있습니다.
+- **추가 포함 검토:** 체스 온라인 XP [#349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 일반전 채팅 [#350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [#354](https://github.com/SuperNova080710/Alkkagi/pull/354) 모두 구현 Draft가 열려 있습니다. `develop` 병합과 v0.4.2 포함 여부는 별도입니다. 최종 범위는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에 기록합니다.
+- **릴리스 #345의 STOP:** 포함 PR·RC SHA·해당 SQL 확정 → 운영 DB 이력·권한 읽기 전용 확인 및 RC CI → 승인된 Preview 두 계정 QA → 별도 운영 변경·Production 승인 및 배포 후 Smoke. [상세 인수 체크리스트](release-v0.4.2-handoff.md)를 따릅니다.
 
 ## 4. 오래된 이슈를 닫는 기준
 
@@ -44,7 +45,7 @@
 
 ## 5. 운영·보안·SEO·검증 보류
 
-- 운영 Supabase는 PostgreSQL **17.11**. 알까기 SQL 004~009(2026-11-02), 오목 001~006(v0.3.0), 이후 오목 금수/체스 일반·랭크·친구 초대(v0.4.0)의 적용 이력이 릴리스 PR에 보고돼 있습니다. **이미 적용된 SQL을 재실행하지 않습니다.** 새 SQL #342/#344는 이전 적용 기록과 분리합니다.
+- 운영 Supabase는 PostgreSQL **17.11**. 알까기 SQL 004~009(2026-11-02), 오목 001~006(v0.3.0), 이후 오목 금수/체스 일반·랭크·친구 초대(v0.4.0)의 적용 이력이 릴리스 PR에 보고돼 있습니다. **이미 적용된 SQL을 재실행하지 않습니다.** #342·#344·#349·#350·#354의 새 SQL은 [릴리스 후보 목록](release-v0.4.2-handoff.md#2-sql-적용-사전-차단)에서 추적합니다.
 - [#338](https://github.com/SuperNova080710/Alkkagi/issues/338): 실제 v0.4.1 Production 두 계정 일반/랭크 체스 결과·재접속 Smoke와 공식 Git tag/Release 인수. [#194](https://github.com/SuperNova080710/Alkkagi/issues/194) UI 확대/모바일, [#196](https://github.com/SuperNova080710/Alkkagi/issues/196) 기존 두 계정 Auth/DM WebSocket/XP, [#309](https://github.com/SuperNova080710/Alkkagi/issues/309) 체스 통합 QA는 별도 미완료입니다.
 - [#62](https://github.com/SuperNova080710/Alkkagi/issues/62)·[#64](https://github.com/SuperNova080710/Alkkagi/issues/64) Supabase Advisor/RPC 추가 감사, [#65](https://github.com/SuperNova080710/Alkkagi/issues/65) Auth 유출 비밀번호 보호 Free 플랜 제약은 기술 릴리스 PR이 병합됐다는 이유로 종료하지 않습니다.
 - [#126](https://github.com/SuperNova080710/Alkkagi/issues/126): 검색 SEO 코드와 사이트맵은 이전 릴리스에 포함. 사용자의 Search Console 소유권 확인·사이트맵 성공 보고는 있으나 실제 색인/검색 성과와 구분합니다.
@@ -64,6 +65,7 @@
 
 - [체스 일반전 참가자 채팅 PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350) — [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 구현 PR의 존재만으로 Production 또는 사용자 E2E 완료를 선언하지 않습니다.
 - [체스 온라인 경기 XP PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349) — [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 보상 중복·랭크 RP·PG17 운영 적용·실계정 검증을 따로 인수합니다.
-- [체스 재대결 PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344)도 **open/미병합**. 세 PR의 병합 여부와 v0.4.2 포함 범위는 릴리스 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 검토합니다.
+- [체스 재대결 PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) — [#341](https://github.com/SuperNova080710/Alkkagi/issues/341)의 구현 Draft가 **open/미병합**입니다.
+- [오목 돌·체스 기물 꾸미기 PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354) — 상위 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323), 하위 [#352 카탈로그·장착 권한](https://github.com/SuperNova080710/Alkkagi/issues/352)과 [#353 미리보기·대국 표시](https://github.com/SuperNova080710/Alkkagi/issues/353)를 구현한 Draft입니다. 기본·레벨 해금 외형, 장착 및 대국 반영을 검증했습니다. 실계정 QA와 v0.4.2 포함 결정은 남아 있습니다.
 
 이 섹션은 같은 날 병렬 개발로 추가된 PR을 반영한 보충 기록입니다. 최신 PR 상태가 변경되면 GitHub가 우선합니다. 이번 작업에서는 해당 개발 PR을 병합하거나 신규 DB migration을 적용하지 않았습니다.

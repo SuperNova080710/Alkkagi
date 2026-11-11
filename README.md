@@ -34,7 +34,7 @@
 - **[#342](https://github.com/SuperNova080710/Alkkagi/pull/342) (develop 병합)** 오목 랭크 메시지 직접 RPC INSERT/SELECT DB 경계 차단. 신규 SQL은 **운영 미적용**, 앱 API 수준 채팅 차단(v0.3.1)과 구분
 - **[#343](https://github.com/SuperNova080710/Alkkagi/pull/343) (develop 병합)** 공개 가이드의 게임별 AI 진입 방식·중복 페이지 제목 정정. v0.4.1 Production에는 미포함
 - **[#344](https://github.com/SuperNova080710/Alkkagi/pull/344) (미병합)** 체스 일반전 종료 후 양쪽 수락 재대결 ([#341](https://github.com/SuperNova080710/Alkkagi/issues/341)); 신규 SQL·실제 두 계정 QA·릴리스 전 승인 필요
-- **후속 별도(현재 Draft PR 검토 중):** 체스 참가자 전용 채팅 [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) / [PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 체스 온라인 XP [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) / [PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349). 모두 **develop 미병합·Production 미출시**입니다. 오목 돌/체스 기물 꾸미기 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323)는 별도 후속입니다.
+- **추가 포함 검토 중:** 체스 온라인 XP [PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 참가자 전용 채팅 [PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354). 모두 Draft·`develop` 미병합·Production 미출시이며, v0.4.2 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
 
 ## 기술 구조
 

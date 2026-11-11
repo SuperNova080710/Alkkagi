@@ -15,15 +15,15 @@
 | v0.3.1 | [#304](https://github.com/SuperNova080710/Alkkagi/pull/304) 오목 랭크 UI 스크롤·앱 채팅 비활성화 | DB 직접 호출 차단 #342은 후속 |
 | v0.4.0 | [#330](https://github.com/SuperNova080710/Alkkagi/pull/330) 체스 온라인 일반·랭크/90초·AI, 공통 UI, 신규 오목 대국 흑 금수 | 기존 시작 오목 대국 자유룰 보존 |
 | **v0.4.1** | [#336](https://github.com/SuperNova080710/Alkkagi/pull/336) 체스 온라인 결과 패널·로비 복귀 | **현행 Production** `d40e110`, 실제 운영 2계정 QA [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) 미완료 |
-| **v0.4.2 예정** | [#345](https://github.com/SuperNova080710/Alkkagi/issues/345), [릴리스 체크리스트](docs/release-v0.4.2-handoff.md) | 승인 전 Production 변경 금지. `develop` #342/#343와 미병합 #344 구분 |
+| **v0.4.2 예정** | [#345](https://github.com/SuperNova080710/Alkkagi/issues/345), [릴리스 체크리스트](docs/release-v0.4.2-handoff.md) | 기존 계획 #342/#343/#344, 추가 후보 #349/#350/#354의 포함 여부 미확정 |
 
 ### 다음 우선순위와 DONE 조건
 
 1. **P0 — 출시 안정화/데이터 보안:** 오목 랭크 채팅 DB RPC/RLS 방어 [#342](https://github.com/SuperNova080710/Alkkagi/pull/342)와 공개 AI 가이드 [#343](https://github.com/SuperNova080710/Alkkagi/pull/343)는 `develop` 병합 완료. **Production v0.4.1에는 미반영**, 새 오목 SQL은 사용자 승인·운영 사전 점검/두 계정 테스트 후에만 배포.
 2. **P1 — 체스 일반전 재대결:** [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344)는 미병합. 종료 후 30분 양측 수락, 새 경기 단일 생성/색상 교대, 재접속/RLS/동시성 검증, 승인된 운영 신규 SQL 적용이 완료돼야 DONE.
 3. **P1 — 릴리스 인수:** [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 v0.4.2 RC 소스 동결, 최신 SHA Quality·PG17·Supabase·Backup·UI 회귀/Preview, 실계정 A/B, 별도 Production 승인/Smoke와 `develop` 역반영을 수행. 공식 Git tag/GitHub Release는 실제 발행 여부를 따로 확인.
-4. **P2 — 미구현 체스 공통 기능:** [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 대국 채팅([Draft #350](https://github.com/SuperNova080710/Alkkagi/pull/350)), [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 공통 XP([Draft #349](https://github.com/SuperNova080710/Alkkagi/pull/349)), 상위 [#327](https://github.com/SuperNova080710/Alkkagi/issues/327). 데이터 모델·API/RLS·클라이언트·테스트를 별도 기능 이슈/PR로 관리, 구현 전 출시 기능 안내 금지.
-5. **P2 — 이용자 꾸미기:** 오목 돌·체스 기물 커스터마이징 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323); 기존 알까기 코스메틱과 게임별 에셋/장착 정책 분리.
+4. **P2 — 체스 공통 기능:** [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 대국 채팅([Draft #350](https://github.com/SuperNova080710/Alkkagi/pull/350)), [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 공통 XP([Draft #349](https://github.com/SuperNova080710/Alkkagi/pull/349)), 상위 [#327](https://github.com/SuperNova080710/Alkkagi/issues/327). Draft 검토와 v0.4.2 포함 여부 결정이 남아 있습니다.
+5. **P2 — 이용자 꾸미기:** [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) 오목 돌·체스 기물의 카탈로그·장착·대국 표시를 구현한 [Draft #354](https://github.com/SuperNova080710/Alkkagi/pull/354)가 열려 있습니다. v0.4.2 포함 여부는 #345에서 결정합니다.
 6. **별도 수용:** 체스 FIDE 세부 무승부 [#312](https://github.com/SuperNova080710/Alkkagi/issues/312), 서버 권위 AI 계약 [#313](https://github.com/SuperNova080710/Alkkagi/issues/313), 실제 2계정 브라우저 QA [#338](https://github.com/SuperNova080710/Alkkagi/issues/338)·[#309](https://github.com/SuperNova080710/Alkkagi/issues/309)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)·[#196](https://github.com/SuperNova080710/Alkkagi/issues/196), Security Advisor [#62](https://github.com/SuperNova080710/Alkkagi/issues/62)·[#65](https://github.com/SuperNova080710/Alkkagi/issues/65), Google 색인 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) 등.
 
 ### 릴리스/보안 실행 기준

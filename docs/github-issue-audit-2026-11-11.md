@@ -91,18 +91,18 @@
 | [#309](https://github.com/SuperNova080710/Alkkagi/issues/309) | [v0.4.0 QA] 체스 2계정 대전·공통 UI 회귀 및 릴리스 후보 검증 | v0.4.0 실제 2계정 체스/모바일 QA |
 | [#312](https://github.com/SuperNova080710/Alkkagi/issues/312) | [v0.4.0 체스] 합법 수·특수 수·승패 및 무승부 판정 | FIDE 75수/합의 무승부 등 미검증 핵심 요구 |
 | [#313](https://github.com/SuperNova080710/Alkkagi/issues/313) | [v0.4.0 체스] 난이도별 AI 대전 및 즉시 재시작 | 체스 AI 서버 권위·소유자/멱등 계약 미검증 |
-| [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) | [후속 기능] 오목 돌과 체스 기물 꾸미기 | 오목 돌·체스 기물 꾸미기 미구현 |
+| [#323](https://github.com/SuperNova080710/Alkkagi/issues/323) | [후속 기능] 오목 돌과 체스 기물 꾸미기 | Draft PR #354 구현, 미병합·운영 미출시 |
 | [#327](https://github.com/SuperNova080710/Alkkagi/issues/327) | [체스 후속] 온라인 대국 종료와 일반전 공통 기능 정리 | 체스 재대결·채팅·XP 후속 상위 |
 | [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) | [v0.4.1 운영 인수] 실제 2계정 Smoke 및 공식 태그·Release 정리 | v0.4.1 실계정 Smoke·Git 태그/GitHub Release |
-| [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) | [체스 #327.3] 온라인 대국 종료 시 공통 경험치 반영 | 체스 온라인 종료 공통 XP 미구현 |
-| [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) | [체스 #327.2] 일반전 참가자 전용 대국 채팅 | 체스 일반전 전용 대국 채팅 미구현 |
+| [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) | [체스 #327.3] 온라인 대국 종료 시 공통 경험치 반영 | 체스 온라인 XP Draft PR #349 미병합 |
+| [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) | [체스 #327.2] 일반전 참가자 전용 대국 채팅 | 체스 일반전 채팅 Draft PR #350 미병합 |
 | [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) | [체스 #327.1] 일반전 종료 후 양쪽 수락 재대결 | 체스 재대결 PR #344 미병합 |
 | [#345](https://github.com/SuperNova080710/Alkkagi/issues/345) | [v0.4.2 Release] 오목 채팅 DB 보안·AI 안내·체스 재대결 통합 배포 | v0.4.2 준비 중, 신규 SQL/Preview/Production 승인 필요 |
 | [#346](https://github.com/SuperNova080710/Alkkagi/issues/346) | [Docs 11/11] v0.4.1 기준 PR·이슈 전수 정리 및 운영 문서 최신화 | 이번 문서 PR 리뷰·병합 대기 |
 | [#347](https://github.com/SuperNova080710/Alkkagi/issues/347) | [Docs #346.1] 병합 PR 기반 이슈 종료 판정과 남은 QA 분리 | 병합 PR 기준 이슈 분류 수행 기록 |
 | [#348](https://github.com/SuperNova080710/Alkkagi/issues/348) | [Docs #346.2] v0.4.1 운영 문서·CHANGELOG·README·릴리스 인수 갱신 | 운영·릴리스 문서 PR 리뷰·병합 대기 |
-| [#352](https://github.com/SuperNova080710/Alkkagi/issues/352) | [#323] 오목·체스 외형 카탈로그와 장착 권한 | 게임별 슬롯·카탈로그·소유권/RLS·기존 계정 호환 구현 전; #323의 신규 하위 이슈 |
-| [#353](https://github.com/SuperNova080710/Alkkagi/issues/353) | [#323] 오목·체스 미리보기와 대국 외형 표시 | 꾸미기 미리보기·PvP/AI/랭크 렌더링·접근성 QA 구현 전; #323의 신규 하위 이슈 |
+| [#352](https://github.com/SuperNova080710/Alkkagi/issues/352) | [#323] 오목·체스 외형 카탈로그와 장착 권한 | 슬롯·카탈로그·소유권과 기존 계정 호환을 Draft PR #354에서 구현, 미병합 |
+| [#353](https://github.com/SuperNova080710/Alkkagi/issues/353) | [#323] 오목·체스 미리보기와 대국 외형 표시 | 미리보기·대국 렌더링을 Draft PR #354에서 구현, 미병합 |
 
 ## 4. 병합되지 않은 PR 처리 원칙
 
@@ -141,6 +141,6 @@
 
 ## 8. 최신 추가 이슈 반영 (2026-11-11, 문서 PR #351 보완)
 
-- 11/11 최초 감사 뒤 [#352](https://github.com/SuperNova080710/Alkkagi/issues/352)(오목·체스 외형 카탈로그와 장착 권한)와 [#353](https://github.com/SuperNova080710/Alkkagi/issues/353)(미리보기·실제 대국 외형 표시)가 상위 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323)의 세부 작업으로 생성됐습니다. **병합된 구현 PR이 없으므로 세 이슈 모두 OPEN**입니다.
+- 11/11 최초 감사 뒤 [#352](https://github.com/SuperNova080710/Alkkagi/issues/352)(오목·체스 외형 카탈로그와 장착 권한)와 [#353](https://github.com/SuperNova080710/Alkkagi/issues/353)(미리보기·실제 대국 외형 표시)가 상위 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323)의 세부 작업으로 생성됐습니다. [Draft PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354)에서 두 작업을 구현했으며, 미병합 상태로 세 이슈 모두 OPEN입니다.
 - 전체 일반 이슈는 **215건 / CLOSED 186건 / OPEN 29건**으로 갱신했습니다. 이번에 완료로 닫았던 기존 **48건**의 판정·근거는 그대로 유지합니다.
-- #352/#353은 **v0.4.2 #345 릴리스에 자동 포함하지 않습니다**. 구현·검증·병합 및 출시 범위를 별도 승인받아야 하며, #344/#349/#350은 여전히 병합 전 상태입니다.
+- #349·#350·#354는 v0.4.2 추가 후보입니다. 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
