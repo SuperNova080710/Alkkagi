@@ -102,17 +102,38 @@ async function run() {
     fen:DEFAULT_POSITION,inCheck:false,ply:0,winnerId:null,finishReason:null,moves:[],mode:'casual'};
   let failPost = true;
   let failGet = false;
+  let loseChatResponse=true;
+  const chatMessages:{id:string;sender_id:string;body:string}[]=[];
   window.fetch = async (_input,options) => {
     await sleep(80);
+    if (String(_input).endsWith('/messages')) {
+      if (options?.method==='POST') {
+        const {body,requestId}=JSON.parse(options.body as string);
+        if (!chatMessages.some(message=>message.id===requestId))
+          chatMessages.push({id:requestId,sender_id:'me',body});
+        if (loseChatResponse) {loseChatResponse=false; throw Error('채팅 응답 유실');}
+        return Response.json({data:{id:requestId}});
+      }
+      return Response.json({data:chatMessages});
+    }
     if (options?.method==='POST') {
+      const body = JSON.parse(options.body as string);
+      if (body.action==='rematch' && snapshot.rematch) {
+        const peer=String(_input).endsWith('/qa-peer');
+        const whiteVoted=snapshot.rematch.whiteVoted || !peer;
+        const blackVoted=snapshot.rematch.blackVoted || peer;
+        snapshot={...snapshot,rematch:{whiteVoted,blackVoted,
+          nextMatchId:whiteVoted && blackVoted ? 'successor' : null}};
+        return Response.json({data:snapshot});
+      }
       if (failPost) {failGet=true; throw Error('테스트 착수 응답 유실');}
-      const game=new Chess(snapshot.fen); game.move(JSON.parse(options.body as string));
+      const game=new Chess(snapshot.fen); game.move(body);
       snapshot={...snapshot,fen:game.fen(),ply:1,turnUserId:'other',moves:[{ply:1,san:'e4'}]};
     } else if (failGet) throw Error('테스트 재동기화 실패');
     return Response.json({data:snapshot});
   };
   for (const mode of ['casual','ranked'] as const) {
-    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null};failPost=true;
+    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null,rematch:null};failPost=true;
     flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page"><ChessMatchClient key={mode} matchId="qa" userId="me"/></div></ArenaShell>));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     click('e2');click('e4');
@@ -122,6 +143,31 @@ async function run() {
     failGet=false; window.dispatchEvent(new Event('online'));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     check(!document.querySelector('[role="alert"]'),mode+' authoritative GET clears stale alert');
+    const chat=document.querySelector('[aria-label="체스 경기 채팅"]');
+    if (mode==='casual') {
+      const input=chat?.querySelector('textarea');
+      check(Boolean(input),'casual match shows chat alongside notation');
+      input!.scrollIntoView({block:'center',behavior:'instant'});
+      const chatRect=input!.getBoundingClientRect();
+      check(chatRect.top>=-1 && chatRect.bottom<=innerHeight+1 && chatRect.left>=-1 && chatRect.right<=innerWidth+1,
+        'chat is reachable without horizontal overflow: '+JSON.stringify(chatRect.toJSON()));
+      flushSync(()=>{
+        Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(input,'좋은 경기!');
+        input!.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      const send=chat!.querySelector<HTMLButtonElement>('form button')!;
+      await until(()=>!send.disabled);
+      flushSync(()=>send.click());
+      await until(()=>Boolean(chat!.querySelector('[role="alert"]')?.textContent?.includes('응답 유실')));
+      check(input!.value==='좋은 경기!','chat keeps the draft when its send response is lost');
+      flushSync(()=>send.click());
+      await until(()=>Boolean(chat!.querySelector('ol')?.textContent?.includes('좋은 경기!')));
+      chatMessages.push({id:'peer-chat',sender_id:'other',body:'다음에도 만나요'});
+      window.dispatchEvent(new Event('online'));
+      await until(()=>Boolean(chat!.querySelector('ol')?.textContent?.includes('다음에도 만나요')));
+      check(chat!.querySelectorAll('ol li').length===2,'chat POST and reconnect show both participants');
+      window.scrollTo(0,0);
+    } else check(!chat,'ranked match does not render chat');
     for (const [winnerId,outcome,reason,label] of [
       ['me','승리','checkmate','체크메이트'],['other','패배','resignation','기권'],[null,'무승부','stalemate','스테일메이트'],
     ]) {
@@ -131,6 +177,46 @@ async function run() {
       const button=inspectResult(outcome!,label!);
       flushSync(()=>button.click());
       check(document.documentElement.dataset.qaNavigation===(mode==='ranked'?'/chess/ranked':'/chess'),mode+' result returns to correct lobby');
+    }
+    if (mode==='casual') {
+      snapshot={...snapshot,rematch:{whiteVoted:false,blackVoted:false,nextMatchId:null}};
+      window.dispatchEvent(new Event('online'));
+      const selector='button[aria-label="재대결 신청"]';
+      await until(()=>Boolean(document.querySelector(selector)));
+      const replay = document.querySelector<HTMLButtonElement>(selector)!;
+      replay.scrollIntoView({block:'nearest'});
+      const {top,bottom} = replay.getBoundingClientRect();
+      check(top>=0 && bottom<=innerHeight,'casual rematch is reachable in the result overlay');
+      flushSync(()=>replay.click());
+      await until(()=>replay.textContent==='상대 수락 대기 중');
+      check(replay.disabled && Boolean(replay.closest('.game-result-card')?.textContent?.includes('1/2')),
+        'one casual rematch vote waits for the second player');
+      flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page">
+        <ChessMatchClient key="casual-reconnect" matchId="qa" userId="me"/>
+      </div></ArenaShell>));
+      await until(()=>document.querySelector(selector)?.textContent==='상대 수락 대기 중');
+      check(Boolean(document.querySelector<HTMLButtonElement>(selector)?.disabled),
+        'reconnected first player still waits');
+
+      const peerElement=document.createElement('div');
+      document.body.append(peerElement);
+      const peerRoot=createRoot(peerElement);
+      document.documentElement.dataset.qaReplaceCount='0';
+      try {
+        flushSync(()=>peerRoot.render(<ChessMatchClient matchId="qa-peer" userId="other"/>));
+        await until(()=>Boolean(peerElement.querySelector(selector)));
+        check(Boolean(peerElement.querySelector('.game-result-card')?.textContent?.includes('1/2')),
+          'the second player sees one vote');
+        flushSync(()=>peerElement.querySelector<HTMLButtonElement>(selector)!.click());
+        await until(()=>document.documentElement.dataset.qaNavigation==='/chess/matches/successor');
+        window.dispatchEvent(new Event('online'));
+        await until(()=>Number(document.documentElement.dataset.qaReplaceCount)>=2);
+        check(document.documentElement.dataset.qaNavigation==='/chess/matches/successor',
+          'both casual players open the same new match');
+      } finally {
+        flushSync(()=>peerRoot.unmount());
+        peerElement.remove();
+      }
     }
   }
   snapshot={...snapshot,status:'active',turnUserId:'me',winnerId:null,finishReason:null};

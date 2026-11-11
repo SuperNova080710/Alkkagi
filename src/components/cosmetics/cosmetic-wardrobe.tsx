@@ -11,8 +11,10 @@ import {
 } from './cosmetic-api';
 
 const groups = [
-  { slot: 'piece', heading: '나만의 알', description: '외형만 바뀌고 충돌 판정과 발사 성능은 동일합니다.' },
-  { slot: 'avatar', heading: '나만의 캐릭터', description: '프로필에 보여줄 캐릭터를 선택하세요.' },
+  { slot: 'piece', key: 'pieceCode', label: '나의 알', heading: '나만의 알', description: '외형만 바뀌고 충돌 판정과 발사 성능은 동일합니다.' },
+  { slot: 'avatar', key: 'avatarCode', label: '나의 캐릭터', heading: '나만의 캐릭터', description: '프로필에 보여줄 캐릭터를 선택하세요.' },
+  { slot: 'omok', key: 'omokCode', label: '나의 오목돌', heading: '오목돌', description: '흑돌과 백돌 한 세트를 골라 장착하세요.' },
+  { slot: 'chess', key: 'chessCode', label: '나의 체스 기물', heading: '체스 기물', description: '백 기물과 흑 기물 한 세트를 골라 장착하세요.' },
 ] as const;
 
 function canEquip(item: CosmeticItem): boolean {
@@ -28,16 +30,19 @@ export function CosmeticCollection({
   onEquip: (code: string) => void;
 }) {
   const { items, loadout, rankedWins, level } = inventory;
+  const availableGroups = groups.filter(({slot}) => slot === 'piece' || slot === 'avatar' ||
+    items.some(item => item.slot === slot));
   return <>
     <ArenaPanel title="현재 장착" className="arena-cosmetics-current">
       <div className="arena-cosmetics-loadout">
-        <div><CosmeticPreview code={loadout.pieceCode} slot="piece"/>
-          <div><span>나의 알</span><strong>{COSMETIC_STYLES[safeCosmeticCode(loadout.pieceCode, 'piece')].name}</strong></div></div>
-        <div><CosmeticPreview code={loadout.avatarCode} slot="avatar"/>
-          <div><span>나의 캐릭터</span><strong>{COSMETIC_STYLES[safeCosmeticCode(loadout.avatarCode, 'avatar')].name}</strong></div></div>
+        {availableGroups.map(({slot,key,label}) => {
+          const code = safeCosmeticCode(loadout[key], slot);
+          return <div key={slot}><CosmeticPreview code={code} slot={slot}/>
+            <div><span>{label}</span><strong>{COSMETIC_STYLES[code].name}</strong></div></div>;
+        })}
       </div>
     </ArenaPanel>
-    {groups.map(({ slot, heading, description }) => {
+    {availableGroups.map(({ slot, heading, description }) => {
       const list = items.filter(item => item.slot === slot);
       return <section className="arena-cosmetics-section" aria-label={heading} key={slot}>
         <header><h2>{heading}</h2><p>{description}</p></header>

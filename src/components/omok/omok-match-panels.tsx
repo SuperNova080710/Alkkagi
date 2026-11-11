@@ -113,6 +113,7 @@ export type OmokMatchViewProps = {
   turnUserId: string | null;
   status: 'waiting' | 'active' | 'finished';
   lastMove?: OmokPosition | null;
+  stoneSkins?: Partial<Record<OmokStone,string>>;
   winnerId?: string | null;
   finishReason?: string | null;
   pending?: boolean;
@@ -132,7 +133,7 @@ export type OmokMatchViewProps = {
 };
 
 export function OmokMatchPanel({
-  board, players, currentUserId, turnUserId, status, lastMove, winnerId,
+  board, players, currentUserId, turnUserId, status, lastMove, stoneSkins, winnerId,
   finishReason, pending = false, reconnecting = false, error, rematchReadyCount = 0,
   myRematchVote = false, onPlace, onForfeit, onRematch, onReturn,
   onRankedReplay, mode = 'casual', ruleSet, chat, extra,
@@ -161,7 +162,7 @@ export function OmokMatchPanel({
     </ol>
     <div className="arena-omok-match-layout">
       <div className="arena-omok-board-stage">
-        <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'}
+        <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'} stoneSkins={stoneSkins}
           myTurn={myTurn} status={status} pending={pending || reconnecting} onPlace={onPlace}/>
         {finished && <OmokResultOverlay
           outcome={result ?? '무승부'} mode={mode} finishReason={finishReason}
@@ -195,6 +196,7 @@ export function OmokMatchPanel({
 
 export type OmokChatMessage = { id: string; senderId: string; senderName: string; body: string };
 export type OmokChatPanelProps = {
+  game?: 'omok' | 'chess';
   messages: readonly OmokChatMessage[];
   currentUserId: string;
   disabled?: boolean;
@@ -203,7 +205,7 @@ export type OmokChatPanelProps = {
   onSend?: (message: string) => Promise<boolean> | boolean;
 };
 export function OmokChatPanel({
-  messages, currentUserId, disabled = false, sending = false, error, onSend,
+  game = 'omok', messages, currentUserId, disabled = false, sending = false, error, onSend,
 }: OmokChatPanelProps) {
   const [draft, setDraft] = useState('');
   const [localPending, setLocalPending] = useState(false);
@@ -235,7 +237,7 @@ export function OmokChatPanel({
     event.preventDefault();
     if (canSend) event.currentTarget.form?.requestSubmit();
   }
-  return <section className="arena-omok-panel arena-omok-chat" aria-label="오목 경기 채팅">
+  return <section className="arena-omok-panel arena-omok-chat" aria-label={game === 'chess' ? '체스 경기 채팅' : '오목 경기 채팅'}>
     <header className="arena-omok-panel-heading"><h2>대전 채팅</h2><span>참가자 전용</span></header>
     <ol aria-label="채팅 메시지" aria-live="polite" aria-relevant="additions text" className="arena-omok-chat-list">
       {messages.length === 0 && <li className="arena-omok-panel-hint">아직 메시지가 없습니다.</li>}

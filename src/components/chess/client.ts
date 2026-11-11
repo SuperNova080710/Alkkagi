@@ -10,6 +10,7 @@ export type ChessSnapshot = {
   moves: {ply: number; san: string}[];
   mode?: 'casual' | 'ranked';
   deadline?: string | null;
+  rematch?: {whiteVoted: boolean; blackVoted: boolean; nextMatchId: string | null} | null;
 };
 
 const labels: Record<string, string> = {
@@ -25,11 +26,18 @@ const labels: Record<string, string> = {
   TURN_EXPIRED: '착수 제한 시간이 지났습니다.',
   NOT_YOUR_TURN: '상대 차례입니다.',
   MATCH_FINISHED: '이미 끝난 대국입니다.',
+  REMATCH_NOT_AVAILABLE: '종료된 일반전에서 재대결을 신청할 수 있습니다.',
+  REMATCH_EXPIRED: '재대결 신청 시간이 지났습니다.',
   REQUEST_CONFLICT: '다른 요청이 먼저 처리됐습니다.',
   ROOM_ACTIVE_LIMIT: '열린 대기실을 정리한 후 새 방을 만들어 주세요.',
   ROOM_RATE_LIMIT: '잠시 후 방 만들기를 다시 시도해 주세요.',
   CHESS_DISABLED: '체스 대전이 아직 열리지 않았습니다.',
   GAME_SERVICE_UNAVAILABLE: '체스 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+  INVALID_MESSAGE: '메시지는 1자 이상 280자 이내로 입력해 주세요.',
+  CHAT_NOT_AVAILABLE: '체스 일반전에서 채팅할 수 있습니다.',
+  CHAT_CLOSED: '대국 종료 후 채팅 시간이 지났습니다.',
+  CHAT_FULL: '이 대국의 채팅 메시지가 가득 찼습니다.',
+  CHAT_RATE_LIMIT: '잠시 기다린 뒤 메시지를 보내 주세요.',
 };
 export async function chessRequest<T>(path: string, body?: Record<string, unknown>): Promise<T> {
   const response = await fetch('/api/chess' + path, body
@@ -40,7 +48,7 @@ export async function chessRequest<T>(path: string, body?: Record<string, unknow
   return result.data as T;
 }
 
-export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'match' | 'ranked') {
+export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'match' | 'ranked' | 'messages') {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState('');
   const sequence = useRef(0);
@@ -74,11 +82,15 @@ export function useChessSnapshot<T>(path: string, id: string, kind: 'room' | 'ma
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     const db = kind !== 'ranked' && url && key ? createBrowserClient(url, key) : null;
     const channel = db?.channel('chess:' + kind + ':' + id).on('postgres_changes', {
-      event: '*', schema: 'public', table: 'chess_matches',
-      filter: (kind === 'room' ? 'room_id' : 'id') + '=eq.' + id,
+      event: kind === 'messages' ? 'INSERT' : '*', schema: 'public',
+      table: kind === 'messages' ? 'chess_match_messages' : 'chess_matches',
+      filter: (kind === 'messages' ? 'match_id' : kind === 'room' ? 'room_id' : 'id') + '=eq.' + id,
     }, load);
     if (kind === 'room') channel?.on('postgres_changes', {
       event: 'UPDATE', schema: 'public', table: 'chess_rooms', filter: 'id=eq.' + id,
+    }, load);
+    if (kind === 'match') channel?.on('postgres_changes', {
+      event: '*', schema: 'public', table: 'chess_rematches', filter: 'match_id=eq.' + id,
     }, load);
     channel?.subscribe(status => { if (status === 'SUBSCRIBED') load(); });
     return () => {

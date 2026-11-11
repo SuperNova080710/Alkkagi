@@ -1,200 +1,78 @@
-# Alkkagi Arena
+# 한판아레나 (Alkkagi Arena)
 
-브라우저에서 친구와 1:1 알까기를 즐기고 랜덤 랭크 매칭과 순위표에서 경쟁하는 웹게임입니다.
+**브라우저에서 즐기는 1:1 온라인 보드게임 서비스 — 알까기 · 오목 · 체스**
 
-> **2026-10-29 P3 제출 기준점(역사적 기록).** P2 점검 시점의 일반전·랜덤 랭크 매칭·Elo RP 기능을 유지하면서, 동료 플레이 피드백을 토대로 내 알/턴 시인성, 닉네임 변경·중복 방지, 경기별 채팅, 승패·RP 결과 화면, 재도전, 채팅 포커스·결과 모션을 추가했습니다. 최신 코드 `dced773`의 GitHub Actions 성공·Vercel Production READY와 운영 DB 집계를 확인했습니다. **ALEPH 최종 제출 폼의 실제 접수/승인은 아직 확인하지 않았습니다.**
+친구와 코드로 방에 참여하거나 게임별 랭크전·AI 대전을 즐길 수 있습니다. Supabase Auth·PostgreSQL·Realtime 기반으로 사용자와 경기 정보를 관리하고 Next.js를 Vercel에 배포합니다.
 
-## 사용 방법
+[<u>서비스 바로가기</u>](https://alkkagi-alpha.vercel.app) · [전체 개발·운영 상태 (2026-11-11)](docs/current-status-2026-11-11.md) · [이슈 전수 감사](docs/github-issue-audit-2026-11-11.md) · [릴리스 변경 내역](CHANGELOG.md)
 
-1. [공개 서비스](https://alkkagi-alpha.vercel.app)에서 두 개의 서로 다른 계정으로 로그인합니다.
-2. A가 로비에서 방을 만들고 8자리 초대 코드를 B에게 전달합니다. B가 코드로 참가합니다.
-3. A가 경기를 시작하면 각 5개의 알로 드래그 발사를 번갈아 진행합니다. 마지막 알을 제거하거나 기권하면 승패가 확정됩니다.
+> **운영 기준 (2026-11-11): v0.4.1 Production.** GitHub `main` = `d40e1101c32bb30143ca9728a248860376093d45`, Vercel [Production 배포](https://vercel.com/mallang1/alkkagi/9iKVkDCnu7bmuEaHqE9wotiPD2Kr) **READY**·`alkkagi-alpha.vercel.app` alias 일치. 로그인된 두 계정의 전체 E2E·공식 GitHub Release는 별도 운영 인수 중입니다. 최근 수정 PR이 `develop`에 병합됐다고 자동으로 Production에 표시되는 것은 아닙니다.
 
-**최종 기능 검증:** 사용자 직접 플레이 정상 보고(2026-10-29), [GitHub Actions #40797946845](https://github.com/SuperNova080710/Alkkagi/actions/runs/40797946845) 성공 (`dced773`), Vercel Production READY. 운영 DB 기준 완료 일반전 10건·랭크전 11건·RP 원장 22건/11경기(합계 0)·채팅 13건/3경기를 확인했습니다. 사용자 확인, 자동 검사, 운영 DB 기록은 별도 증빙입니다.
+## 지금 제공하는 게임
 
-## 구현 범위와 검증
+| 게임 | 일반전 | 랭크전 | AI 대전 | 특이사항 |
+| --- | --- | --- | --- | --- |
+| **알까기** | 1:1 방 생성·코드 참가·친구 초대, 서버 확정 턴·물리 | 랜덤 매칭·RP·리더보드 | 난이도 선택·연습 대전 | 재대결, 경기 채팅, 알/캐릭터 꾸미기, 레벨/XP |
+| **오목** | 15×15, 친구 초대·채팅·재대결 | 오목 전용 RP·리더보드·매칭 | 3개 난이도 | **v0.4.0부터 신규 대국** 흑 33·44·장목 금수. 이전 시작 대국은 자유룰 유지 |
+| **체스** | 코드방·친구 초대·합법 수 서버 판정 | 턴당 90초·체스 독립 RP | 3개 난이도·즉시 재시작 | 기물 이동 모션·차례 배너·승패/무승부/종료 사유 결과 패널 |
 
-| 영역 | 상태 |
+게임별 랭크 등급·RP·전적은 분리하고, 사용자 프로필·친구·메신저·XP 등은 공통 경험으로 연결합니다. 자세한 동작은 실제 구현/릴리스와 [공개 조작법](https://alkkagi-alpha.vercel.app/how-to-play)을 대조해야 합니다.
+
+### 접속 경로
+
+- [게임 선택·로그인](https://alkkagi-alpha.vercel.app) · [알까기 로비](https://alkkagi-alpha.vercel.app/lobby) · [알까기 랭크](https://alkkagi-alpha.vercel.app/ranked)
+- [오목 로비](https://alkkagi-alpha.vercel.app/omok) · [오목 랭크](https://alkkagi-alpha.vercel.app/omok/ranked)
+- [체스 로비](https://alkkagi-alpha.vercel.app/chess) · [체스 랭크](https://alkkagi-alpha.vercel.app/chess/ranked)
+- [프로필](https://alkkagi-alpha.vercel.app/profile) · [친구](https://alkkagi-alpha.vercel.app/friends) · [메신저](https://alkkagi-alpha.vercel.app/messages) · [꾸미기](https://alkkagi-alpha.vercel.app/cosmetics)
+
+일부 경로는 인증/서버 기능 플래그를 요구합니다. 직접 링크 존재가 모든 계정에 기능이 열린다는 뜻은 아닙니다.
+
+## v0.4.2 통합 릴리스 후보 — 아직 Production 미반영
+
+[릴리스 이슈 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) · [RC 인수 체크리스트](docs/release-v0.4.2-handoff.md).
+
+`develop`에 기능과 브랜드 개편 PR을 통합했으며 `release/v0.4.2`에서 **최신 RC CI·Preview를 재검증 중**입니다. 운영 웹 Production은 여전히 **v0.4.1**이고, 새 SQL 5개는 사용자 승인으로 운영 DB에 적용 완료했습니다(재실행 금지).
+
+- **[#342](https://github.com/SuperNova080710/Alkkagi/pull/342)**: 오목 랭크전 채팅 데이터베이스 조회/쓰기 RLS·RPC 제한.
+- **[#343](https://github.com/SuperNova080710/Alkkagi/pull/343)**: 게임별 실제 AI 시작 흐름과 공개 조작법·SEO 제목 개선.
+- **[#344](https://github.com/SuperNova080710/Alkkagi/pull/344)**: 체스 일반전 종료 후 양측 동의 재대결·흑백 교대·동시 요청 중복 방지.
+- **[#349](https://github.com/SuperNova080710/Alkkagi/pull/349)**: 체스 일반·랭크전 서버 XP 지급, 3게임 공통 XP 상한.
+- **[#350](https://github.com/SuperNova080710/Alkkagi/pull/350)**: 체스 일반전 참가자 채팅 및 Realtime·재접속.
+- **[#354](https://github.com/SuperNova080710/Alkkagi/pull/354)**: 오목돌·체스 기물의 장착·미리보기·게임판 꾸미기.
+- **[#361](https://github.com/SuperNova080710/Alkkagi/pull/361)**: 종합 플랫폼 홈·한판아레나 공통 브랜드·3게임 선택 UI.
+- **[#362](https://github.com/SuperNova080710/Alkkagi/pull/362)**: 검색 대표 제목·WebSite JSON-LD·canonical·보호 경로 비색인.
+- **[#363](https://github.com/SuperNova080710/Alkkagi/pull/363)**: 공개 게임별 소개 3페이지·사이트맵·모바일/200% QA.
+
+**주의:** 개별 PR의 테스트 성공만으로 통합 기능의 운영 정상 동작을 보장하지 않습니다. 신규 DB SQL 5개는 **이미 운영에 적용**됐으며 원본 SQL 타임스탬프와 Supabase 기록 버전이 달라 CLI 자동 재실행을 방지해야 합니다. Preview는 현재 운영 DB를 공유하므로 실제 두 계정 테스트가 기록을 생성하며, Production 코드 배포는 별도의 사용자 승인이 필요합니다.
+
+## 기술 구조
+
+| 영역 | 구성·계약 |
 | --- | --- |
-| Supabase Auth·프로필·RLS | 구현, 운영 DB 기본 테이블 확인 |
-| 코드방 생성·참가·퇴장 | 구현, PostgreSQL 마이그레이션 적용 |
-| 물리 엔진·5대5 보드·서버 턴 판정 | 구현, GitHub Actions 테스트 통과 |
-| Supabase Realtime | publication 등록, 구독+스냅샷 폴링 구현 |
-| P1 중간 점검 1차 제출 | 완료(사용자 보고) |
-| P2 중간 점검 기준 | 2026-10-28 기능·테스트·배포 스냅샷 유지 (후속 기능과 구분) |
-| P3 최종 구현 | 닉네임, 플레이어/턴 시인성, 경기 채팅, RP 결과·재도전, 포커스/애니메이션 완료 |
-| P3 최종 제출 | **입력 문구·발표 PPTX·증빙 PDF 준비 완료**, ALEPH 플랫폼 실제 접수/승인 대기 |
+| UI | Next.js App Router · React · TypeScript · Tailwind CSS |
+| 게임 판정 | 알까기 독립 물리 엔진, 오목 서버 권위 착수·결과, 체스 `chess.js` 기반 합법 수·서버 온라인 대국 판정 |
+| 인증·실시간 | Supabase Auth · PostgreSQL 17.11 · RLS/RPC · Realtime + DB 확정 스냅샷 재조회 |
+| 배포 | GitHub `main` → Vercel Production; `develop` 작업 통합; `release/vX.Y.Z` 검토/수동 Preview |
+| 품질 | GitHub Actions Quality, PostgreSQL 17 SQL·RLS/권한·경합, Supabase local Auth/Realtime, 백업복원, Chromium 뷰포트 회귀 |
 
-자세한 내용은 [P2 중간 점검 제출본](docs/p2-submission-2026-10-28.md), [P3 최종 제출 입력 문구](docs/p3-final-submission-2026-10-29.md), [P3 최종 인수·증빙 기록](docs/p3-final-acceptance-2026-10-29.md), [전체 문서 안내](docs/aleph-submissions.md)를 참고합니다.
+개발 설정/스크립트의 진실의 원천은 [package.json](package.json)과 [.github/workflows](.github/workflows)입니다. `npm run check`는 lint → typecheck → Vitest → Next.js production build를 검증합니다. CI 통과와 Production에 실제 두 사용자로 접속한 E2E는 다릅니다.
 
-## UI/UX 게임형 리뉴얼 — 코드 병합 완료
+### 운영 데이터·보안 원칙
 
-목재·유리알·크림/에메랄드 테마의 시작 화면, 인증, 게임형 로비, 대기실, 일반/AI/랭크 게임판, 랭킹, 내 프로필을 적용했습니다. 디자인 PR #61·#66·#68·#70·#71은 모두 **main에 병합**됐습니다. 플레이어 검색·공개 프로필·공개 범위 UI PR #91도 병합했습니다.
+- 과거 적용된 알까기 SQL 004~009, 오목 001~006 및 v0.4.0 오목 금수/체스 SQL은 릴리스 이력이 있습니다. **기존 마이그레이션 재실행 금지**. 새 SQL은 운영 적용 여부·RLS/GRANT·Realtime·백업/복구·기능 호환성 확인 후 승인된 범위만 진행합니다.
+- Vercel·Supabase 서비스 관리자 키는 서버 전용이며 브라우저 코드/PR/이슈에 게시하지 않습니다. Preview와 Production의 DB/키 범위를 구분합니다.
+- 운영에서 아직 검증되지 않은 부분은 [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) 실제 v0.4.1 두 계정 Smoke·태그/Release, [#309](https://github.com/SuperNova080710/Alkkagi/issues/309) 체스 QA, [#194](https://github.com/SuperNova080710/Alkkagi/issues/194) UI, [#196](https://github.com/SuperNova080710/Alkkagi/issues/196) Auth/DM/XP, [#62](https://github.com/SuperNova080710/Alkkagi/issues/62)·[#65](https://github.com/SuperNova080710/Alkkagi/issues/65) 보안 인수에서 별도 추적합니다.
+- GitHub Releases API에 정식 Release 등록이 확인되지 않았습니다. 버전이 배포됐다는 이유로 태그와 Release가 발행됐다고 기록하지 않습니다.
 
-- [디자인 구현/시각 QA](docs/design-implementation.md)
-- [플레이어 검색 UI](docs/player-directory-ui.md)
-- [게임형 디자인 원안](docs/ui-redesign-v1.md)
+## 브랜치·이슈·PR 운영
 
-단, 모의 브라우저 QA 통과는 실제 계정 두 명의 전체 E2E 확인과 다릅니다. 실사용 통합·최신 Vercel 배포는 별도 확인이 필요합니다.
+1. 큰 기능은 상위 이슈, 시작 가능한 세부 작업은 하위 이슈로 분리합니다.
+2. `develop`에서 기능별 `feat/<issue>-...`, `fix/<issue>-...`, `docs/<issue>-...` 브랜치를 생성하고 검증 가능한 단위로 커밋합니다. 커밋 메시지는 제목 한 줄, 빈 줄, 변경 근거 3~4개 불릿을 사용합니다.
+3. 기능 PR은 `develop`, 릴리스 후보는 `release/vX.Y.Z → main`으로 구분합니다. **검토/병합은 별도 담당 채팅**에서 수행합니다.
+4. 합쳐진 PR의 구현 이슈는 근거 PR·출시 범위를 남기고 종료하되, 운영 E2E·보안·미출시 기능의 남은 작업은 별도 OPEN 상태로 유지합니다.
 
-## AI 연습전 — 대기실에서 AI 상대 추가 (최종 제출 이후 기능)
+[릴리스 운영 절차](docs/release-process.md) · [v0.4.1 최신 인수](docs/current-status-2026-11-11.md) · [전체 GitHub 이슈 정리](docs/github-issue-audit-2026-11-11.md)
 
-1. 로그인 후 로비에서 기존 **방 만들기**로 대기실을 만듭니다.
-2. 친구가 입장하기 전에 방 주인이 **AI 상대 추가**에서 **쉬움·보통·어려움**을 선택하고 **확인 · AI 대전 시작**을 누릅니다.
-3. AI와 5개 알씩 1:1 대전합니다. 내 차례에 드래그 또는 키보드로 발사하면 서버가 AI의 응수를 시뮬레이션하고 두 발사의 이동을 재생합니다.
-4. 승패 화면에서 **같은 난이도로 재도전**하거나 로비로 돌아올 수 있습니다. 로비에는 진행 중인 AI 경기를 다시 여는 링크도 표시됩니다.
+## ALEPH 이전 제출·역사적 문서
 
-AI 대전은 별도 **연습전**으로 랭크 RP·순위·전적에 영향을 주지 않습니다. 친구가 방에 들어오면 AI를 추가할 수 없으며, AI 대전 시작 후 다른 사람도 해당 방에 참가할 수 없습니다.
-
-기존 일반전·랭크전 로직을 변경하지 않도록 별도 `ai_matches`/`ai_turns` RLS 테이블, 서버 전용 원자적 판정 및 기존 결정적 물리 엔진을 사용합니다. 상세: [AI 대기실 대전 구조·검증](docs/ai-room-opponent.md).
-
-> 이 기능은 **P3 최종 제출 자료 작성 이후의 별도 후속 개선**입니다. 기존 제출 문서·발표 파일은 보존합니다.
-
-## P3 최종 추가 개선 (2차 제출 이후)
-
-- **내 알과 턴 식별:** 선공/후공, 색상, 닉네임, 남은 알을 상단 카드에 표시. 게임판 가림·과도한 알 테두리를 줄였습니다. (#35, PR #36·#39)
-- **닉네임 설정:** 본인 닉네임 변경, 중복 확인, DB의 대소문자 무관 UNIQUE 제약과 본인 변경 RPC로 다른 계정/랭크 RP 보호. (#37, PR #38)
-- **1:1 경기 채팅:** 왼쪽 채팅 / 중앙 게임판 / 오른쪽 턴 로그. 두 참가자 RLS, Realtime, 280자/1초 제한. (#40, PR #41)
-- **승패·RP 결과:** 경기 종료 시 승리/패배/무승부, 랭크 RP 실제 정산 전후 및 ±값, 로비 복귀·일반전 양측 재대전·랭크 새 매칭. (PR #41)
-- **조작·모션:** Enter 전송, Shift+Enter 줄바꿈, 한글 IME 확정 보호, 전송 후 채팅 포커스 유지, 180/260ms 결과 진입 애니메이션, reduced-motion 대응. (#42·#44, PR #43·#45)
-
-위 개선은 P2에 제출한 서버 판정·랭크 점수 알고리즘을 변경하지 않았습니다. [P3 인수 검증](docs/p3-final-acceptance-2026-10-29.md)에 PR/CI/DB 증빙을 구분해 기록했습니다.
-
-## 닉네임 설정 (P3 동료 피드백 개선)
-
-로그인 후 일반전 로비의 **닉네임 설정** 또는 랭크 아레나의 **닉네임 변경**으로 이동하면 /profile에서 닉네임을 수정할 수 있습니다.
-
-- 한글·영문·숫자·밑줄(_) **2~24자**를 사용할 수 있습니다.
-- **중복 확인** 후 저장하며, 대소문자만 다른 동일 닉네임도 중복으로 처리합니다.
-- 검사 이후 다른 사용자가 먼저 닉네임을 등록해도 DB 고유 인덱스로 최종 저장 충돌을 방지합니다.
-- 일반전 대기실·게임의 나/상대 표시·턴 기록, 랭크전 및 리더보드에 최신 닉네임을 표시합니다.
-- 닉네임 변경 시 기존 RP·승패·경기 기록은 그대로 유지됩니다.
-
-구현·검증 기록: [닉네임 관리 설계·테스트](docs/p3-nicknames.md). 이 항목은 **P2 제출 기준점 이후**에 추가한 P3 개선입니다.
-
-## 랭크전 이용 방법
-
-1. 로그인 후 로비에서 **랭크 아레나**에 입장합니다.
-2. 두 계정에서 **랭크 매칭 시작**을 선택합니다. 매칭되면 랭크 경기 화면으로 이동합니다.
-3. 승패 또는 기권으로 경기를 종료하고 랭크 로비에서 RP·승패·리더보드를 확인합니다.
-
-동일 RP의 두 플레이어가 대결해 한 명이 승리하면 일반적으로 **+16 / -16 RP**가 적용됩니다. 일반전 결과는 RP에 반영되지 않습니다. 자동 CI 및 실제 사용자 검증을 별도로 기록했습니다. 2026-10-28 사용자가 랭크/일반전 기능 정상 작동을 보고했고 운영 DB에서 RP +16/-16 정산을 확인했습니다.
-
----
-
-## 프로젝트 목표
-
-- **1:1 알까기:** 턴제 물리 판정, 양측 동기화, 한 판 완료
-- **대전 진입:** 초대 코드 기반 일반전 방 / 랜덤 랭크 매칭
-- **경쟁:** Elo 기반 랭크 포인트, 리더보드, 대전 기록
-
-## 사용 기술 스택
-
-Next.js (App Router) · React · TypeScript · Supabase (Auth / PostgreSQL / Realtime) · Vercel
-
-- 서버가 샷·턴·승패를 검증합니다. 브라우저가 점수나 승패를 직접 결정하지 않습니다.
-- 랭크 포인트는 **랭크전에서만** 반영합니다. 초대방 일반전은 비랭크전입니다.
-- 게임 상태의 기준은 PostgreSQL에 저장된 확정 스냅샷입니다.
-- MVP는 1:1, 알 5개씩, 드래그 발사 방식입니다. 물리 엔진은 서버에서 결과를 확정하며, 발사 세기는 8~125 범위를 1차 밸런스 값으로 사용합니다.
-
-## ALEPH 앱 프로젝트 진행
-
-| 단계 | 구현 범위 | 완료 기준 |
-| --- | --- | --- |
-| P1 | 로그인, 방 만들기·참가, 알까기 물리 엔진, 턴 동기화 | 배포 URL에서 서로 다른 두 계정이 일반전 1회 완료 |
-| P2 | 랜덤 랭크 매칭, RP 정산, 랭킹·전적 | 랭크 매치 결과가 전적·RP·리더보드에 일관되게 반영 |
-| P3 | 이탈/재접속, 모바일·연출, 보안·테스트·문서 | 두 기기 검증 및 공개 서비스 재현 절차 충족 |
-
-작업 기록은 GitHub Issues / Pull Requests로 관리합니다. 큰 단계마다 별도 브랜치를 만들고 PR 리뷰 및 검증 후 병합합니다.
-
-### 개발 절차
-
-1. 목표를 ALEPH에 저장하고 `plan.md` v1 업로드
-2. P1 기본 게임 → 공개 배포 확인 → 중간 점검 1차 제출
-3. P2 랜덤 매칭·랭크 및 현재까지의 UX·복구 개선 → 실사용/DB 검증 → **현재 버전 2차 제출**
-4. P3 사용자 피드백 개선을 이슈/브랜치/PR로 구현·검증·배포 → **최종 제출 자료 준비 완료** → ALEPH 사이트에서 실제 제출·접수 확인
-
-> 계획·실제 구현·테스트·배포 여부를 구분해 기록합니다. 프로젝트 상세 설계는 작업 브랜치에서 `plan.md`로 관리합니다.
-
-## 로컬 실행 — Issue #4
-
-Node.js 24.x와 npm을 사용합니다. `.nvmrc`가 제공됩니다.
-
-```sh
-nvm use
-npm ci
-npm run dev
-```
-
-`http://localhost:3000`에서 시작 화면을 확인합니다. 시작 화면은 환경변수 없이도 표시됩니다. 실제 로그인·방·대전은 Supabase 환경변수 설정이 필요합니다.
-로컬 인증을 시험하려면 `.env.example`을 `.env.local`로 복사하고 공개 설정과 `SITE_URL=http://localhost:3000`을 설정합니다.
-`SUPABASE_SECRET_KEY`는 서버 전용이며 브라우저 코드에서 사용하면 안 됩니다.
-
-## 품질 검사
-
-```sh
-npm run lint       # ESLint, 경고도 실패 처리
-npm run typecheck  # Next.js 라우트 타입 생성 후 TypeScript 검사
-npm test           # SSR·인증 경계·쿠키·DB RLS 검증
-npm run build      # 프로덕션 빌드
-# 전체 검사
-npm run check
-```
-
-`npm run start`는 빌드 완료 후 프로덕션 서버를 실행합니다.
-GitHub Actions도 Node.js 24에서 `npm ci`와 동일한 전체 검사를 실행합니다.
-인증 단위 테스트와 로컬 PostgreSQL RLS 테스트를 포함합니다. 실제 Supabase 스키마 적용과 PostgreSQL 원자적 매칭/RP 검증은 별도 기록으로 구분합니다. 실제 두 계정 E2E도 별도입니다.
-
-## 코드 구조와 배포 준비
-
-- `src/app/layout.tsx`: 한국어 문서, 메타데이터, 전역 스타일
-- `src/app/page.tsx`: 서비스의 게임형 시작 화면
-- `tests/`: Vitest 테스트
-- `.env.example`: 값이 비어 있는 환경변수 목록
-
-Vercel에서 이 저장소를 연결하고 Framework Preset을 **Next.js**, Root Directory를
-저장소 루트, Node.js를 **24.x**로 지정합니다. Install Command는 `npm ci`,
-Build Command는 `npm run build`입니다. Output Directory는 기본값을 사용합니다.
-Next.js 자동 감지를 사용합니다. 현재는 **Git 자동 배포를 `main`에만 허용하기 위한 `vercel.json`**도 존재합니다. 자세한 내용은 [릴리스 정책](docs/release-process.md)을 참고하세요.
-실제 Vercel Production(https://alkkagi-alpha.vercel.app)과 Supabase 프로젝트 연결이 완료됐습니다.
-
-### 의존성 참고
-
-Next.js ESLint 설정에 포함된 React/import/accessibility 플러그인의 peer 범위가
-ESLint 9까지이므로 `eslint@9.39.5`를 고정했습니다. 설치 시 지원 종료 경고가
-출력됩니다. 플러그인이 ESLint 10을 지원하면 함께 업그레이드해야 합니다.
-
-## 인증·DB 연결 — Issue #5
-
-설정, SQL 적용, 테스트 범위와 배포 후 점검은 [docs/auth-database.md](docs/auth-database.md)를 따릅니다.
-
-## 2026-11-03 현재 개발 현황
-
-> **현재 상태 판단에는 [11월 3일 통합 인수 문서](docs/current-status-2026-11-03.md)를 우선 사용합니다.** 이전 P2/P3 제출·2026-10-29/30 기능 설명은 해당 날짜의 과거 기록입니다.
-
-| 영역 | 현재 상태 | 미완료 |
-| --- | --- | --- |
-| Production 서비스 | **v0.2.0 코드 `main` 병합 완료** (`dc5a2f4`, PR #207); Vercel **Production READY**, 실도메인 alias 확인 | 배포 후 기능별 HTTP/실사용 A/B·Realtime/AI·모바일 E2E는 별도 |
-| v0.2.0 릴리스 | [PR #207](https://github.com/SuperNova080710/Alkkagi/pull/207) **`main` 병합 완료**, Vercel Production SHA 일치 READY | 실제 두 계정 QA/Preview AI 인증키 장애·Production Smoke 인수 및 정식 GitHub Release·태그 미확인 |
-| 운영 DB | PostgreSQL **17.11**, **2026-11-02 SQL 004~009 적용 완료** (#155) | SQL 재실행 금지. 실제 사용자 E2E/기능 플래그는 별도 |
-| 친구·DM·방 초대 | 백엔드 #76/#81/#90, UI #96/#143/#181 병합 | 실제 친구·DM WebSocket·초대/좌석 A/B 검증 |
-| XP·레벨·로비 카드 | #110/#159·로비 컴팩트 카드 #214(`develop`)/#215(`release`) 병합 | `EXPERIENCE_UI_ENABLED` 수용/실계정 경험치 지급 확인 |
-| 알·캐릭터 꾸미기 | #115/#167 인벤토리, #173 게임판 외형 병합 | 실제 장착/상대 공개 범위·AI 기본 스킨 확인 |
-| 반응형/통합 UI QA | #189/#197/#200/#202 병합, 플래그 안내 #210/#212 반영 | [#194](https://github.com/SuperNova080710/Alkkagi/issues/194) 실제 로그인/확대 화면 인수 |
-| 릴리스 CI·QA 도구 | #190/#193, PG17 #171, Local Supabase #178, 백업복원 #185, Hosted QA #198 병합 | 실제 릴리스 보호 정책·브라우저 QA·운영 승인 |
-| Preview AI 장애 | [#211](https://github.com/SuperNova080710/Alkkagi/issues/211) 과거 500 발생 시 관리자 키 누락 확인 | 현재 `SUPABASE_SECRET_KEY`는 Production+전체 Preview 대상에 **이름/설정 범위만 확인됨**. 실제 배포 반영 및 AI 발사·기권 성공은 미검증; 키 범위 제한·운영 DB 사용 승인 필요 |
-| Google 검색 | 공개 가이드·사이트맵·noindex 정책 구현 | 실제 Search Console 소유권/색인 요청 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) |
-
-**기능 노출 게이트:** `FRIENDS_UI_ENABLED`, `MESSAGES_UI_ENABLED`, `ROOM_INVITES_UI_ENABLED`, `EXPERIENCE_UI_ENABLED`, `COSMETICS_UI_ENABLED`는 실제 배포 환경 설정과 DB 권한/E2E를 별도로 점검해야 합니다. QA 화면 `OPS_TWO_ACCOUNT_QA_ENABLED`는 정확한 A/B allowlist와 함께 승인 후에만 활성화합니다.
-
-**최신 릴리스 사실 (2026-11-03):** GitHub [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) 병합 및 Vercel의 Production 배포 `dc5a2f4` READY 확인([배포 상세](https://vercel.com/mallang1/alkkagi/4mQ86h7Ed71BAQYT4YLc2Sci2wFr)). 단 실제 HTTP/사용자 동선·AI 오류 #211 및 Google Search Console·공식 태그/GitHub Release는 별도로 확인해야 합니다.
-
-**릴리스 프로세스:** 기능/문서는 `develop` → `release/vX.Y.Z` RC/검증 → 사용자 승인 후 `main` Production 배포. 최신 `release/v0.2.0` [CHANGELOG](CHANGELOG.md) 및 [RC 체크리스트](https://github.com/SuperNova080710/Alkkagi/blob/release/v0.2.0/docs/release-v0.2.0-rc.md)를 참고하세요. Vercel Git 자동 배포 제약은 `vercel.json`과 [릴리스 운영 문서](docs/release-process.md)에서 관리합니다.
-
-**운영 안전:** SQL 004~009는 이미 실행됐으므로 재실행하지 않습니다. 승인되지 않은 Preview 키 확대·운영 DML·main 병합·태그 발행을 수행하지 않으며, 이전 P2/P3 검증 기록은 그대로 보존합니다.
-
-문서: [최신 인수](docs/current-status-2026-11-03.md) · [QA 인수](docs/hosted-two-account-e2e.md) · [전체 UI 검증](docs/integrated-ui-qa-2026-11-02.md) · [이전 2026-10-30 스냅샷](docs/current-status-2026-10-30.md).
-
-## 차기 개발 — v0.3.0 오목 멀티게임 (기획·Draft 단계)
-
-[오목 확장 Epic #217](https://github.com/SuperNova080710/Alkkagi/issues/217)과 하위 #218~#224에서 15×15 자유룰 오목 엔진·DB/RLS·2인 일반전·AI·독립 랭크/XP 정책 및 멀티게임 로비를 기획/개발하고 있습니다. [설계 Draft #231](https://github.com/SuperNova080710/Alkkagi/pull/231), [엔진 Draft #230](https://github.com/SuperNova080710/Alkkagi/pull/230), [DB/RPC Draft #232](https://github.com/SuperNova080710/Alkkagi/pull/232), [PvP API·재대결 Draft #233](https://github.com/SuperNova080710/Alkkagi/pull/233), [AI Draft #235](https://github.com/SuperNova080710/Alkkagi/pull/235)는 코드/CI 단계이며 **develop 병합·서비스 배포가 되지 않은 기능**입니다. **v0.2.0 RC #207의 실사용 QA·Production 승인과 완전히 분리**합니다.
+ALEPH P1/P2/P3 제출용 기준점은 현재 v0.4.1 기능 범위와 다릅니다. 2026-10-28/29 제출 스냅샷·기존 게임/디자인 설계는 원본 그대로 유지합니다. [ALEPH 제출 문서 색인](docs/aleph-submissions.md) · [2026-11-03 상태 기록](docs/current-status-2026-11-03.md). 실제 ALEPH 플랫폼 최종 접수·승인은 별도 이슈 [#3](https://github.com/SuperNova080710/Alkkagi/issues/3)에서 확인합니다.

@@ -401,3 +401,5 @@ begin
   raise notice 'PASS: black forbidden-move migration, double three and ACL';
 end;
 $forbidden_smoke$;
+
+\ir chess-pg17-rematch.sql

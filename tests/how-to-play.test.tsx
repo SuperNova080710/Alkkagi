@@ -13,6 +13,12 @@ describe('public how-to-play guide', () => {
     expect(html).toContain('무승부');
     expect(html).toContain('8자리 초대 코드');
     expect(html).toContain('쉬움·보통·어려움');
+    expect(html).toContain('「AI 연습방 만들기」');
+    expect(html).toContain('「연습방 만들기」를 누르세요');
+    expect(html).toContain('「AI 상대 추가」');
+    expect(html).toContain('「AI 대전 시작」');
+    expect(html).toContain('오목과 체스는 각 로비에서 「AI 연습 시작」');
+    expect(html).toContain('난이도를 고른 뒤 시작 버튼을 누르면');
     expect(html).toContain('href="/lobby"');
     expect(html).toContain('href="/"');
     expect(html).toContain('href="#guide-controls"');
@@ -23,7 +29,7 @@ describe('public how-to-play guide', () => {
   });
 
   it('provides page-specific SEO metadata without making the guide private', () => {
-    expect(metadata.title).toContain('규칙·조작법');
+    expect(metadata.title).toBe('알까기 게임 규칙·조작법');
     expect(metadata.description).toContain('키보드');
     expect(metadata.alternates?.canonical).toBe('https://alkkagi-alpha.vercel.app/how-to-play');
     expect(metadata.robots).toBeDefined();

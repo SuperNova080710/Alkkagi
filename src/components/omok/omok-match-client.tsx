@@ -14,6 +14,7 @@ import {
   type MatchSnapshot, type OmokChatRecord,
 } from './omok-client-api';
 import type { OmokPosition } from './omok-board-view';
+import { useMatchCosmetics } from '@/components/game/use-match-cosmetics';
 
 type ProposedMove = { requestId: string; turnNo: number; row: number; col: number };
 
@@ -23,6 +24,10 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   const router = useRouter();
   const chatEnabled = kind === 'casual';
   const [match, setMatch] = useState<MatchSnapshot | null>(null);
+  const viewer = match?.id === matchId.toLowerCase() && [match.blackId,match.whiteId].includes(currentUserId) ? currentUserId : '';
+  const opponent = viewer && match && kind === 'casual'
+    ? match.blackId === viewer ? match.whiteId : match.blackId : null;
+  const cosmetics = useMatchCosmetics(viewer, opponent);
   const [names, setNames] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<OmokChatRecord[]>([]);
   const [error, setError] = useState('');
@@ -217,6 +222,7 @@ export function OmokMatchClient({ matchId, currentUserId, kind = 'casual' }: {
   ];
   return <div className={'arena-omok-live-stack' + (kind === 'ranked' ? ' arena-omok-live-stack--ranked' : '')}>
     <OmokMatchPanel board={match.board} lastMove={match.lastMove}
+      stoneSkins={{black:cosmetics[match.blackId]?.omokCode,white:cosmetics[match.whiteId]?.omokCode}}
       players={players} currentUserId={currentUserId} turnUserId={match.turnUserId}
       status={match.status} winnerId={match.winnerId} finishReason={match.finishReason}
       ruleSet={match.ruleSet}

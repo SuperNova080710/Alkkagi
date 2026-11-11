@@ -61,7 +61,10 @@ export function isExperienceData(data: unknown): data is ExperienceData {
 }
 
 const number = (value: number) => value.toLocaleString('ko-KR');
-const kinds: Record<string, string> = { casual: '일반전', ranked: '랭크전', ai: 'AI 연습전' };
+const kinds: Record<string, string> = {
+  casual: '일반전', ranked: '랭크전', ai: 'AI 연습전',
+  chess_casual: '체스 일반전', chess_ranked: '체스 랭크전',
+};
 const outcomes: Record<string, string> = { win: '승리', loss: '패배', draw: '무승부' };
 
 function rewardTime(value: string): string {

@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef, useState, type KeyboardEvent } from 'react';
+import { safeCosmeticCode } from '@/components/cosmetics/cosmetic-api';
+import '@/components/cosmetics/game-skins.css';
 import './omok-board.css';
 
 const SIZE = 15;
@@ -12,6 +14,7 @@ export type OmokBoardViewProps = {
   board: unknown;
   lastMove?: OmokPosition | null;
   stoneToPlace?: OmokStone;
+  stoneSkins?: Partial<Record<OmokStone,string>>;
   myTurn?: boolean;
   status?: 'waiting' | 'active' | 'finished';
   pending?: boolean;
@@ -42,7 +45,7 @@ function clamp(index: number) {
  * optimistic stones. Calling onPlace sends only a proposed (row,col) coordinate.
  */
 export function OmokBoardView({
-  board, lastMove = null, stoneToPlace = 'black', myTurn = false,
+  board, lastMove = null, stoneToPlace = 'black', stoneSkins, myTurn = false,
   status = 'active', pending = false, onPlace,
 }: OmokBoardViewProps) {
   const [cursor, setCursor] = useState<OmokPosition>({ row: 7, col: 7 });
@@ -51,6 +54,8 @@ export function OmokBoardView({
     return <p role="alert" className="arena-omok-board-error">오목판 정보를 확인할 수 없습니다. 새로고침해 주세요.</p>;
   }
   const marked = validPosition(lastMove) ? lastMove : null;
+  const blackSkin = safeCosmeticCode(stoneSkins?.black, 'omok');
+  const whiteSkin = safeCosmeticCode(stoneSkins?.white, 'omok');
   const editable = status === 'active' && myTurn && !pending && !!onPlace;
   const canPlace = (row: number, col: number) => editable && board[row][col] === null;
   const statusLabel = status === 'finished' ? '경기가 종료되었습니다.' :
@@ -115,6 +120,7 @@ export function OmokBoardView({
               onClick={() => { if (canPlace(row, col)) onPlace?.({ row, col }); }}>
               {hoshi && stone === null && <span className="arena-omok-hoshi" aria-hidden="true"/>}
               {stone && <span className={`arena-omok-stone arena-omok-stone--${stone}`}
+                data-omok-skin={stone === 'black' ? blackSkin : whiteSkin}
                 aria-hidden="true">{isLast && <span className="arena-omok-last-dot"/>}</span>}
             </button>;
           })}

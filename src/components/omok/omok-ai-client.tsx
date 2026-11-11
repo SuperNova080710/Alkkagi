@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { OmokBoardView, isOmokBoardCells, type OmokBoardCells, type OmokPosition } from './omok-board-view';
 import { OmokResultOverlay } from './omok-result-overlay';
 import { OmokAiModalEntry } from './omok-ai-modal-entry';
+import { useMatchCosmetics } from '@/components/game/use-match-cosmetics';
 import './omok-parity.css';
 import { isRecord, isUuid, omokErrorText, omokRequest, omokRuleText, type OmokClientError, type OmokRuleSet } from './omok-client-api';
 import './omok-competitive.css';
@@ -97,8 +98,9 @@ export function OmokAiLobby() {
 }
 
 type Proposed = { requestId: string; turnNo: number; row: number; col: number };
-export function OmokAiMatchClient({ matchId }: { matchId: string }) {
+export function OmokAiMatchClient({ matchId, currentUserId = '' }: { matchId: string; currentUserId?: string }) {
   const router = useRouter();
+  const cosmetics = useMatchCosmetics(currentUserId, null);
   const [snapshot, setSnapshot] = useState<AiSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [reconnecting, setReconnecting] = useState(false);
@@ -202,6 +204,7 @@ export function OmokAiMatchClient({ matchId }: { matchId: string }) {
     <div className="arena-omok-match-layout">
       <div className="arena-omok-board-stage">
         <OmokBoardView board={snapshot.board} lastMove={snapshot.lastMove}
+          stoneSkins={{black:cosmetics[currentUserId]?.omokCode}}
           status={snapshot.status} myTurn={!finished && !reconnecting} stoneToPlace="black"
           pending={pending || reconnecting || !!retry} onPlace={onPlace}/>
         {finished && <OmokResultOverlay

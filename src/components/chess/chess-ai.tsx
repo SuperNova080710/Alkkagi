@@ -8,6 +8,7 @@ import { chooseChessAiMove, type ChessDifficulty } from '@/lib/chess/ai';
 import { initialChessState, inspectChessState, parseChessMove, playChessMove, type ChessMove, type ChessState } from '@/lib/chess/engine';
 import { OmokResultOverlay } from '@/components/omok/omok-result-overlay';
 import { ChessBoard } from './chess-board';
+import { useMatchCosmetics } from '@/components/game/use-match-cosmetics';
 import { ChessTurnStatus } from './chess-turn-status';
 import { CHESS_MOVE_DURATION } from './move-feedback';
 import { ChessDifficultyForm, chessDifficultyLabels as levels } from './chess-difficulty-form';
@@ -41,6 +42,7 @@ function recover(key: string): Session | null {
 
 export function ChessAi({userId}: {userId:string}) {
   const router = useRouter();
+  const cosmetics = useMatchCosmetics(userId, null);
   const replay = useRef<HTMLDialogElement>(null);
   const key = 'chess-practice-v040:' + userId;
   const [session,setSession] = useState<Session|null>(null);
@@ -110,6 +112,7 @@ export function ChessAi({userId}: {userId:string}) {
       <ChessTurnStatus black={false} myTurn={position.turn === 'w'} finished={finished}
         inCheck={position.inCheck} ai error={Boolean(error)}/>
       <ChessBoard fen={position.fen} black={false}
+        pieceSkins={{w:cosmetics[userId]?.chessCode}}
         enabled={!finished && !error && position.turn === 'w'} onMove={play}/>
       {finished && <OmokResultOverlay game="chess" mode="ai" outcome={outcome} finishReason={reason}
         onReplay={() => replay.current?.showModal()} onReturn={() => router.push('/chess')}/>}
