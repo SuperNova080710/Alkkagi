@@ -33,6 +33,10 @@ jobs:
       - name: Confirm preinstalled Chrome / Chromium
         run: |
           command -v google-chrome || command -v google-chrome-stable || command -v chromium
+      - name: Install Korean fonts for screenshots
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
       - name: Build actual Next.js production pages
         run: npm run build
         env:
@@ -45,6 +49,15 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
           QA_OUTPUT_DIR: artifacts/ui-viewport-qa
           QA_EXPECT_ALL_GAMES: 'true'
+      - name: Verify real Chrome tab zoom at 200%
+        run: |
+          sudo apt-get install -y --no-install-recommends xvfb xdotool xauth
+          xvfb-run -a -s '-screen 0 1920x1080x24' node scripts/qa/public-viewport.mjs
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          QA_OUTPUT_DIR: artifacts/ui-viewport-qa/chrome-zoom-200
+          QA_EXPECT_ALL_GAMES: 'true'
+          QA_CHROME_ZOOM: '200'
       - name: Save pixel diagnostics and public-only screenshots
         if: always()
         uses: actions/upload-artifact@v4
