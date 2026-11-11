@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { cosmeticRequest, isCosmeticInventory, safeCosmeticCode } from '@/components/cosmetics/cosmetic-api';
+import { MatchCosmeticsContext } from '@/components/cosmetics/match-cosmetics-provider';
 
 /** Presentation only. Never used to construct shot, physics, RP or match payloads. */
-export type MatchCosmeticLook = { pieceCode: string; avatarCode: string };
+export type MatchCosmeticLook = { pieceCode: string; avatarCode: string; omokCode?: string; chessCode?: string };
 export type MatchCosmeticLooks = Record<string, MatchCosmeticLook>;
 
 export const DEFAULT_MATCH_LOOK: MatchCosmeticLook = {
@@ -15,8 +16,10 @@ export function safeMatchCosmeticLook(value: unknown): MatchCosmeticLook {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return DEFAULT_MATCH_LOOK;
   const data = value as Record<string, unknown>;
   return {
-    pieceCode: safeCosmeticCode(typeof data.pieceCode === 'string' ? data.pieceCode : '', 'piece'),
-    avatarCode: safeCosmeticCode(typeof data.avatarCode === 'string' ? data.avatarCode : '', 'avatar'),
+    pieceCode: safeCosmeticCode(data.pieceCode, 'piece'),
+    avatarCode: safeCosmeticCode(data.avatarCode, 'avatar'),
+    ...(data.omokCode !== undefined ? {omokCode:safeCosmeticCode(data.omokCode,'omok')} : {}),
+    ...(data.chessCode !== undefined ? {chessCode:safeCosmeticCode(data.chessCode,'chess')} : {}),
   };
 }
 
@@ -47,8 +50,10 @@ export async function fetchMatchCosmeticLooks(
 
 /** Fetch once per viewer/opponent pairing; animation frames only change Board, not cosmetics. */
 export function useMatchCosmetics(
-  viewerId: string, opponentId: string | null, enabled: boolean,
+  viewerId: string, opponentId: string | null, enabledOverride?: boolean,
 ): MatchCosmeticLooks {
+  const configured = useContext(MatchCosmeticsContext);
+  const enabled = Boolean(viewerId) && (enabledOverride ?? configured);
   const key = enabled ? viewerId + ':' + (opponentId ?? '') : '';
   const [response, setResponse] = useState<{ key: string; looks: MatchCosmeticLooks } | null>(null);
   useEffect(() => {

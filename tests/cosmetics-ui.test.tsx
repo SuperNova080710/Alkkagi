@@ -89,6 +89,27 @@ describe('cosmetics wardrobe UI and safety contract', () => {
     expect(cosmeticUnlockLabel(inventory.items[2], 0, 1)).toContain('레벨 3');
   });
 
+  it('previews both sides of each game and equips only owned items in the correct slot', () => {
+    const data: CosmeticInventory = {
+      ...inventory,
+      loadout: {...inventory.loadout,omokCode:'omok-jade',chessCode:'chess-classic'},
+      items: [...inventory.items,
+        {code:'omok-jade',slot:'omok',name:'비취 오목돌',description:'양 진영 세트',
+          unlockKind:'xp_level',requiredValue:2,owned:true,equipped:true,unlockedAt:'2026-11-11'},
+        {code:'chess-sapphire',slot:'chess',name:'사파이어 체스 기물',description:'양 진영 세트',
+          unlockKind:'xp_level',requiredValue:2,owned:false,equipped:false,unlockedAt:null},
+      ],
+    };
+    expect(isCosmeticInventory(data)).toBe(true);
+    const html = renderToStaticMarkup(<CosmeticCollection inventory={data} onEquip={() => {}}/>);
+    expect(html).toContain('비취 오목돌 미리보기 · 흑돌과 백돌');
+    expect(html).toContain('사파이어 체스 기물 미리보기 · 백 기물과 흑 기물');
+    expect(html).toContain('비취 오목돌 장착 중');
+    expect(html).toContain('사파이어 체스 기물 잠김');
+    expect(safeCosmeticCode('omok-jade','chess')).toBe('chess-classic');
+    expect(safeCosmeticCode(undefined,'omok')).toBe('omok-classic');
+  });
+
   it('rejects malformed inventory JSON before rendering any nested item rows', () => {
     expect(isCosmeticInventory(inventory)).toBe(true);
     for (const bad of [

@@ -113,6 +113,7 @@ export type OmokMatchViewProps = {
   turnUserId: string | null;
   status: 'waiting' | 'active' | 'finished';
   lastMove?: OmokPosition | null;
+  stoneSkins?: Partial<Record<OmokStone,string>>;
   winnerId?: string | null;
   finishReason?: string | null;
   pending?: boolean;
@@ -132,7 +133,7 @@ export type OmokMatchViewProps = {
 };
 
 export function OmokMatchPanel({
-  board, players, currentUserId, turnUserId, status, lastMove, winnerId,
+  board, players, currentUserId, turnUserId, status, lastMove, stoneSkins, winnerId,
   finishReason, pending = false, reconnecting = false, error, rematchReadyCount = 0,
   myRematchVote = false, onPlace, onForfeit, onRematch, onReturn,
   onRankedReplay, mode = 'casual', ruleSet, chat, extra,
@@ -161,7 +162,7 @@ export function OmokMatchPanel({
     </ol>
     <div className="arena-omok-match-layout">
       <div className="arena-omok-board-stage">
-        <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'}
+        <OmokBoardView board={board} lastMove={lastMove} stoneToPlace={me?.stone ?? 'black'} stoneSkins={stoneSkins}
           myTurn={myTurn} status={status} pending={pending || reconnecting} onPlace={onPlace}/>
         {finished && <OmokResultOverlay
           outcome={result ?? '무승부'} mode={mode} finishReason={finishReason}

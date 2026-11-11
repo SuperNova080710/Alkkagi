@@ -1,4 +1,4 @@
-export const COSMETIC_CODE=/^(?:piece|avatar)-[a-z0-9-]{2,32}$/;
+export const COSMETIC_CODE=/^(?:piece|avatar|omok|chess)-[a-z0-9-]{2,32}$/;
 export function validEquipCosmetic(body:unknown):body is {itemCode:string}{
   if(!body||typeof body!=='object'||Array.isArray(body))return false;
   const b=body as Record<string,unknown>;
