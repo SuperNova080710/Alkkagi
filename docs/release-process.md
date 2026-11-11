@@ -5,6 +5,31 @@
 
 관련: #144 (상위), #145 (Vercel), #146 (CI), #147 (인수)
 
+## 2026-11-11 운영된 릴리스 사례 및 다음 RC
+
+| 버전 | Release→main | 실제 확인 | 남은 정리 |
+| --- | --- | --- | --- |
+| 0.2.0 | [#207](https://github.com/SuperNova080710/Alkkagi/pull/207) | 알까기 소셜/XP/꾸미기 통합 | 당시 E2E·공식 태그와 구분 |
+| 0.3.0 | [#297](https://github.com/SuperNova080710/Alkkagi/pull/297) | 오목 일반/랭크/AI, 독립 RP·UX Production | 오목 기존 자유룰 대국 보존 |
+| 0.3.1 | [#304](https://github.com/SuperNova080710/Alkkagi/pull/304) | 오목 랭크 UI 스크롤·앱 메시지 차단 | DB 직접 RPC/RLS 차단 #342 별도 |
+| 0.4.0 | [#330](https://github.com/SuperNova080710/Alkkagi/pull/330) | 체스 3모드·오목 신규 대국 금수, Production READY | 2계정 운영 QA #309/#338 |
+| **0.4.1** | [#336](https://github.com/SuperNova080710/Alkkagi/pull/336) | 체스 온라인 종료 결과 패널, `d40e110` Vercel READY | 실계정 A/B Smoke·정식 GitHub Release [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) |
+| **0.4.2 후보** | [#345](https://github.com/SuperNova080710/Alkkagi/issues/345) | `develop`의 #342/#343 통합 준비. #344는 아직 PR 미병합 | 신규 SQL 운영 승인·Preview/2인 QA·사용자 main 승인 전 STOP |
+
+**정식 GitHub Releases API 조회(2026-11-11): 0건.** 배포된 소스 버전과 공식 Git 태그·GitHub Release가 동일하다고 단정하지 않습니다. 릴리스 등록/태그를 변경할 때도 담당 채팅의 별도 승인과 SHA 확인이 필요합니다.
+
+### 0.4.2 RC 준비 때 확인할 항목
+
+1. `develop`에 실제 병합된 기능과 **open PR**을 분리. [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344)는 병합 전에는 `release/v0.4.2`에 포함됐다고 쓰지 않기
+2. `20261111025029_omok_ranked_chat_boundary.sql`과 체스 재대결 신규 SQL의 적용 여부를 **운영 SELECT/read-only 이력으로 먼저 확인**. 기존 알까기 004~009·오목 001~006·v0.4.0 금수/체스 SQL 재실행 금지
+3. 새 권한과 DB 상태 변경은 보안/RLS/Realtime·Data API 후속 영향, 운영 데이터 보존·복구, 사용자 승인 범위를 문서로 확인 후 적용
+4. `release/v0.4.2` RC SHA의 Quality/PG17·Auth/Realtime/Restore/Chromium 검사 및 **별도 승인된 Preview 실제 A/B** 검증 완료. `main` 보호 Required Checks 확인은 #188/#192 후속
+5. 사용자 별도 Production 배포 승인 후 `main` 병합 → Vercel READY/동일 SHA·alias → 로그인/게임별 최소 Smoke → `develop` 역반영. 실제 공식 Tag/Release가 없으면 없다고 기록
+
+[상세 v0.4.2 인수](release-v0.4.2-handoff.md) · [전체 이슈 정리](github-issue-audit-2026-11-11.md).
+
+---
+
 ## 원칙
 
 | 브랜치 | 목적 | 병합 대상 | Vercel 배포 |
