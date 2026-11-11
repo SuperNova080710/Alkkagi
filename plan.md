@@ -1,7 +1,43 @@
-# Alkkagi Arena — ALEPH 프로젝트 계획 v13
+# Alkkagi Arena — ALEPH 프로젝트 계획 v14
 
-> 갱신일: 2026-11-03. 상태: P2 기준점 보존, **P3 사용자 피드백 개선 구현·운영 배포·검증 완료. 최종 제출 문구·발표/증빙 파일 준비 완료. ALEPH 실제 접수/승인만 미확인.**
+> **최신 갱신: 2026-11-11 KST. 현재 v0.4.1 Production(`main` `d40e110`, Vercel READY). 아래 v1~v13의 과거 단계/미병합·미적용 문구는 각각의 작성 날짜에서 유효했던 계획으로 보존합니다. 현재 판단은 [11월 11일 인수](docs/current-status-2026-11-11.md)를 우선합니다.**
 > 이 문서는 작업 시작용 GitHub 버전입니다. ALEPH 제출용 상세 계획서 원본과 함께 관리하고, 변경 시 사유와 버전을 기록합니다.
+
+## 운영 기준 계획 v14 (2026-11-11)
+
+이 프로젝트는 최초의 1:1 알까기 단일 게임에서 **알까기·오목·체스 3종 온라인 보드게임**으로 확장됐습니다. 사용자 공통 인증·친구·메신저·프로필/경험치와 게임별 일반전·랭크/전적·AI/규칙을 구분합니다.
+
+### 확정된 운영 구성
+
+| 영역 | 구현·배포 기준 | 의도된 경계 |
+| --- | --- | --- |
+| v0.3.0 | [#297](https://github.com/SuperNova080710/Alkkagi/pull/297) 오목 15×15 일반/랭크/AI·친구/채팅/재대결 정식 릴리스 | 당시 신규 경기는 자유룰 |
+| v0.3.1 | [#304](https://github.com/SuperNova080710/Alkkagi/pull/304) 오목 랭크 UI 스크롤·앱 채팅 비활성화 | DB 직접 호출 차단 #342은 후속 |
+| v0.4.0 | [#330](https://github.com/SuperNova080710/Alkkagi/pull/330) 체스 온라인 일반·랭크/90초·AI, 공통 UI, 신규 오목 대국 흑 금수 | 기존 시작 오목 대국 자유룰 보존 |
+| **v0.4.1** | [#336](https://github.com/SuperNova080710/Alkkagi/pull/336) 체스 온라인 결과 패널·로비 복귀 | **현행 Production** `d40e110`, 실제 운영 2계정 QA [#338](https://github.com/SuperNova080710/Alkkagi/issues/338) 미완료 |
+| **v0.4.2 예정** | [#345](https://github.com/SuperNova080710/Alkkagi/issues/345), [릴리스 체크리스트](docs/release-v0.4.2-handoff.md) | 승인 전 Production 변경 금지. `develop` #342/#343와 미병합 #344 구분 |
+
+### 다음 우선순위와 DONE 조건
+
+1. **P0 — 출시 안정화/데이터 보안:** 오목 랭크 채팅 DB RPC/RLS 방어 [#342](https://github.com/SuperNova080710/Alkkagi/pull/342)와 공개 AI 가이드 [#343](https://github.com/SuperNova080710/Alkkagi/pull/343)는 `develop` 병합 완료. **Production v0.4.1에는 미반영**, 새 오목 SQL은 사용자 승인·운영 사전 점검/두 계정 테스트 후에만 배포.
+2. **P1 — 체스 일반전 재대결:** [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344)는 미병합. 종료 후 30분 양측 수락, 새 경기 단일 생성/색상 교대, 재접속/RLS/동시성 검증, 승인된 운영 신규 SQL 적용이 완료돼야 DONE.
+3. **P1 — 릴리스 인수:** [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 v0.4.2 RC 소스 동결, 최신 SHA Quality·PG17·Supabase·Backup·UI 회귀/Preview, 실계정 A/B, 별도 Production 승인/Smoke와 `develop` 역반영을 수행. 공식 Git tag/GitHub Release는 실제 발행 여부를 따로 확인.
+4. **P2 — 미구현 체스 공통 기능:** [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 대국 채팅, [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 공통 XP, 상위 [#327](https://github.com/SuperNova080710/Alkkagi/issues/327). 데이터 모델·API/RLS·클라이언트·테스트를 별도 기능 이슈/PR로 관리, 구현 전 출시 기능 안내 금지.
+5. **P2 — 이용자 꾸미기:** 오목 돌·체스 기물 커스터마이징 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323); 기존 알까기 코스메틱과 게임별 에셋/장착 정책 분리.
+6. **별도 수용:** 체스 FIDE 세부 무승부 [#312](https://github.com/SuperNova080710/Alkkagi/issues/312), 서버 권위 AI 계약 [#313](https://github.com/SuperNova080710/Alkkagi/issues/313), 실제 2계정 브라우저 QA [#338](https://github.com/SuperNova080710/Alkkagi/issues/338)·[#309](https://github.com/SuperNova080710/Alkkagi/issues/309)·[#194](https://github.com/SuperNova080710/Alkkagi/issues/194)·[#196](https://github.com/SuperNova080710/Alkkagi/issues/196), Security Advisor [#62](https://github.com/SuperNova080710/Alkkagi/issues/62)·[#65](https://github.com/SuperNova080710/Alkkagi/issues/65), Google 색인 [#126](https://github.com/SuperNova080710/Alkkagi/issues/126) 등.
+
+### 릴리스/보안 실행 기준
+
+- 기능 브랜치 → `develop` PR → `release/vX.Y.Z` RC/검증 → **사용자 승인 후에만** `main` Production. 기존 병합 코드는 불필요하게 다시 병합하거나 같은 DB migration을 재실행하지 않습니다.
+- PostgreSQL 17.11: 기존 알까기 004~009·오목 001~006·v0.4.0 금수/체스 SQL은 적용 이력이 있습니다. 신규 보안 SQL #342와 미병합 #344의 migration은 **운영 적용 전**입니다.
+- 테스트 계정 두 명, 권한 경계/Realtime·RP·XP·재접속·채팅·모바일/200% 확대/장애 상황까지 각 기능별로 검증한 증거를 이슈에 남겨야 합니다. 도메인 READY/격리 CI만으로 운영 E2E PASS를 주장하지 않습니다.
+- 과거 ALEPH P1/P2/P3 제출용 원본은 삭제하지 않습니다. 개인 정보·키·토큰·운영 DB 실제 데이터는 문서/PR에 복사하지 않습니다.
+
+---
+
+## 이하: 2026-10-28~2026-11-03 계획 및 의사결정 기록 (역사적 스냅샷)
+
+아래의 '향후 추가/미병합/운영 SQL 미적용/최신 Draft' 표현은 **당시 기준**입니다. 현재 v0.4.1 운영 상태는 위의 v14 및 [현재 상태 문서](docs/current-status-2026-11-11.md)를 우선합니다.
 
 ## 프로젝트 목표
 - **한 줄 소개:** 친구와 방을 만들어 1:1 알까기를 즐기거나 랜덤 랭크 매칭에 참여하여 RP와 순위를 경쟁하는 웹게임.
