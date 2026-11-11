@@ -1,4 +1,4 @@
-import { expireChessRanked, getChessMatch, resignChessMatch, submitChessMove } from '@/lib/chess/casual';
+import { expireChessRanked, getChessMatch, resignChessMatch, submitChessMove, voteChessRematch } from '@/lib/chess/casual';
 import { chessBody, ChessError, requireChessId, withChessUser } from '@/lib/chess/http';
 
 type Context = { params: Promise<{id: string}> };
@@ -14,6 +14,7 @@ export async function POST(request: Request, {params}: Context) {
     if (body.action === 'move') return submitChessMove(userId, matchId, body);
     if (body.action === 'expire') return expireChessRanked(userId, matchId);
     if (body.action === 'resign') return resignChessMatch(userId, matchId, requireChessId(body.requestId));
+    if (body.action === 'rematch') return voteChessRematch(userId, matchId);
     throw new ChessError('INVALID_REQUEST');
   });
 }

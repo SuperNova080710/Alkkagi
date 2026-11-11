@@ -105,14 +105,19 @@ async function run() {
   window.fetch = async (_input,options) => {
     await sleep(80);
     if (options?.method==='POST') {
+      const body = JSON.parse(options.body as string);
+      if (body.action==='rematch' && snapshot.rematch) {
+        snapshot={...snapshot,rematch:{...snapshot.rematch,whiteVoted:true}};
+        return Response.json({data:snapshot});
+      }
       if (failPost) {failGet=true; throw Error('테스트 착수 응답 유실');}
-      const game=new Chess(snapshot.fen); game.move(JSON.parse(options.body as string));
+      const game=new Chess(snapshot.fen); game.move(body);
       snapshot={...snapshot,fen:game.fen(),ply:1,turnUserId:'other',moves:[{ply:1,san:'e4'}]};
     } else if (failGet) throw Error('테스트 재동기화 실패');
     return Response.json({data:snapshot});
   };
   for (const mode of ['casual','ranked'] as const) {
-    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null};failPost=true;
+    snapshot={...snapshot,mode,status:'active',turnUserId:'me',winnerId:null,finishReason:null,rematch:null};failPost=true;
     flushSync(()=>root.render(<ArenaShell game="chess"><div className="chess-page"><ChessMatchClient key={mode} matchId="qa" userId="me"/></div></ArenaShell>));
     await until(()=>document.querySelector('.chess-turn-status')?.getAttribute('data-state')==='mine');
     click('e2');click('e4');
@@ -131,6 +136,24 @@ async function run() {
       const button=inspectResult(outcome!,label!);
       flushSync(()=>button.click());
       check(document.documentElement.dataset.qaNavigation===(mode==='ranked'?'/chess/ranked':'/chess'),mode+' result returns to correct lobby');
+    }
+    if (mode==='casual') {
+      snapshot={...snapshot,rematch:{whiteVoted:false,blackVoted:false,nextMatchId:null}};
+      window.dispatchEvent(new Event('online'));
+      const selector='button[aria-label="재대결 신청"]';
+      await until(()=>Boolean(document.querySelector(selector)));
+      const replay = document.querySelector<HTMLButtonElement>(selector)!;
+      replay.scrollIntoView({block:'nearest'});
+      const {top,bottom} = replay.getBoundingClientRect();
+      check(top>=0 && bottom<=innerHeight,'casual rematch is reachable in the result overlay');
+      flushSync(()=>replay.click());
+      await until(()=>replay.textContent==='상대 수락 대기 중');
+      check(replay.disabled && Boolean(replay.closest('.game-result-card')?.textContent?.includes('1/2')),
+        'one casual rematch vote waits for the second player');
+      snapshot={...snapshot,rematch:{whiteVoted:true,blackVoted:true,nextMatchId:'successor'}};
+      window.dispatchEvent(new Event('online'));
+      await until(()=>document.documentElement.dataset.qaNavigation==='/chess/matches/successor');
+      check(true,'the second casual rematch vote opens the new match');
     }
   }
   snapshot={...snapshot,status:'active',turnUserId:'me',winnerId:null,finishReason:null};

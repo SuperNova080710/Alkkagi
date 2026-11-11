@@ -2,7 +2,7 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { initialChessState, parseChessMove, playChessMove, type ChessMove } from './engine';
-import { chessDbError, ChessError, requireChessId } from './http';
+import { chessDbError, ChessError, chessInviteCode, requireChessId } from './http';
 
 type StoredMove = {
   ply: number;
@@ -30,6 +30,7 @@ type StoredSnapshot = {
     finished_at: string | null;
   };
   moves: StoredMove[];
+  rematch?: {whiteVoted: boolean; blackVoted: boolean; nextMatchId: string | null} | null;
 };
 
 async function loadChessMatch(matchId: string): Promise<StoredSnapshot> {
@@ -40,7 +41,7 @@ async function loadChessMatch(matchId: string): Promise<StoredSnapshot> {
   return data as StoredSnapshot;
 }
 
-function publicMatch({ match, moves }: StoredSnapshot) {
+function publicMatch({ match, moves, rematch }: StoredSnapshot) {
   return {
     id: match.id, roomId: match.room_id, whiteId: match.white_id, blackId: match.black_id,
     status: match.finished_at ? 'finished' : 'active',
@@ -48,6 +49,7 @@ function publicMatch({ match, moves }: StoredSnapshot) {
     ply: match.ply, fen: match.fen, inCheck: match.in_check,
     turnUserId: match.finished_at ? null : match.ply % 2 === 0 ? match.white_id : match.black_id,
     winnerId: match.winner_id, finishReason: match.finish_reason, finishedAt: match.finished_at,
+    rematch: rematch ?? null,
     moves: moves.map(move => ({
       ply: move.ply, playerId: move.player_id, from: move.from_square,
       to: move.to_square, promotion: move.promotion, san: move.san,
@@ -105,6 +107,18 @@ export async function resignChessMatch(userId: string, matchId: string, requestI
   });
   if (error) chessDbError(error);
   return getChessMatch(matchId);
+}
+
+export async function voteChessRematch(userId: string, matchId: string) {
+  const db = createAdminClient();
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const {error} = await db.rpc('chess_vote_rematch', {
+      p_actor: userId, p_match_id: matchId, p_code: chessInviteCode(),
+    });
+    if (!error) return getChessMatch(matchId);
+    if (error.message !== 'ROOM_CODE_CONFLICT') chessDbError(error);
+  }
+  throw new ChessError('ROOM_CODE_CONFLICT');
 }
 
 export async function expireChessRanked(userId: string, matchId: string) {
