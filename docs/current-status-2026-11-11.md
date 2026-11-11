@@ -4,6 +4,13 @@
 >
 > **구분 원칙:** GitHub PR 병합 ≠ 릴리스 브랜치 포함 ≠ Vercel Production READY ≠ 운영 DB 마이그레이션 실제 적용 ≠ 두 계정 브라우저 E2E ≠ Git 태그·GitHub Release 발행. 한 단계의 성공을 다음 단계의 완료로 간주하지 않습니다.
 
+## 0. 2026-11-11 후속 갱신 — v0.4.2 RC 후보
+
+- **Production은 v0.4.1 그대로 유지**(main `d40e1101`, 기존 Vercel READY). 운영 SQL·데이터·환경변수 변경 없음.
+- 문서 PR [#351](https://github.com/SuperNova080710/Alkkagi/pull/351) 및 체스 재대결 [#344](https://github.com/SuperNova080710/Alkkagi/pull/344), 체스 XP [#349](https://github.com/SuperNova080710/Alkkagi/pull/349), 일반전 채팅 [#350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목·체스 꾸미기 [#354](https://github.com/SuperNova080710/Alkkagi/pull/354)가 `develop`에 모두 병합됐습니다. 이전 #342/#343 포함 **기능 PR 6개**가 릴리스 범위입니다.
+- `release/v0.4.2`는 위 개발 코드를 기준으로 구성된 **RC 준비 브랜치**입니다. `0.4.2` 버전·CHANGELOG·[SQL 5개 및 QA 절차](release-v0.4.2-handoff.md) 검증 후 RC 인수를 진행하며, Production 출시 완료가 아닙니다.
+- 아래 원래 날짜별 표와 문서는 **병합 전 시점 기록**일 수 있습니다. 최신 v0.4.2 인수는 이 절과 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)를 우선 참조하세요.
+
 ## 1. 실서비스·브랜치·버전
 
 | 구분 | 확인 상태 | 근거 / 인수 경계 |
@@ -61,11 +68,12 @@
 
 **이번 문서화에서 운영 SQL·환경변수·Vercel 배포·기능 코드·실제 두 계정 쓰기 E2E는 실행하지 않았습니다. 문서 PR 병합·Production 출시 판단은 별도 검토 채팅 담당입니다.**
 
-## 7. 최신 병렬 작업 PR 상태 (2026-11-11 KST)
+## 7. 최신 병렬 작업 PR 상태 — 후속 갱신
 
-- [체스 일반전 참가자 채팅 PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350) — [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 구현 PR의 존재만으로 Production 또는 사용자 E2E 완료를 선언하지 않습니다.
-- [체스 온라인 경기 XP PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349) — [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 보상 중복·랭크 RP·PG17 운영 적용·실계정 검증을 따로 인수합니다.
-- [체스 재대결 PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) — [#341](https://github.com/SuperNova080710/Alkkagi/issues/341)의 구현 Draft가 **open/미병합**입니다.
-- [오목 돌·체스 기물 꾸미기 PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354) — 상위 [#323](https://github.com/SuperNova080710/Alkkagi/issues/323), 하위 [#352 카탈로그·장착 권한](https://github.com/SuperNova080710/Alkkagi/issues/352)과 [#353 미리보기·대국 표시](https://github.com/SuperNova080710/Alkkagi/issues/353)를 구현한 Draft입니다. 기본·레벨 해금 외형, 장착 및 대국 반영을 검증했습니다. 실계정 QA와 v0.4.2 포함 결정은 남아 있습니다.
+- [#344](https://github.com/SuperNova080710/Alkkagi/pull/344) 재대결: **develop 병합** `f1a33f7b`, PostgreSQL 두 독립 연결 경쟁·Chromium 검증 성공. 실사용 두 계정/운영 SQL 적용은 대기.
+- [#349](https://github.com/SuperNova080710/Alkkagi/pull/349) 체스 XP: **develop 병합** `2b7f94de`, 3게임 공동 제한과 독립 PG17 경합 검증 성공. 운영 지급 E2E 대기.
+- [#350](https://github.com/SuperNova080710/Alkkagi/pull/350) 체스 채팅: **develop 병합** `34475a37`, 참가자 전용 API·UI·PGlite/Chromium 검사 성공. 실사용 Realtime 검증 대기.
+- [#354](https://github.com/SuperNova080710/Alkkagi/pull/354) 오목·체스 꾸미기: **develop 병합** `073058cb`, 신규 슬롯·권한·UI 검증 성공. 기존 계정 장착값/공개 프로필 실제 검증 대기.
+- [#351](https://github.com/SuperNova080710/Alkkagi/pull/351) 문서: **develop 병합** `9f005cad`, 기존 운영 문서 감사·체크리스트 기록 완료.
 
-이 섹션은 같은 날 병렬 개발로 추가된 PR을 반영한 보충 기록입니다. 최신 PR 상태가 변경되면 GitHub가 우선합니다. 이번 작업에서는 해당 개발 PR을 병합하거나 신규 DB migration을 적용하지 않았습니다.
+**신규 SQL 5개는 RC에서 전체 재생·권한 검증 후 별도 운영 승인을 받아야 하며, 현재 Production v0.4.1에는 미적용**입니다. [v0.4.2 인수](release-v0.4.2-handoff.md).

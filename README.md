@@ -1,4 +1,4 @@
-# Alkkagi Arena
+# 한판아레나 (Alkkagi Arena)
 
 **브라우저에서 즐기는 1:1 온라인 보드게임 서비스 — 알까기 · 오목 · 체스**
 
@@ -27,14 +27,23 @@
 
 일부 경로는 인증/서버 기능 플래그를 요구합니다. 직접 링크 존재가 모든 계정에 기능이 열린다는 뜻은 아닙니다.
 
-## 현재 진행 중인 개발 — v0.4.2
+## v0.4.2 통합 릴리스 후보 — 아직 Production 미반영
 
-**아직 Production에 적용되지 않은 작업**입니다. 릴리스 트래커는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345), 운영 인수는 [v0.4.2 체크리스트](docs/release-v0.4.2-handoff.md)를 따릅니다.
+[릴리스 이슈 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) · [RC 인수 체크리스트](docs/release-v0.4.2-handoff.md).
 
-- **[#342](https://github.com/SuperNova080710/Alkkagi/pull/342) (develop 병합)** 오목 랭크 메시지 직접 RPC INSERT/SELECT DB 경계 차단. 신규 SQL은 **운영 미적용**, 앱 API 수준 채팅 차단(v0.3.1)과 구분
-- **[#343](https://github.com/SuperNova080710/Alkkagi/pull/343) (develop 병합)** 공개 가이드의 게임별 AI 진입 방식·중복 페이지 제목 정정. v0.4.1 Production에는 미포함
-- **[#344](https://github.com/SuperNova080710/Alkkagi/pull/344) (미병합)** 체스 일반전 종료 후 양쪽 수락 재대결 ([#341](https://github.com/SuperNova080710/Alkkagi/issues/341)); 신규 SQL·실제 두 계정 QA·릴리스 전 승인 필요
-- **추가 포함 검토 중:** 체스 온라인 XP [PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 참가자 전용 채팅 [PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354). 모두 Draft·`develop` 미병합·Production 미출시이며, v0.4.2 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
+`develop`에 기능과 브랜드 개편 PR을 통합했으며 `release/v0.4.2`에서 **최신 RC CI·Preview를 재검증 중**입니다. 운영 웹 Production은 여전히 **v0.4.1**이고, 새 SQL 5개는 사용자 승인으로 운영 DB에 적용 완료했습니다(재실행 금지).
+
+- **[#342](https://github.com/SuperNova080710/Alkkagi/pull/342)**: 오목 랭크전 채팅 데이터베이스 조회/쓰기 RLS·RPC 제한.
+- **[#343](https://github.com/SuperNova080710/Alkkagi/pull/343)**: 게임별 실제 AI 시작 흐름과 공개 조작법·SEO 제목 개선.
+- **[#344](https://github.com/SuperNova080710/Alkkagi/pull/344)**: 체스 일반전 종료 후 양측 동의 재대결·흑백 교대·동시 요청 중복 방지.
+- **[#349](https://github.com/SuperNova080710/Alkkagi/pull/349)**: 체스 일반·랭크전 서버 XP 지급, 3게임 공통 XP 상한.
+- **[#350](https://github.com/SuperNova080710/Alkkagi/pull/350)**: 체스 일반전 참가자 채팅 및 Realtime·재접속.
+- **[#354](https://github.com/SuperNova080710/Alkkagi/pull/354)**: 오목돌·체스 기물의 장착·미리보기·게임판 꾸미기.
+- **[#361](https://github.com/SuperNova080710/Alkkagi/pull/361)**: 종합 플랫폼 홈·한판아레나 공통 브랜드·3게임 선택 UI.
+- **[#362](https://github.com/SuperNova080710/Alkkagi/pull/362)**: 검색 대표 제목·WebSite JSON-LD·canonical·보호 경로 비색인.
+- **[#363](https://github.com/SuperNova080710/Alkkagi/pull/363)**: 공개 게임별 소개 3페이지·사이트맵·모바일/200% QA.
+
+**주의:** 개별 PR의 테스트 성공만으로 통합 기능의 운영 정상 동작을 보장하지 않습니다. 신규 DB SQL 5개는 **이미 운영에 적용**됐으며 원본 SQL 타임스탬프와 Supabase 기록 버전이 달라 CLI 자동 재실행을 방지해야 합니다. Preview는 현재 운영 DB를 공유하므로 실제 두 계정 테스트가 기록을 생성하며, Production 코드 배포는 별도의 사용자 승인이 필요합니다.
 
 ## 기술 구조
 

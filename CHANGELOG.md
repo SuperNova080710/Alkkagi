@@ -1,20 +1,34 @@
 # Changelog
 
-Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production 배포**를 분리합니다. `main`/운영에 없는 변경을 출시 완료로 표시하지 않습니다. [릴리스 프로세스](docs/release-process.md) · [2026-11-03 상태](docs/current-status-2026-11-03.md).
+한판아레나(구 Alkkagi Arena)의 **개발 병합**, **릴리스 후보(RC)**, **Production 배포**를 분리합니다.
+[릴리스 프로세스](docs/release-process.md) · [v0.4.2 인수 체크리스트](docs/release-v0.4.2-handoff.md)
 
-## [Unreleased — v0.4.2 예정] (2026-11-11 기준)
+## [0.4.2] — Release Candidate 준비 (2026-11-11)
 
-> **개발/출시 구분:** 현행 Production은 v0.4.1 (`main` `d40e110`, [Vercel READY](https://vercel.com/mallang1/alkkagi/9iKVkDCnu7bmuEaHqE9wotiPD2Kr)). 아래 기능은 **Production에 아직 반영되지 않았으며** [릴리스 이슈 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) 및 [인수 체크리스트](docs/release-v0.4.2-handoff.md)를 따릅니다.
+> **출시 전:** `release/v0.4.2`는 `develop`의 기능 통합을 기반으로 준비 중입니다.
+> 현행 운영 Production은 여전히 **v0.4.1** (`main` `d40e1101`). 신규 SQL 5개는 **사용자 승인에 따라 기존 운영 Supabase DB에 적용 완료**됐으나, 신규 v0.4.2 웹 기능은 아직 Production에 배포되지 않았습니다.
+> RC CI·Preview 두 계정 인수·운영 변경 승인이 완료되기 전에는 정식 출시로 표시하지 않습니다.
 
-### Fixed — develop에만 병합
-- [PR #342](https://github.com/SuperNova080710/Alkkagi/pull/342): 오목 랭크전 메시지의 **Supabase RPC INSERT/과거 SELECT RLS** 차단. 일반전 채팅 보존 및 일회용 PG17.11 검증. 신규 `20261111025029_omok_ranked_chat_boundary.sql`은 **운영 적용 전**이며 0.3.1의 앱 API/UI 채팅 차단과 다릅니다.
-- [PR #343](https://github.com/SuperNova080710/Alkkagi/pull/343): 공개 조작법의 알까기 연습방 AI 진입, 오목/체스 로비 AI 즉시 시작 흐름을 정정하고 중복된 서비스명 페이지 제목을 수정. 공개 SEO/canonical·Chromium 회귀 확인.
+### Added
+- [#344](https://github.com/SuperNova080710/Alkkagi/pull/344): 체스 일반전 종료 30분 내 **양측 수락 재대결**. 원본 기보와 승패를 보존하고 후속 대국에서 흑백 교대. 독립 PostgreSQL 17 두 연결 동시성·멱등성 테스트 포함.
+- [#349](https://github.com/SuperNova080710/Alkkagi/pull/349): 체스 일반전/랭크전 온라인 확정 종료 시 **공통 XP 지급**. 알까기·오목·체스의 UTC 일일 PvP 20경기 및 동일 상대 일반전 5경기 제한 공유, 중복 지급 방지·RP 분리.
+- [#350](https://github.com/SuperNova080710/Alkkagi/pull/350): **체스 일반전 참가자 전용 채팅**, 전송·조회·Realtime·재접속·요청 ID 중복 방지. 랭크전/비참가자 제한 유지.
+- [#354](https://github.com/SuperNova080710/Alkkagi/pull/354): **오목돌·체스 기물 꾸미기**, 기본 및 레벨 2 외형, 소유·슬롯 검사, 내 장착·상대 공개 설정 반영, 고대비/모바일 폴백.
 
-### Pending — 구현 Draft 검토 중
-- [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) **미병합:** 체스 일반전 종료 30분 내 양측 수락 재대결·색 교대/원본 기록 보존/동시 요청 중복 방지. 신규 `20261111025703_chess_casual_rematch.sql` 적용·운영 E2E 전에는 출시 기능이 아닙니다.
-- 체스 온라인 공통 XP [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 참가자 전용 채팅 [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [Draft PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354)는 미병합이며 v0.4.2 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
+- [#361](https://github.com/SuperNova080710/Alkkagi/pull/361): **한판아레나 플랫폼 홈**, 오목·체스·알까기 3종 게임 선택과 공통 헤더·푸터, 반응형 및 실제 Chrome 200% 확대 지원.
+- [#363](https://github.com/SuperNova080710/Alkkagi/pull/363): 세 게임별 **비로그인 공개 소개** `/games/omok`, `/games/chess`, `/games/alkkagi`, 독립 SEO 메타·sitemap·기존 로비 CTA.
 
-**릴리스 STOP:** 적용 이력 없는 새 SQL에 대한 운영 승인, 분리된 DB/RLS·Realtime 검사와 실제 두 계정 E2E, 최신 SHA의 CI, 사용자 Preview/Production 승인 전 배포·태그 발행 금지. 이미 적용된 SQL 재실행 금지.
+### Fixed
+- [#342](https://github.com/SuperNova080710/Alkkagi/pull/342): 오목 랭크전 채팅의 직접 데이터베이스 조회·전송을 **RLS/RPC 경계에서 차단**, 기존 채팅 기록과 일반전 보존.
+- [#343](https://github.com/SuperNova080710/Alkkagi/pull/343): 알까기와 오목·체스의 실제 AI 대전 진입 흐름으로 공개 조작법을 수정하고 SEO title 중복 제거.
+
+- [#362](https://github.com/SuperNova080710/Alkkagi/pull/362): 한판아레나 대표 검색 제목·OG/Twitter·WebSite JSON-LD·보호 경로 noindex·Preview 비색인 정책 통합.
+
+### Release/Database
+- 문서 인수: [#351](https://github.com/SuperNova080710/Alkkagi/pull/351), 릴리스 트래커 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345).
+- **신규 SQL 5개 — 운영 적용 완료(2026-11-11, 재실행 금지):** `20261111025029_omok_ranked_chat_boundary.sql`, `20261111025703_chess_casual_rematch.sql`, `20261111033733_chess_online_xp.sql`, `20261111033735_chess_casual_chat.sql`, `20261111050715_omok_chess_cosmetics.sql`.
+- 기존 RC `b06431c3`의 통합 CI 8개와 Vercel Preview READY를 확인했습니다. 그러나 #361~#363 추가 이후 **최신 RC SHA의 전체 재검증·Preview 실제 두 계정 E2E**는 별도 완료 기록이 필요합니다. 기존 Preview는 브랜드 개편 이전 빌드입니다.
+- 기존 SQL 및 이번 SQL 5개를 **재실행하거나 데이터를 초기화하지 마세요**. Supabase가 원본 SQL 파일명과 다른 migration version을 기록했으므로 추후 `db push` 전 이력 정합성 확인이 필요합니다. `main`/Production 코드·환경변수는 사용자 정식 배포 승인 전까지 변경하지 않습니다.
 
 ## [0.4.1] — Production READY (2026-11-09)
 

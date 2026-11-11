@@ -1,59 +1,79 @@
-# v0.4.2 릴리스 인수 — 준비 체크리스트 (2026-11-11)
+# v0.4.2 릴리스 후보 인수 체크리스트 — 2026-11-11
 
-> **상위:** [Release #345](https://github.com/SuperNova080710/Alkkagi/issues/345), 체스 후속 [#327](https://github.com/SuperNova080710/Alkkagi/issues/327). **현재 Production은 v0.4.1**(SHA `d40e110`, [Vercel READY](https://vercel.com/mallang1/alkkagi/9iKVkDCnu7bmuEaHqE9wotiPD2Kr)). 이 문서는 릴리스 실행/승인을 의미하지 않습니다.
+> **상위 이슈:** [#345](https://github.com/SuperNova080710/Alkkagi/issues/345) · **후속 체스 기능:** [#327](https://github.com/SuperNova080710/Alkkagi/issues/327).
+> 현행 **Production은 v0.4.1**(`main` `d40e1101`). `release/v0.4.2`는 통합 코드 검증을 위한 RC이며 운영 배포가 아닙니다.
+> GitHub PR 병합·CI 성공·Preview READY·실계정 E2E·운영 DB 적용·Production 배포는 별개 인수 항목입니다.
 
-## 1. 소스·포함 범위
+## 1. 릴리스 범위 — 확정 후보
 
-| 작업 | 구현 상태 | v0.4.2 범위 |
-| --- | --- | --- |
-| 오목 랭크전 DB 채팅 차단 | [PR #342](https://github.com/SuperNova080710/Alkkagi/pull/342) `develop` 병합 | 기존 계획 |
-| 공개 AI 조작법·title | [PR #343](https://github.com/SuperNova080710/Alkkagi/pull/343) `develop` 병합 | 기존 계획, 신규 SQL 없음 |
-| 체스 일반전 양쪽 수락 재대결 | [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [Draft PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) 미병합 | 기존 계획, 리뷰·병합 대기 |
-| 체스 온라인 XP | [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) / [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349) 미병합 | 추가 포함 여부 미확정 |
-| 체스 일반전 채팅 | [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) / [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350) 미병합 | 추가 포함 여부 미확정 |
-| 오목 돌·체스 기물 꾸미기 | [#323](https://github.com/SuperNova080710/Alkkagi/issues/323), [#352 카탈로그·장착](https://github.com/SuperNova080710/Alkkagi/issues/352), [#353 미리보기·대국 표시](https://github.com/SuperNova080710/Alkkagi/issues/353) 구현 [Draft PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354) 미병합 | 추가 포함 여부 미확정 |
-
-최종 포함 PR과 RC SHA는 #345에 기록합니다. 위 변경은 모두 v0.4.1 Production 미반영 상태입니다.
-
-## 2. SQL 적용 사전 차단
-
-아래는 검증 대상 후보 최대 5개의 타임스탬프 순서입니다. 실제 적용 목록은 **포함이 확정되고 해당 SQL이 RC에 있으며 운영 적용 이력에 없는 파일**로 확정합니다.
-
-| 순서 | 후보 SQL (`supabase/migrations/`) | PR 및 범위 | 운영 적용 전 확인 |
+| 기능 | 개발 PR | develop 병합 | 사용자 확인 기준 |
 | --- | --- | --- | --- |
-| 1 | `20261111025029_omok_ranked_chat_boundary.sql` | #342 · 기존 계획 | 랭크 INSERT RPC·과거 메시지 SELECT 제한, 일반전 권한·Realtime 유지, 기존 행 보존 |
-| 2 | `20261111025703_chess_casual_rematch.sql` | #344 · 기존 계획, 미병합 | 독립 PG17 연결의 동시 수락·새 대국 한 건 생성, 비참가자 거부, 원본 기보·결과 보존 |
-| 3 | `20261111033733_chess_online_xp.sql` | #349 · 추가 포함 미확정 | 종료 보상 중복 방지, 세 게임 공통 일일·동일 상대 상한의 경합, RP 독립, 기존 종료 대국 소급 지급 방지 |
-| 4 | `20261111033735_chess_casual_chat.sql` | #350 · 추가 포함 미확정 | 참가자 전용 조회·쓰기, 일반전 한정, Realtime·재접속, 재시도 중복 방지, 대국별 기록 분리 |
-| 5 | `20261111050715_omok_chess_cosmetics.sql` | #354 · 추가 포함 미확정 | 기존 알·캐릭터 장착값 보존, 신규 슬롯 기본값·레벨 해금, 소유·슬롯 검증, 비공개·미발행 외형 대체 |
+| 오목 랭크전 DB 채팅 SELECT/RPC 거부 | [#342](https://github.com/SuperNova080710/Alkkagi/pull/342) | `5d76e3d2` | 랭크 메시지 접근 불가, 일반전 채팅 유지, 기존 기록 보존 |
+| 공개 AI 안내·SEO 제목 | [#343](https://github.com/SuperNova080710/Alkkagi/pull/343) | `1fc3bf43` | 로그인 없이 공개 안내, title 중복 없음 |
+| 체스 일반전 양측 수락 재대결 | [#344](https://github.com/SuperNova080710/Alkkagi/pull/344) | `f1a33f7b` | 1/2→2/2 투표, 양측 동일한 새 경기, 색 반전 |
+| 체스 일반·랭크 온라인 XP | [#349](https://github.com/SuperNova080710/Alkkagi/pull/349) | `2b7f94de` | 최초 종료에만 XP·상한 및 RP 독립 |
+| 체스 일반전 참가자 채팅 | [#350](https://github.com/SuperNova080710/Alkkagi/pull/350) | `34475a37` | 참가자만 조회/전송, Realtime·재접속, 랭크 거부 |
+| 오목돌·체스 기물 꾸미기 | [#354](https://github.com/SuperNova080710/Alkkagi/pull/354) | `073058cb` | 기존 장착 보존, 신규 슬롯, 비공개·고대비·기본 외형 |
+| 한판아레나 공개 홈·3게임 카드 | [#361](https://github.com/SuperNova080710/Alkkagi/pull/361) | `3fceb381` | 오목·체스·알까기 동등한 게임 선택, 320/390/1024/1366/1920px 및 Chrome 200% |
+| 대표 검색 제목·SEO·비색인 | [#362](https://github.com/SuperNova080710/Alkkagi/pull/362) | `1c6e79b8` | 단일 WebSite JSON-LD·canonical·OG, Preview noindex·보호 경로 noindex |
+| 공개 게임 소개 3페이지 | [#363](https://github.com/SuperNova080710/Alkkagi/pull/363) | `422c139e` | `/games/*` 공개 200, 고유 메타·기능 게이트·sitemap 5개 URL |
+| 문서·이슈 정리 | [#351](https://github.com/SuperNova080710/Alkkagi/pull/351) | `9f005cad` | 실제 출시와 개발 상태 구분 |
 
-- [ ] **범위·이력 확정:** #345의 포함 PR과 RC SHA에 맞춰 SQL 목록을 동결합니다. 운영 PostgreSQL 버전, 적용 이력, 실제 스키마·RLS/GRANT·Realtime publication을 읽기 전용으로 확인합니다. 알까기 004~009, 오목 001~006, 오목 금수·체스 일반/랭크·친구 초대 등 이미 적용된 SQL은 재실행하지 않습니다.
-- [ ] **통합 재생:** RC의 확정 SQL을 기존 스키마 위에서 타임스탬프 오름차순으로 일회용 PG17에 적용합니다. 적용 로그에 확정 SQL이 모두 있는지 확인하고, 선행 의존성, 기존 v0.4.1 코드 호환성, 데이터 보존, 백업·복구 및 Auth/Realtime 검증 결과를 RC SHA에 남깁니다. #344의 독립 연결 검증은 [PG17 CI](https://github.com/SuperNova080710/Alkkagi/actions/runs/42955445328)에 있습니다.
-- [ ] **운영 적용 STOP:** 범위 미확정, PR 미병합, RC에 파일 없음, 이력 불일치, 통합 검증 실패 또는 운영 승인 전에는 해당 SQL 적용을 보류합니다. 승인된 미적용 파일만 위 순서로 각 1회 적용하고 파일명·결과를 #345에 기록합니다.
-- [ ] 운영 SQL 적용 후 2계정 테스트는 승인한 소량의 테스트 데이터만 생성하고, 실제 메시지·회원 정보·토큰을 이슈/로그에 공개하지 않기
+**릴리스 범위 기존 기능 PR 6개 + 한판아레나 UI/SEO 3개 + 문서 PR 1개, 신규 SQL 5개**. 각 개발 PR의 개별 CI는 성공했으나 통합 RC 최신 HEAD의 재검증은 별개입니다.
 
-## 3. 사용 시나리오별 QA
+## 2. 신규 SQL 정확한 적용 순서
 
-- [ ] **오목 일반전:** A/B 일반전 생성·참가·채팅 GET/POST·Realtime 수신/재접속 정상, 차단·제3자 요청 거부
-- [ ] **오목 랭크전:** 참여자도 DB RPC로 INSERT 불가, 과거 랭크 메시지 SELECT 불가. 기존 메시지 삭제하지 않음. 앱 API 403과 직접 SQL/RPC·RLS 결과를 분리해 기록
-- [ ] **가이드:** 비로그인 `/how-to-play` HTTP 200, 알까기 연습방 AI와 오목/체스 로비 AI 설명 일치, HTML 최종 title 서비스명 한 번, canonical·robots·sitemap 유지
-- [ ] **체스 재대결:** 일반전 서버 확정 종료 → A 수락 1/2 → B 수락 2/2 → 두 사용자 동일 새 대국 ID, 색 교대·기존 FEN/기보/결과 보존. 중복 버튼/두 연결 동시 POST/재접속/비참가자·랭크전 거부
-- [ ] **체스 온라인 XP (포함 시):** 일반전·랭크전 종료 후 두 계정의 보상 및 프로필 반영, 중복 정산 방지, 알까기·오목·체스 공통 상한과 RP 정산 회귀 확인
-- [ ] **체스 일반전 채팅 (포함 시):** A/B 양방향 Realtime 수신, 재접속·재시도, 제3자와 랭크전 접근 거부, 대국별 채팅 분리 확인. 재대결이 함께 포함되면 새 대국이 빈 기록에서 시작하는지 확인
-- [ ] **오목 돌·체스 기물 꾸미기 (포함 시):** 기본·레벨 해금 외형 미리보기/장착, 일반전·랭크전·AI의 내 외형, 일반전 공개 상대 외형 및 비공개·랭크·AI 상대의 기본 외형, 모바일·고대비·미발행 외형 대체 확인
-- [ ] **체스 기존 3모드:** 일반전·랭크전 결과 패널/로비 복귀, 90초 턴·RP 정산·3난이도 AI, 체크·캐슬링·승격·키보드, 모션 감소 설정 회귀
-- [ ] **알까기·오목 기존 기능:** 일반/랭크/AI·친구/XP/꾸미기 회귀, 오목 기존 자유룰 대국 보존과 새 대국 흑 33/44/장목 금수
-- [ ] 모바일 320/390, 태블릿 768, 데스크톱 1280/1920, 브라우저 실제 200% 확대, 버튼/패널/게임판 잘림·가로/미세 세로스크롤·접근성 확인
+**운영 적용 완료(2026-11-11). 동일 SQL 재실행 금지.** 기존 사용자 승인으로 신규 5개를 운영 Supabase에 순차 적용했으며, 먼저 운영 PostgreSQL 17.11의 기존 스키마·migration 이력, 권한·RLS·Realtime publication을 *읽기 전용*으로 점검합니다. 아래 SQL이 이미 적용됐는지 확인하고 **미적용 파일만** 순서대로 각 1회 적용합니다. 과거 알까기 004~009, 오목 001~006 및 v0.4.0 신규 SQL은 재실행하지 않습니다.
 
-## 4. 브랜치·릴리스 단계
+| 적용 순서 | 신규 마이그레이션 | 검증 항목 |
+| --- | --- | --- |
+| 1 | `20261111025029_omok_ranked_chat_boundary.sql` | 기존 랭크 메시지 보존·RLS SELECT 차단·RPC 전송 거부·일반전 Realtime 유지 |
+| 2 | `20261111025703_chess_casual_rematch.sql` | 트랜잭션 행 잠금, 동시 투표 멱등성·원본 결과 보존·INSERT/UPDATE Realtime |
+| 3 | `20261111033733_chess_online_xp.sql` | 3게임 공동 일일/상대 상한·중복 지급·종전 종료 소급 없음·RP와 분리 |
+| 4 | `20261111033735_chess_casual_chat.sql` | 일반전 참가자 조회/전송·RLS·요청 재시도·1초/280자/30분 제한·Realtime |
+| 5 | `20261111050715_omok_chess_cosmetics.sql` | 기존 장착 보존, 신규 코드·슬롯 제약·해금/소유 검증·비공개 대체 |
 
-1. [ ] #345의 확정 범위와 `develop` 병합 상태를 대조한 뒤 `release/v0.4.2` 생성. RC SHA의 PR·SQL 목록을 확인하고 `package.json`/lockfile 버전·CHANGELOG·인수 문서를 맞춤
-2. [ ] Quality (lint/typecheck/Vitest/Next build), PostgreSQL 17 통합·백업/복원·Supabase Auth/Realtime·release-source-guard 및 관련 Chromium QA를 **해당 RC 최신 SHA**에서 확인. 기능 Draft에서 건너뛴 릴리스 워크플로는 RC에서 실행 결과 확인
-3. [ ] 무료 Vercel Preview 횟수를 최소화하고, 사용자가 승인한 Preview 환경/DB 연결·쓰기 범위에서 실제 A/B E2E 진행. Production 비밀을 전체 Preview에 확장하지 않기
-4. [ ] 결과와 실패 재현을 #345/상세 기능 이슈에 기록. 실패 시 RC 브랜치 보완·CI/Preview 재검증
-5. [ ] **사용자 별도 운영 변경·Production 승인 후** 확정 SQL을 §2 순서대로 적용하고 `release/v0.4.2 → main` PR을 병합. Production READY·실제 배포 SHA/alias/HTTP/API·런타임 오류 Smoke 확인
-6. [ ] 실제 사용 E2E와 공식 Git 태그/GitHub Release 발행 여부를 각각 기록, `develop` 변경 역반영·불필요한 Preview 키/플래그 정리
+- [x] 운영 PostgreSQL 17.11 이력·스키마·RLS/RPC/Realtime·데이터 보존 확인, 신규 SQL 5개 각 1회 적용 완료. [#345 기록](https://github.com/SuperNova080710/Alkkagi/issues/345#issuecomment-6788578243). **원본 버전과 적용 migration 버전이 달라 자동 db push 전에 이력 조정 필요.**
+- [ ] RC 최신 SHA 기준 **일회용 PG17 전체 migration**을 위 순서대로 재생합니다. 기능별 스위트뿐 아니라 순차 적용 시 중복 함수·정의 교체 호환성을 확인합니다.
+- [ ] 운영 전에 복원 경로와 변경 후 구버전 서비스 코드 호환성 및 손상/중복 발생 시 대응 방안을 기록합니다.
+- [ ] 통합 Supabase Auth JWT·PostgREST·Realtime INSERT/UPDATE, XP·cosmetics 공개 프로필 권한을 일회용 환경에서 검증합니다.
+- [x] 사용자 SQL 적용 승인에 따라 신규 5개만 실행, 데이터 초기화·운영 키·기능 플래그 변경 없음. **동일 SQL 재실행하지 않습니다.**
 
-## 5. 인수 사실과 금지
+## 3. RC 품질 게이트
 
-2026-11-11 기준 #342·#343은 `develop`에만 병합됐으며 #344·#349·#350·#354는 Draft로 열려 있습니다. v0.4.2 Preview·Production 배포와 운영 신규 SQL 적용은 확인되지 않았습니다. 이 문서 PR은 GitHub의 릴리스 인수 자료만 갱신합니다.
+- [x] `package.json`과 `package-lock.json` 루트 버전이 둘 다 `0.4.2`이며 CHANGELOG 릴리스 후보 기록과 일치합니다.
+- [ ] RC 최신 SHA의 `npm run check`(lint, 타입, Vitest, 빌드) 성공.
+- [ ] PostgreSQL 17 모든 관련 SQL/RLS·서로 다른 두 연결의 재대결 경합·공통 XP 상한·기존 오목 금수 CI 성공.
+- [ ] 로컬 Supabase Auth/Realtime 통합 및 백업·복원 CI 성공. **skipped는 성공으로 처리하지 않습니다.**
+- [ ] Chromium 모바일 320/390, 768, 1280/1920, 모션 감소·고대비·브라우저 200% 확대, 체스·오목 기존 보드/결과/입력 회귀 확인.
+- [ ] 공동 수정 영역 `src/components/chess/chess-online.tsx`, `src/components/chess/client.ts`의 재대결+채팅+꾸미기 동시 렌더·종료 흐름 확인.
+- [ ] 해당 RC SHA의 빌드와 Preview DB 연결을 검증하고 Production 비밀키 노출/키 범위 확장 없음 확인.
+
+## 3.1 한판아레나 통합 QA 필수 추가
+
+- [ ] 최종 RC `src/app/page.tsx`에서 **3종 게임 선택 + 세 게임 소개 링크 + 절대 SEO title + 단일 WebSite JSON-LD** 모두 존재하는지 확인합니다.
+- [ ] `scripts/qa/public-viewport.mjs`의 공개 7개 경로·실제 Chrome 200% 검사·1024×768/1366×768 홈 세로 넘침 0px를 새 RC SHA 기준으로 확인합니다.
+- [ ] Production은 홈·조작법·게임별 소개를 합친 5개 공개 HTML 경로와 sitemap 5개 URL이 색인 가능, Preview는 전체 noindex·보호 게임 로비와 인증 정보는 비색인 처리합니다.
+- [ ] 홈의 게임 선택 링크는 기존 로그인 보호 로비로만 연결하고, 기능 OFF 시 시작 CTA를 숨깁니다. 게임별 공개 소개는 인증/DB 없이 렌더링합니다.
+- [ ] 기존 RC `b06431c3`와 Preview `dpl_5wx5D7FVu9kKTskJUkak4BM5navf`는 **브랜드 3개 PR 이전 빌드**입니다. 새 RC HEAD로 재검증·Preview 재배포 후 인수합니다.
+
+## 4. Preview 실제 두 계정 수용
+
+- [ ] **오목 채팅:** A/B 일반전 메시지/Realtime·재접속 정상, 랭크전 참여자도 GET/POST/DB 직접 SELECT·RPC INSERT 거부.
+- [ ] **공개 가이드:** 비인증 `/how-to-play`와 `/games/omok`·`/games/chess`·`/games/alkkagi` 200, 실제 게임별 AI 안내·타이틀/robots/canonical/모바일 확인.
+- [ ] **체스 재대결:** 경기 확정 종료 → A 수락 1/2 → B 수락 → 두 화면이 같은 다음 경기로 전환, 색 반전·기보 보존·재접속·만료·중복 POST 검증.
+- [ ] **체스 XP:** 일반/랭크 승·패·무 보상, 3게임 공통 상한·동일 상대 제한, 기권·턴 초과·중복/재시도·RP 독립 검증.
+- [ ] **체스 채팅:** 참가자만 양방향 Realtime 및 재접속 기록, 랭크·비참가자 거부, 재대결 새 경기에서는 이전 기록 미승계.
+- [ ] **꾸미기:** 레벨 2 해금·장착·기본값, 오목·체스 일반/랭크/AI에서 자기 외형, 일반전 공개 상대와 비공개 상대 폴백, 고대비/모바일.
+- [ ] **회귀:** 알까기 일반·랭크·AI·친구·XP, 오목 33/44·장목 금수, 체스 체크메이트·기권·90초·AI·랭크 결과.
+- [ ] 실계정 QA의 계정 식별자/토큰·메시지 본문은 Issue/PR/로그에 남기지 않습니다.
+
+## 5. Production 승격 게이트
+
+1. [ ] 이번 RC의 정확한 commit SHA와 CI/Preview 테스트 증거를 #345에 기록.
+2. [x] 사용자 운영 SQL 5개 적용 승인 및 반영 완료. **Production 코드 배포 승인은 별도 필요**.
+3. [x] 기존 SQL을 재실행하지 않고 신규 SQL 5개만 적용, DDL/RLS/Realtime 검증 완료. 단, 운영 사용자 실 E2E 및 migration 버전 매핑 조치는 별도.
+4. [ ] `release/v0.4.2` → `main` PR 검토·병합 후 Vercel Production READY/배포 SHA·alias·Runtime 오류/핵심 게임 Smoke 확인.
+5. [ ] `develop` 릴리스 문서·코드 역반영, 공식 Git tag/Release 발행 여부 기록.
+
+**이 문서와 릴리스 후보 브랜치 생성은 운영 DB/Preview/Production 배포 완료를 의미하지 않습니다.**
