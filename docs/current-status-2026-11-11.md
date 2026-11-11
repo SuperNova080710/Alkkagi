@@ -59,3 +59,11 @@
 - [오목 0.3 아키텍처(역사적 설계)](v0.3.0-omok-architecture.md) · [이전 2026-11-03 스냅샷](current-status-2026-11-03.md) · [2026-10-30 스냅샷](current-status-2026-10-30.md)
 
 **이번 문서화에서 운영 SQL·환경변수·Vercel 배포·기능 코드·실제 두 계정 쓰기 E2E는 실행하지 않았습니다. 문서 PR 병합·Production 출시 판단은 별도 검토 채팅 담당입니다.**
+
+## 7. 최신 병렬 작업 PR 상태 (2026-11-11 KST)
+
+- [체스 일반전 참가자 채팅 PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350) — [#340](https://github.com/SuperNova080710/Alkkagi/issues/340) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 구현 PR의 존재만으로 Production 또는 사용자 E2E 완료를 선언하지 않습니다.
+- [체스 온라인 경기 XP PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349) — [#339](https://github.com/SuperNova080710/Alkkagi/issues/339) 후속 개발 PR이 `develop` 대상으로 **open/미병합**. 보상 중복·랭크 RP·PG17 운영 적용·실계정 검증을 따로 인수합니다.
+- [체스 재대결 PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344)도 **open/미병합**. 세 PR의 병합 여부와 v0.4.2 포함 범위는 릴리스 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 검토합니다.
+
+이 섹션은 같은 날 병렬 개발로 추가된 PR을 반영한 보충 기록입니다. 최신 PR 상태가 변경되면 GitHub가 우선합니다. 이번 작업에서는 해당 개발 PR을 병합하거나 신규 DB migration을 적용하지 않았습니다.
