@@ -8,6 +8,8 @@ const privatePaths = [
   "/lobby/:path*",
   "/ranked/:path*",
   "/rooms/:path*",
+  "/omok/:path*",
+  "/chess/:path*",
   "/profile/:path*",
   "/players/:path*",
   "/friends/:path*",

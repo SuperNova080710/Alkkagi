@@ -2,14 +2,19 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArenaShell } from '@/components/ui/arena';
+import { isSearchProduction, SITE_NAME, SITE_ORIGIN } from '@/lib/seo/site';
+
+const title = '알까기 게임 규칙·조작법';
+const description = '온라인 알까기 게임을 처음 시작하나요? 알 5개로 승부하는 규칙, 마우스·터치·키보드 조작, 방 코드 참가, AI 연습전과 랭크전의 차이를 알아보세요.';
+const canonical = SITE_ORIGIN + '/how-to-play';
 
 export const metadata: Metadata = {
-  title: '알까기 게임 규칙·조작법',
-  description: '온라인 알까기 게임을 처음 시작하나요? 알 5개로 승부하는 규칙, 마우스·터치·키보드 조작, 방 코드 참가, AI 연습전과 랭크전의 차이를 알아보세요.',
-  alternates: { canonical: 'https://alkkagi-alpha.vercel.app/how-to-play' },
-  robots: process.env.VERCEL_ENV === 'production'
-    ? { index: true, follow: true }
-    : { index: false, follow: false },
+  title,
+  description,
+  alternates: { canonical },
+  openGraph: { type: 'website', locale: 'ko_KR', title, description, url: canonical, siteName: SITE_NAME },
+  twitter: { card: 'summary', title, description },
+  robots: isSearchProduction() ? { index: true, follow: true } : { index: false, follow: false },
 };
 
 const steps = [

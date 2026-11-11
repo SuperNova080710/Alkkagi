@@ -96,3 +96,12 @@ Google 공식 문서에서 **robots.txt는 색인 차단 도구가 아니며**, 
 - 기술 SEO [PR #131](https://github.com/SuperNova080710/Alkkagi/pull/131) 및 공개 가이드 [PR #137](https://github.com/SuperNova080710/Alkkagi/pull/137)는 모두 **main 병합**됐습니다. 위 '병합 후 진행' 항목은 작성 당시 단계입니다.
 - 코드상 production 사이트맵은 홈/가이드 2건이며, Google Search Console 속성 인증, Production 실제 URL/robots/noindex HTTP 검사, 사이트맵 제출·색인 생성 요청 및 실제 검색 순위 확인은 **별도로 미확인**입니다.
 - URL 접두어 검색 콘솔 인증은 사용자 Google 계정 작업이 필요하며, 검색 상단 노출은 보장되지 않습니다. 최신 릴리스는 [운영 매뉴얼](release-process.md) 기준 RC 승인 뒤 main Production 검증을 수행합니다.
+
+## 한판아레나 브랜드 전환 (#357/#359)
+
+홈 대표 제목은 **무료 온라인 오목·체스·알까기 게임 | 한판아레나**입니다. 대표 주소는 `https://alkkagi-alpha.vercel.app/`를 유지합니다. 홈에만 `WebSite` JSON-LD를 출력하고 `name`은 한판아레나, `alternateName`은 HANPAN ARENA로 지정합니다. 공개 게임 소개 페이지와 사이트맵 확장은 #360에서 관리합니다.
+
+정식 배포 후 #126에서 URL 검사로 홈·공개 가이드의 canonical, 색인 여부, 실제 렌더링된 사이트명을 확인합니다. Search Console 검색 실적은 배포 전 28일과 배포 후 같은 길이의 구간을 같은 속성·검색 유형·국가 기준으로 비교합니다. 페이지와 검색어별 노출·클릭·CTR을 기록하며, 초기 수집 지연이 있는 경우 비교 시점을 기록합니다. Google Trends 단기 수치는 상대 관심도이며 월간 검색량과 분리합니다.
+
+- [Google 검색 사이트명·WebSite 구조화 데이터](https://developers.google.com/search/docs/appearance/site-names)
+- [Search Console 실적 보고서](https://support.google.com/webmasters/answer/7576553)
