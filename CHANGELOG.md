@@ -2,12 +2,26 @@
 
 Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production 배포**를 분리합니다. `main`/운영에 없는 변경을 출시 완료로 표시하지 않습니다. [릴리스 프로세스](docs/release-process.md) · [2026-11-03 상태](docs/current-status-2026-11-03.md).
 
-## [0.4.1] — 정식 배포 승인 (2026-11-09)
+## [Unreleased — v0.4.2 예정] (2026-11-11 기준)
+
+> **개발/출시 구분:** 현행 Production은 v0.4.1 (`main` `d40e110`, [Vercel READY](https://vercel.com/mallang1/alkkagi/9iKVkDCnu7bmuEaHqE9wotiPD2Kr)). 아래 기능은 **Production에 아직 반영되지 않았으며** [릴리스 이슈 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) 및 [인수 체크리스트](docs/release-v0.4.2-handoff.md)를 따릅니다.
+
+### Fixed — develop에만 병합
+- [PR #342](https://github.com/SuperNova080710/Alkkagi/pull/342): 오목 랭크전 메시지의 **Supabase RPC INSERT/과거 SELECT RLS** 차단. 일반전 채팅 보존 및 일회용 PG17.11 검증. 신규 `20261111025029_omok_ranked_chat_boundary.sql`은 **운영 적용 전**이며 0.3.1의 앱 API/UI 채팅 차단과 다릅니다.
+- [PR #343](https://github.com/SuperNova080710/Alkkagi/pull/343): 공개 조작법의 알까기 연습방 AI 진입, 오목/체스 로비 AI 즉시 시작 흐름을 정정하고 중복된 서비스명 페이지 제목을 수정. 공개 SEO/canonical·Chromium 회귀 확인.
+
+### Pending — 구현 Draft 검토 중
+- [#341](https://github.com/SuperNova080710/Alkkagi/issues/341) / [PR #344](https://github.com/SuperNova080710/Alkkagi/pull/344) **미병합:** 체스 일반전 종료 30분 내 양측 수락 재대결·색 교대/원본 기록 보존/동시 요청 중복 방지. 신규 `20261111025703_chess_casual_rematch.sql` 적용·운영 E2E 전에는 출시 기능이 아닙니다.
+- 체스 온라인 공통 XP [Draft PR #349](https://github.com/SuperNova080710/Alkkagi/pull/349), 체스 참가자 전용 채팅 [Draft PR #350](https://github.com/SuperNova080710/Alkkagi/pull/350), 오목 돌·체스 기물 꾸미기 [Draft PR #354](https://github.com/SuperNova080710/Alkkagi/pull/354)는 미병합이며 v0.4.2 포함 여부는 [#345](https://github.com/SuperNova080710/Alkkagi/issues/345)에서 결정합니다.
+
+**릴리스 STOP:** 적용 이력 없는 새 SQL에 대한 운영 승인, 분리된 DB/RLS·Realtime 검사와 실제 두 계정 E2E, 최신 SHA의 CI, 사용자 Preview/Production 승인 전 배포·태그 발행 금지. 이미 적용된 SQL 재실행 금지.
+
+## [0.4.1] — Production READY (2026-11-09)
 
 - **체스 일반전·랭크전:** 서버에서 승패가 확정되면 오목·체스 AI와 공통 결과 패널을 표시합니다. 재접속·오류 발생 후에도 확정된 결과를 유지하고, 종료 뒤 기물 입력을 차단합니다 (#333).
 - **결과 및 이동:** 승리·패배·무승부와 종료 사유(체크메이트, 기권, 시간 초과 등)를 표시하며 일반전은 체스 로비, 랭크전은 체스 랭크 로비로 돌아갑니다. 구현되지 않은 온라인 재대결 버튼은 노출하지 않습니다.
 - **검증:** Quality checks, Vitest 95개 파일/571개 테스트, Chromium 5개 화면×모션 설정 2개 조합(10/10) 통과. `release/v0.4.1` Preview READY·사용자 수동 확인 완료.
-- **운영:** DB 스키마·RLS·RP 정산·기존 기능 플래그는 변경하지 않습니다. 실제 Production 배포 상태와 SHA는 [릴리스 이슈 #334](https://github.com/SuperNova080710/Alkkagi/issues/334)에 기록합니다. 실계정 2명 온라인 E2E와 공식 Git 태그/Release는 별도 확인 대상입니다.
+- **운영:** [PR #336](https://github.com/SuperNova080710/Alkkagi/pull/336) `main` 병합 SHA `d40e1101c32bb30143ca9728a248860376093d45`, [Vercel Production READY/서비스 alias](https://vercel.com/mallang1/alkkagi/9iKVkDCnu7bmuEaHqE9wotiPD2Kr) 확인. 신규 SQL/RLS·RP 정산 변경 없음. 실제 두 계정 온라인 E2E·태그/공식 GitHub Release는 [#338](https://github.com/SuperNova080710/Alkkagi/issues/338)에서 미완료.
 
 ## [0.4.0] — Production 배포 확인 (2026-11-09)
 
@@ -23,7 +37,7 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 - **품질:** CI 전용 7-뷰포트 Chromium 랭크 경기 fixture 및 채팅 경계 회귀 테스트 추가. 운영용 fixture 라우트는 포함하지 않습니다.
 - **운영:** DB 마이그레이션·알까기 판정/RP·오목 엔진과 기존 운영 기능 플래그는 변경하지 않습니다. 정식 Production 배포 결과는 [#298](https://github.com/SuperNova080710/Alkkagi/issues/298)에 기록합니다.
 
-## [0.3.0] — 오목 정식 릴리스 후보 승인 (2026-11-04)
+## [0.3.0] — 오목 Production 릴리스 (2026-11-04)
 
 - **출시 범위:** 기존 알까기 유지, 오목 15×15 자유룰, 일반전·AI 3단계·독립 랭크/랭킹, 친구 초대·채팅·재대결, 공통 프로필·레벨·경험치.
 - **UI:** 게임별 랭킹 직접 전환, 일반전 대화상자·대기실 공통 디자인, AI 난이도 선택/다시하기, TOP 100 리더보드 가로 스크롤 제거, 반응형 화면 검증.
@@ -56,9 +70,10 @@ Alkkagi Arena의 **코드 병합**, **출시 후보(RC)**, **실제 Production �
 - GitHub CI/일회용 Docker E2E 통과와 실제 두 계정 브라우저 E2E·Realtime·UI 기능 플래그 활성화를 구분. 릴리스 전 #194/#196/#203/#206 게이트.
 - 별도 사용자 승인 없이 Preview/Production 키·기능 플래그·운영 데이터를 변경하지 않음.
 
-## [Unreleased]
+## 기존 릴리스의 미완료 운영 인수
 
-- 이전 버전의 실사용 2계정 E2E·공식 Git 태그 및 GitHub Release 발행 여부는 개별 릴리스 기록에서 별도 확인합니다. 발견되는 결함은 후속 버전/핫픽스로 관리합니다.
+- 이전 버전의 실사용 두 계정 E2E 및 공식 Git 태그·GitHub Release 발행 여부는 각 운영 이슈에서 별도로 확인합니다. GitHub Releases 목록은 2026-11-11 조회 시 비어 있었으나 태그 부재까지 확정할 수는 없습니다.
+- 과거 v0.2.0 미완료 목록·Preview 장애는 당시 기록으로 보존하며, 현행 Production v0.4.1과 혼동하지 않습니다. 검증되지 않은 버그 수정은 후속 버전/핫픽스로 관리합니다.
 
 ## 이전 Production 기준점
 

@@ -1,5 +1,8 @@
 # Alkkagi Arena — Google 검색 등록 및 기술 SEO
 
+> **최신 정정 (2026-11-11):** 기술 SEO와 공개 조작법은 과거 PR #131/#137을 통해 서비스에 반영됐습니다. 사용자는 Google Search Console 소유권 확인과 sitemap 제출 성공을 보고했으나, 실제 색인·검색 순위/노출까지 확인된 것은 아닙니다([#126](https://github.com/SuperNova080710/Alkkagi/issues/126)). 2026-11-11 공개 조작법 AI 진입/title 정정 PR #343은 **`develop`에만 병합**, v0.4.1 Production 미반영이며 [v0.4.2 #345](https://github.com/SuperNova080710/Alkkagi/issues/345) 대상입니다.
+
+
 > **최신 정정 (2026-11-03):** SEO 메타·robots·sitemap PR #131, 공개 게임 규칙·FAQ #137 병합. 실제 Google Search Console 소유권 확인·sitemap 제출·색인 요청/보고서는 #126에서 미완료입니다. 운영 SQL 적용이나 릴리스 CI 통과가 검색 노출을 보장하지 않습니다. [현재 인수](current-status-2026-11-03.md). 아래 오래된 미병합·미적용/미구현 문구는 당시 기록으로 보존합니다.
 
 

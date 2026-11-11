@@ -1,5 +1,8 @@
 # ALEPH 앱 프로젝트 제출 문서
 
+> **최신 정정 (2026-11-11):** 이 문서는 ALEPH P1/P2/P3의 **2026-10월 제출 기준점 보존**용입니다. 현재 서비스는 **v0.4.1** `d40e110` Production READY이며 알까기·오목·체스를 제공합니다. [2026-11-11 현행 상태](current-status-2026-11-11.md)와 [CHANGELOG](../CHANGELOG.md)에서 최신 기능을 확인하세요. 본문에 남은 ‘오목 Draft/SQL 미적용/0.2 릴리스 대기’는 이전 날짜의 기록이며 현재 사실이 아닙니다. 실제 ALEPH 최종 접수·승인은 [#3](https://github.com/SuperNova080710/Alkkagi/issues/3)에서 확인해야 합니다.
+
+
 ## P3 — 최종 제출 (2026-10-29 현재)
 - [최종 제출 양식 5개 항목 및 필수 URL](p3-final-submission-2026-10-29.md)
 - [최종 인수·검증 근거 및 P2 이후 PR](p3-final-acceptance-2026-10-29.md)
