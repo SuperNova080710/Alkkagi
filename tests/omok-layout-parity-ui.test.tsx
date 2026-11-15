@@ -70,7 +70,7 @@ describe('Omok matches Alkkagi lobby, result and sizing (#261)', () => {
     const source = readFileSync(new URL('../src/components/omok/omok-ai-client.tsx', import.meta.url), 'utf8');
     expect(source).toContain('<OmokResultOverlay');
     expect(source).toContain('onReplay={chooseReplayDifficulty}');
-    expect(source).toContain('replayDialog.current?.showModal()');
+    expect(source).toContain('openArenaDialog(replayDialog.current, trigger)');
     expect(source).toContain('initialDifficulty={snapshot.difficulty}');
     expect(source).not.toContain('async function again()');
     expect(source).toContain("snapshot.winner === 'human'");
