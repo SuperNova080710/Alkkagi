@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ArenaGame } from '@/components/lobby/game-switcher';
+import { ArenaGlassHeader, type ArenaNavItem } from './arena-glass-header';
 
 export function ArenaShell({ children, current, account, game = 'alkkagi', publicHome = false }: {
   children: ReactNode;
@@ -15,31 +16,32 @@ export function ArenaShell({ children, current, account, game = 'alkkagi', publi
     : game === 'omok' && omokEnabled ? 'omok' : 'alkkagi';
   const lobbyHref = currentGame === 'chess' ? '/chess' : currentGame === 'omok' ? '/omok' : '/lobby';
   const rankedHref = currentGame === 'chess' ? '/chess/ranked' : currentGame === 'omok' ? '/omok/ranked' : '/ranked';
+  const menus: ArenaNavItem[] = publicHome ? [
+    { key: 'games', href: '#games', label: '게임 선택' },
+    { key: 'guide', href: '/how-to-play', label: '조작법' },
+    { key: 'signup', href: '/signup', label: '회원가입' },
+  ] : [
+    { key: 'lobby', href: lobbyHref, label: '로비' },
+    { key: 'ranked', href: rankedHref, label: '랭킹' },
+    { key: 'players', href: '/players', label: '플레이어' },
+    { key: 'friends', href: '/friends', label: '친구' },
+  ];
+  if (!publicHome) {
+    if (process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true')
+      menus.push({ key: 'messages', href: '/messages', label: '메신저' });
+    menus.push({ key: 'profile', href: '/profile', label: '내 프로필' });
+    if (process.env.COSMETICS_UI_ENABLED === 'true')
+      menus.push({ key: 'cosmetics', href: '/cosmetics', label: '꾸미기' });
+  }
+  const activeHref = menus.find(menu => menu.key === (publicHome ? 'games' : current))?.href;
   return <div className="arena">
     <a className="arena-skip" href="#arena-content">본문으로 이동</a>
     <div className="arena-wrap">
-      <header className="arena-header">
+      <ArenaGlassHeader items={menus} activeHref={activeHref} account={account}>
         <Link href="/" className="arena-brand" aria-label="한판아레나 홈">
           <span>한판아레나</span><span lang="en">HANPAN ARENA</span>
         </Link>
-        <nav aria-label="주요 메뉴" className="arena-nav">
-          {publicHome ? <>
-            <Link href="#games">게임 선택</Link>
-            <Link href="/how-to-play">조작법</Link>
-            <Link href="/signup">회원가입</Link>
-          </> : <>
-            <Link href={lobbyHref} aria-current={current === 'lobby' ? 'page' : undefined}>로비</Link>
-            <Link href={rankedHref} aria-current={current === 'ranked' ? 'page' : undefined}>랭킹</Link>
-            <Link href="/players" aria-current={current === 'players' ? 'page' : undefined}>플레이어</Link>
-            <Link href="/friends" aria-current={current === 'friends' ? 'page' : undefined}>친구</Link>
-            {process.env.FRIENDS_UI_ENABLED === 'true' && process.env.MESSAGES_UI_ENABLED === 'true' &&
-              <Link href="/messages" aria-current={current === 'messages' ? 'page' : undefined}>메신저</Link>}
-            <Link href="/profile" aria-current={current === 'profile' ? 'page' : undefined}>내 프로필</Link>
-            {process.env.COSMETICS_UI_ENABLED === 'true' && <Link href="/cosmetics" aria-current={current === 'cosmetics' ? 'page' : undefined}>꾸미기</Link>}
-          </>}
-        </nav>
-        {account && <div className="arena-account">{account}</div>}
-      </header>
+      </ArenaGlassHeader>
       <main id="arena-content" tabIndex={-1}>{children}</main>
       <footer className="arena-footer">한판아레나 <span>오목 · 체스 · 알까기</span></footer>
     </div>

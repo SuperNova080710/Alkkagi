@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { isSearchProduction, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/seo/site";
 import { SocialMessenger } from "@/components/social/social-messenger";
 import "./globals.css";
+import "@zakisheriff/liquid-glass/styles.css";
 import "./arena.css";
 
 export const metadata: Metadata = {

@@ -201,6 +201,19 @@ async function main() {
         }
         if (m.focus.href !== '#arena-content') failures.push('Skip link is not the first keyboard focus target');
         if (path === '/') {
+          const refracted = await until(async () => await session.eval(`
+            Boolean(document.querySelector('.arena-header-glass[data-lg-refract="surface"]'))
+          `, sessionId), 5000).catch(() => false);
+          if (!refracted) failures.push('Liquid Glass did not build the Chromium backdrop filter');
+          const aligned = await session.eval(`(() => {
+            const nav = document.querySelector('.arena-nav[data-indicator-ready]');
+            const pill = nav?.querySelector('.arena-nav-indicator')?.getBoundingClientRect();
+            const current = nav?.querySelector('[aria-current="location"]')?.getBoundingClientRect();
+            return Boolean(pill && current && pill.width > 0 &&
+              Math.abs(pill.left - current.left - 1) < 2 &&
+              Math.abs(pill.right - current.right + 1) < 2);
+          })()`, sessionId);
+          if (!aligned) failures.push('Sliding indicator is missing or off its active link');
           const home = await session.eval(`(() => {
             const grid = document.querySelector('.arena-platform-grid');
             if (!grid) return null;
