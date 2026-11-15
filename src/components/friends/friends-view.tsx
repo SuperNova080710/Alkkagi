@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { ArenaPanel } from '@/components/ui/arena';
 import { ReceivedRoomInvites } from '@/components/rooms/received-room-invites';
+import { notifySocialInboxChanged } from '@/components/social/social-inbox';
 import { dmConversationPath } from '@/components/messages/message-api';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import { FriendApiError, friendActionRequest, friendErrorMessage, friendMutation, type FriendAction } from './friend-api';
@@ -32,6 +33,7 @@ export function FriendsView({ messagesEnabled = false, roomInvitesEnabled = fals
     try {
       const request = friendActionRequest(action);
       await friendMutation(request.path, request.method, request.body);
+      notifySocialInboxChanged();
       dialog.current?.close(); setAction(null); setMessage(`${labels[action.kind]} 요청을 처리했습니다. 최신 목록을 확인해 주세요.`); retry();
     } catch (cause) {
       if (cause instanceof FriendApiError && cause.status === 401) { dialog.current?.close(); setAction(null); setExpired(true); }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { isSearchProduction, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/seo/site";
+import { SocialMessenger } from "@/components/social/social-messenger";
 import "./globals.css";
 import "./arena.css";
 
@@ -36,7 +37,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        {process.env.FRIENDS_UI_ENABLED === 'true' && <SocialMessenger/>}
+      </body>
     </html>
   );
 }
