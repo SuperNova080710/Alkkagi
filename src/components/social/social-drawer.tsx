@@ -12,6 +12,15 @@ import { unreadMessages, type SocialInbox, type SocialInvite, type SocialRequest
 
 type Tab = 'messages' | 'invites' | 'requests';
 
+function InboxActions({ label, pending, onRespond }: {
+  label: string; pending: boolean; onRespond: (accept: boolean) => void;
+}) {
+  return <div className="arena-social-actions">
+    <button type="button" disabled={pending} aria-label={label + ' 수락'} onClick={() => onRespond(true)}>수락</button>
+    <button type="button" disabled={pending} aria-label={label + ' 거절'} onClick={() => onRespond(false)}>거절</button>
+  </div>;
+}
+
 export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
   inbox: SocialInbox; pathname: string; loadFailed: boolean; onRefresh: () => void;
 }) {
@@ -106,13 +115,6 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
     </button>;
   }
 
-  function actions(label: string, run: (accept: boolean) => void) {
-    return <div className="arena-social-actions">
-      <button type="button" disabled={pending} aria-label={label + ' 수락'} onClick={() => run(true)}>수락</button>
-      <button type="button" disabled={pending} aria-label={label + ' 거절'} onClick={() => run(false)}>거절</button>
-    </div>;
-  }
-
   let content: ReactNode;
   if (tab === 'messages') {
     content = <MessengerView userId={inbox.userId} initialPeer={null} embedded onNavigate={close}/>;
@@ -132,8 +134,8 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
             </div>
             <time dateTime={invite.expiresAt}>만료 {inviteTime(invite.expiresAt)}</time>
           </div>
-          {actions(socialInviteGames[invite.game].label + ' ' + invite.inviterNickname + '님의 초대',
-            accept => respondInvite(invite, accept))}
+          <InboxActions label={socialInviteGames[invite.game].label + ' ' + invite.inviterNickname + '님의 초대'}
+            pending={pending} onRespond={accept => respondInvite(invite, accept)}/>
         </li>)}
       </ul>
     </>;
@@ -146,7 +148,8 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
       <ul className="arena-social-list">
         {inbox.requests?.map(request => <li key={request.id}>
           <Link href={'/players/' + request.userId} onClick={close}>{request.nickname}</Link>
-          {actions(request.nickname + '님의 친구 요청', accept => respondFriend(request, accept))}
+          <InboxActions label={request.nickname + '님의 친구 요청'} pending={pending}
+            onRespond={accept => respondFriend(request, accept)}/>
         </li>)}
       </ul>
     </>;
