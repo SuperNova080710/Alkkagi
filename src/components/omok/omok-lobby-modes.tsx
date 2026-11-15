@@ -1,5 +1,6 @@
 'use client';
 
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArenaModeCard } from '@/components/ui/arena';
@@ -12,15 +13,15 @@ export function OmokLobbyModes() {
   const [mode, setMode] = useState<'casual' | 'ai'>('casual');
   const [aiPending, setAiPending] = useState(false);
 
-  function open(next: 'casual' | 'ai') {
+  function open(next: 'casual' | 'ai', trigger: HTMLButtonElement) {
     setMode(next);
-    dialog.current?.showModal();
+    openArenaDialog(dialog.current, trigger);
   }
 
   return <>
     <div className="arena-modes" aria-label="오목 대전 방식">
       <ArenaModeCard mode="casual" game="omok">
-        <button className="arena-button" type="button" onClick={() => open('casual')}>
+        <button className="arena-button" type="button" onClick={event => open('casual', event.currentTarget)}>
           방 만들기 · 코드로 참가 <span aria-hidden="true">›</span>
         </button>
       </ArenaModeCard>
@@ -30,7 +31,7 @@ export function OmokLobbyModes() {
         </Link>
       </ArenaModeCard>
       <ArenaModeCard mode="ai" game="omok">
-        <button className="arena-button arena-button--blue" type="button" onClick={() => open('ai')}>
+        <button className="arena-button arena-button--blue" type="button" onClick={event => open('ai', event.currentTarget)}>
           AI 연습 시작 <span aria-hidden="true">›</span>
         </button>
       </ArenaModeCard>
