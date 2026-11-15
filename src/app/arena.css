@@ -24,13 +24,56 @@
 .arena button:disabled { cursor: not-allowed; opacity: .6; }
 .arena a { text-decoration: none; }
 .arena-wrap { width: min(1440px, 100%); margin: 0 auto; padding: 0 28px; }
-.arena-header { display: flex; align-items: center; gap: 32px; min-height: 88px; padding: 12px 24px; background: #113e2eea; color: #fff9ec; border: 1px solid #ffffff1a; border-top: 0; border-radius: 0 0 20px 20px; }
+.arena-header {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-height: 88px;
+  padding: 12px 24px;
+  color: #fff9ec;
+  background:
+    radial-gradient(ellipse at 22% -125%, #b8f6d54d, transparent 78%),
+    linear-gradient(160deg, #245b46, #11382d 69%, #204b3d);
+  border: 1px solid #d5ffe659;
+  border-top: 0;
+  border-radius: 0 0 20px 20px;
+  box-shadow: inset 0 1px 0 #e7ffee5e, inset 0 -1px 0 #d2ffed38, 0 7px 22px #0f2d2526;
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .arena-header {
+    background:
+      radial-gradient(ellipse at 22% -125%, #b8f6d54d, transparent 78%),
+      linear-gradient(160deg, #174634e8, #092b23ed 69%, #163c30e5);
+    -webkit-backdrop-filter: blur(18px) saturate(155%);
+    backdrop-filter: blur(18px) saturate(155%);
+  }
+}
 .arena-brand { flex: 0 0 auto; display: flex; flex-direction: column; font-weight: 1000; font-size: 25px; line-height: .9; letter-spacing: -.05em; transform: rotate(-4deg); text-shadow: 2px 3px 0 #0b261c; }
 .arena-brand span:first-child { color: #ffd05a; }
 .arena-brand span:last-child { color: #76d8a5; font-size: .53em; line-height: 1.35; text-align: center; letter-spacing: .035em; }
 .arena-nav { display: flex; align-self: stretch; justify-content: center; gap: clamp(12px, 3vw, 48px); margin: 0 auto; }
-.arena-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border-bottom: 3px solid transparent; font-weight: 800; }
-.arena-nav a:hover, .arena-nav a[aria-current] { color: #ffd05a; border-bottom-color: #e8b745; }
+.arena-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-bottom: 3px solid transparent;
+  border-radius: 12px;
+  font-weight: 800;
+}
+.arena-nav a:hover, .arena-nav a:focus-visible {
+  color: #fff3c8;
+  background: #e5fff314;
+}
+.arena-nav a[aria-current] {
+  color: #ffe59a;
+  border-bottom-color: #edc56a;
+  background: linear-gradient(165deg, #f2ffda25, #f2ffda0a);
+  box-shadow: inset 0 1px 0 #fff6d446;
+}
+@media (forced-colors: active) {
+  .arena-nav a[aria-current] { border-bottom-color: Highlight; }
+}
 .arena-account button { min-height: 44px; border-color: #ffffff66; }
 .arena-header :focus-visible { outline-color: #ffd05a; }
 .arena-hero { position: relative; isolation: isolate; display: grid; place-items: center; min-height: 360px; overflow: hidden; border-radius: 20px; margin-top: 18px; background: #294b32; }
