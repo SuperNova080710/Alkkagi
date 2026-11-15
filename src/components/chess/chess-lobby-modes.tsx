@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, type FormEvent } from 'react';
-import { ReceivedRoomInvites } from '@/components/rooms/received-room-invites';
 import { ArenaModeCard } from '@/components/ui/arena';
 import { ChessDifficultyForm } from './chess-difficulty-form';
 import { chessRequest } from './client';
@@ -14,7 +13,7 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
   const [mode, setMode] = useState<'casual' | 'ai' | null>(null);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const [pending, setPending] = useState<'create' | 'join' | 'invite' | null>(null);
+  const [pending, setPending] = useState<'create' | 'join' | null>(null);
   const lock = useRef(false);
   const creation = useRef<string | null>(null);
 
@@ -95,11 +94,6 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
           </form>
         </div>
         {error && <p role="alert" className="arena-invite-error">{error}</p>}
-        {invitesEnabled && <ReceivedRoomInvites game="chess" disabled={pending === 'create' || pending === 'join'}
-          onProcessingChange={processing => {
-            lock.current = processing;
-            setPending(processing ? 'invite' : null);
-          }} onAccepted={() => dialog.current?.close()}/>}
       </div> : mode === 'ai' && <ChessDifficultyForm onStart={difficulty => {
         dialog.current?.close();
         router.push('/chess/ai#' + difficulty);
