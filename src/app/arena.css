@@ -57,14 +57,25 @@
 .arena-brand { flex: 0 0 auto; display: flex; flex-direction: column; font-weight: 1000; font-size: 25px; line-height: .9; letter-spacing: -.05em; transform: rotate(-4deg); text-shadow: 2px 3px 0 #0b261c; }
 .arena-brand span:first-child { color: #ffd05a; }
 .arena-brand span:last-child { color: #76d8a5; font-size: .53em; line-height: 1.35; text-align: center; letter-spacing: .035em; }
-.arena-nav { display: flex; align-self: stretch; justify-content: center; gap: clamp(12px, 3vw, 48px); margin: 0 auto; }
+.arena-nav {
+  --arena-nav-slot: 88px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 auto;
+}
 .arena-nav a {
   position: relative;
   z-index: 1;
   display: inline-flex;
+  flex: 0 0 var(--arena-nav-slot);
   align-items: center;
-  min-height: 44px;
-  padding: 8px 12px;
+  justify-content: center;
+  inline-size: var(--arena-nav-slot);
+  block-size: 44px;
+  padding: 4px 6px;
   border-bottom: 3px solid transparent;
   border-radius: 18px;
   font-weight: 800;
@@ -151,7 +162,7 @@
   .arena-header { flex-wrap: wrap; gap: 12px; min-height: auto; padding: 18px 16px 8px; border-radius: 0 0 18px 18px; }
   .arena-brand { font-size: 23px; }
   .arena-account { margin-left: auto; }
-  .arena-nav { order: 3; flex: 1 0 100%; gap: 18px; }
+  .arena-nav { --arena-nav-slot: 82px; }
   .arena-nav a { padding: 4px 8px; font-size: 14px; }
   .arena-hero, .arena-hero--compact { margin-top: 12px; min-height: 218px; }
   .arena-hero-copy { padding: 18px 10px; }
@@ -438,7 +449,7 @@
   .arena-wrap { padding-inline: 20px; }
   .arena-header { min-height: 62px; gap: 18px; padding: 7px 17px; border-radius: 0 0 16px 16px; }
   .arena-brand { font-size: 21px; }
-  .arena-nav { gap: clamp(5px, 1.4vw, 22px); }
+  .arena-nav { gap: clamp(4px, .75vw, 14px); }
   .arena-nav a { padding: 5px 8px; font-size: 14px; }
   .arena-footer { padding: 11px 8px; }
   .arena-hero { min-height: clamp(168px, 23dvh, 244px); margin-top: 10px; }
@@ -1664,7 +1675,6 @@
     min-width: 0;
   }
   .arena-nav:has(a[href="/cosmetics"]) a {
-    min-height: 42px;
     padding: 5px 8px;
   }
 }
@@ -2014,12 +2024,10 @@
    the CSS viewport often lands here; wrap instead of creating page-wide overflow. */
 @media (min-width: 640px) and (max-width: 1023px) {
   .arena-header {
-    flex-wrap: wrap;
     column-gap: 14px;
     row-gap: 6px;
   }
   .arena-nav {
-    flex: 1 1 420px;
     min-width: 0;
     flex-wrap: wrap;
     justify-content: center;
@@ -2262,4 +2270,102 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .arena-game-switcher > a { transition: none; }
+}
+
+/* Equal side tracks keep the menu centered whether or not an account action is present. */
+@media (min-width: 1024px) {
+  .arena-header {
+    display: grid;
+    grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr);
+    column-gap: 12px;
+  }
+  .arena-header > .arena-brand { grid-area: 1 / 1; justify-self: start; }
+  .arena-header > .arena-nav { grid-area: 1 / 2; justify-self: center; }
+  .arena-header > .arena-account {
+    grid-area: 1 / 3;
+    justify-self: end;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 1023px) {
+  .arena-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .arena-header > .arena-brand { grid-area: 1 / 1; justify-self: start; }
+  .arena-header > .arena-account { grid-area: 1 / 2; justify-self: end; }
+  .arena-header > .arena-nav { grid-area: 2 / 1 / 3 / -1; margin: 0; }
+}
+
+@media (min-width: 1536px) and (min-height: 850px) {
+  .arena:has(> .arena-wrap, > .arena-waiting, > .game-page) {
+    block-size: 100dvh;
+    min-height: 0;
+    overflow: clip;
+  }
+  .arena-wrap {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+  }
+  .arena-wrap > :is(.arena-header, .arena-footer) { flex: 0 0 auto; }
+  .arena-wrap > #arena-content {
+    flex: 1 1 0;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .arena > :is(.arena-waiting, .game-page) {
+    block-size: 100%;
+    min-block-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .arena-wrap > #arena-content > .arena-waiting { min-block-size: 0; }
+  .arena-friends-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+:is(.arena-dialog, .arena-friend-dialog) {
+  --arena-panel-start: translate(
+    calc(var(--arena-panel-origin-x, 50vw) - 50vw),
+    calc(var(--arena-panel-origin-y, 50dvh) - 50dvh)
+  ) scale(.16, .13);
+  transform: var(--arena-panel-start);
+  opacity: .35;
+  transition:
+    transform var(--arena-panel-duration) var(--arena-panel-ease),
+    opacity var(--arena-panel-duration) ease,
+    display var(--arena-panel-duration) allow-discrete,
+    overlay var(--arena-panel-duration) allow-discrete;
+}
+:is(.arena-dialog, .arena-friend-dialog)[open] { transform: none; opacity: 1; }
+:is(.arena-dialog, .arena-friend-dialog)::backdrop {
+  opacity: 0;
+  transition: opacity var(--arena-panel-duration) ease,
+    display var(--arena-panel-duration) allow-discrete,
+    overlay var(--arena-panel-duration) allow-discrete;
+}
+:is(.arena-dialog, .arena-friend-dialog)[open]::backdrop { opacity: 1; }
+@starting-style {
+  :is(.arena-dialog, .arena-friend-dialog)[open] { transform: var(--arena-panel-start); opacity: .35; }
+  :is(.arena-dialog, .arena-friend-dialog)[open]::backdrop { opacity: 0; }
+}
+@supports (interpolate-size: allow-keywords) {
+  .arena details::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    opacity: 0;
+    overflow: clip;
+    transition: block-size var(--arena-panel-duration) var(--arena-panel-ease),
+      opacity var(--arena-panel-duration) ease,
+      content-visibility var(--arena-panel-duration) allow-discrete;
+  }
+  .arena details[open]::details-content { block-size: auto; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.arena-dialog, .arena-friend-dialog),
+  :is(.arena-dialog, .arena-friend-dialog)::backdrop,
+  .arena details::details-content { transition: none; }
 }

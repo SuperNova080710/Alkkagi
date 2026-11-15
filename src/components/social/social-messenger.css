@@ -4,7 +4,6 @@
   --social-button-size: 54px;
   --social-width: min(412px, calc(100vw - var(--social-anchor-x) - max(12px, env(safe-area-inset-right))));
   --social-height: min(620px, calc(100dvh - var(--social-anchor-y) - max(12px, env(safe-area-inset-top))));
-  --social-motion: cubic-bezier(.22, .85, .28, 1);
   --arena-forest: #173c2e;
   --arena-muted: #5a6e61;
   --arena-jade: #267650;
@@ -92,8 +91,8 @@
   overflow: hidden;
   border-color: #b9d4c1;
   transition:
-    width 270ms var(--social-motion), height 270ms var(--social-motion),
-    border-radius 270ms var(--social-motion), display 270ms allow-discrete, overlay 270ms allow-discrete;
+    width var(--arena-panel-duration) var(--arena-panel-ease), height var(--arena-panel-duration) var(--arena-panel-ease),
+    border-radius var(--arena-panel-duration) var(--arena-panel-ease), display var(--arena-panel-duration) allow-discrete, overlay var(--arena-panel-duration) allow-discrete;
 }
 .arena-social-dialog[open] {
   width: var(--social-width);
@@ -102,7 +101,7 @@
 }
 .arena-social-dialog::backdrop {
   background: transparent;
-  transition: background 270ms ease, display 270ms allow-discrete, overlay 270ms allow-discrete;
+  transition: background var(--arena-panel-duration) ease, display var(--arena-panel-duration) allow-discrete, overlay var(--arena-panel-duration) allow-discrete;
 }
 .arena-social-dialog[open]::backdrop { background: #102c2861; }
 
@@ -128,9 +127,9 @@
   color: var(--arena-forest);
   background: linear-gradient(145deg, #fffdf6, #eff5e9);
   opacity: 0;
-  transition: opacity 110ms ease;
+  transition: opacity 145ms ease;
 }
-.arena-social-dialog[open] .arena-social-drawer { opacity: 1; transition-delay: 75ms; }
+.arena-social-dialog[open] .arena-social-drawer { opacity: 1; transition-delay: 90ms; }
 
 @starting-style {
   .arena-social-dialog[open] {

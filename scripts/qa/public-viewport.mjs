@@ -234,6 +234,51 @@ async function main() {
             failures.push('Home vertical overflow ' + m.verticalOverflowPx + 'px');
           }
         }
+        if (label === 'wide-1920x1080') {
+          if (m.verticalOverflowPx > 1) failures.push('Full HD document scroll ' + m.verticalOverflowPx + 'px');
+          if (path === '/login') {
+            const navParity = await session.eval(`(() => {
+              const header = document.querySelector('.arena-header');
+              const tabs = [...(header?.querySelectorAll('.arena-nav a') ?? [])];
+              if (!header || tabs.length === 0) return false;
+              const bounds = () => tabs.map(tab => {
+                const {x, y, width, height} = tab.getBoundingClientRect();
+                return [x, y, width, height];
+              });
+              const initial = bounds();
+              if (initial.some(([, , width, height]) => width !== 88 || height !== 44)) return false;
+              const account = document.createElement('div');
+              account.className = 'arena-account';
+              account.textContent = '로그아웃';
+              header.append(account);
+              const matches = JSON.stringify(bounds()) === JSON.stringify(initial);
+              account.remove();
+              return matches;
+            })()`, sessionId);
+            if (!navParity) failures.push('Header links changed position or size when the account action appeared');
+            const motion = await session.eval(`(async () => {
+              const dialog = document.createElement('dialog');
+              dialog.className = 'arena-dialog';
+              dialog.textContent = '대전 선택';
+              dialog.style.setProperty('--arena-panel-origin-x', '200px');
+              dialog.style.setProperty('--arena-panel-origin-y', '240px');
+              document.querySelector('#arena-content').append(dialog);
+              dialog.showModal();
+              await new Promise(requestAnimationFrame);
+              getComputedStyle(dialog).transform;
+              const entering = dialog.getAnimations().some(animation =>
+                animation.transitionProperty === 'transform' && animation.effect.getTiming().duration === 330);
+              await new Promise(resolve => setTimeout(resolve, 380));
+              dialog.close();
+              getComputedStyle(dialog).transform;
+              const exiting = dialog.getAnimations().some(animation =>
+                animation.transitionProperty === 'transform' && animation.effect.getTiming().duration === 330);
+              dialog.remove();
+              return entering && exiting;
+            })()`, sessionId);
+            if (!motion) failures.push('Shared modal does not transition in and out at 330 ms');
+          }
+        }
         if (response.status !== 200) failures.push('HTTP ' + response.status);
         if (m.path !== path) failures.push('Unexpected redirect: ' + m.path);
         if (m.horizontalOverflowPx > 1) failures.push('Horizontal overflow ' + m.horizontalOverflowPx + 'px');
