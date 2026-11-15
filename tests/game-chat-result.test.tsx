@@ -65,8 +65,8 @@ describe('post-send focus and subtle match-result motion',()=>{
  it('animates only the result overlay and card, with a reduced-motion fallback',()=>{
   const source=readFileSync(new URL('../src/app/globals.css',import.meta.url),'utf8');
   expect(source).toContain('@keyframes alkkagi-result-card-in');
-  expect(source).toContain('translateY(9px) scale(0.985)');
-  expect(source).toContain('260ms cubic-bezier');
+  expect(source).toContain('transform: scale(.16, .13)');
+  expect(source).toContain('var(--arena-panel-duration) var(--arena-panel-ease) both');
   expect(source).toContain('@media (prefers-reduced-motion: reduce)');
   expect(source).toMatch(/\.game-result-overlay,\s*\.game-result-card\s*\{ animation: none; \}/);
   const html=renderToStaticMarkup(<GameResult {...base}/>);
