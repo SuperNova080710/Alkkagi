@@ -1,5 +1,6 @@
 'use client';
 
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import { useActionState, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createRoom } from '@/app/rooms/actions';
@@ -14,15 +15,15 @@ export function LobbyModes() {
   function busy() {
     return pending || Boolean(dialog.current?.querySelector('button[type="submit"]:disabled, form button:not([type]):disabled'));
   }
-  function open(next: 'casual' | 'ai') {
+  function open(next: 'casual' | 'ai', trigger: HTMLButtonElement) {
     setMode(next);
-    dialog.current?.showModal();
+    openArenaDialog(dialog.current, trigger);
   }
   return <>
     <div className="arena-modes">
-      <ArenaModeCard mode="casual"><button type="button" className="arena-button" onClick={() => open('casual')}>방 만들기 · 코드로 참가 <span aria-hidden="true">›</span></button></ArenaModeCard>
+      <ArenaModeCard mode="casual"><button type="button" className="arena-button" onClick={event => open('casual', event.currentTarget)}>방 만들기 · 코드로 참가 <span aria-hidden="true">›</span></button></ArenaModeCard>
       <ArenaModeCard mode="ranked"><Link href="/ranked" className="arena-button arena-button--gold">랭크전 시작 <span aria-hidden="true">›</span></Link></ArenaModeCard>
-      <ArenaModeCard mode="ai"><button type="button" className="arena-button arena-button--blue" onClick={() => open('ai')}>AI 연습방 만들기 <span aria-hidden="true">›</span></button></ArenaModeCard>
+      <ArenaModeCard mode="ai"><button type="button" className="arena-button arena-button--blue" onClick={event => open('ai', event.currentTarget)}>AI 연습방 만들기 <span aria-hidden="true">›</span></button></ArenaModeCard>
     </div>
     <dialog ref={dialog} className="arena-dialog" aria-labelledby="mode-dialog-title" onCancel={event => { if (busy()) event.preventDefault(); }}>
       <div className="arena-dialog-heading">

@@ -1,4 +1,5 @@
 'use client';
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { ArenaPanel } from '@/components/ui/arena';
@@ -26,7 +27,7 @@ export function FriendsView({ messagesEnabled = false, roomInvitesEnabled = fals
   const [message, setMessage] = useState('');
   const dialog = useRef<HTMLDialogElement>(null);
   const busy = useRef(false);
-  function choose(next: FriendAction) { setAction(next); setError(undefined); dialog.current?.showModal(); }
+  function choose(next: FriendAction, trigger: HTMLButtonElement) { setAction(next); setError(undefined); openArenaDialog(dialog.current, trigger); }
   async function confirm() {
     if (!action || busy.current) return;
     busy.current = true; setPending(true); setError(undefined); setMessage('');
@@ -34,7 +35,7 @@ export function FriendsView({ messagesEnabled = false, roomInvitesEnabled = fals
       const request = friendActionRequest(action);
       await friendMutation(request.path, request.method, request.body);
       notifySocialInboxChanged();
-      dialog.current?.close(); setAction(null); setMessage(`${labels[action.kind]} 요청을 처리했습니다. 최신 목록을 확인해 주세요.`); retry();
+      dialog.current?.close(); setMessage(`${labels[action.kind]} 요청을 처리했습니다. 최신 목록을 확인해 주세요.`); retry();
     } catch (cause) {
       if (cause instanceof FriendApiError && cause.status === 401) { dialog.current?.close(); setAction(null); setExpired(true); }
       else setError(cause);
@@ -47,12 +48,12 @@ export function FriendsView({ messagesEnabled = false, roomInvitesEnabled = fals
     {loadError && <div className="arena-directory-feedback"><p role="alert">친구 목록을 불러오지 못했습니다. 기능 준비 중이거나 일시적인 오류일 수 있습니다.</p><button className="arena-button" onClick={retry}>다시 시도</button></div>}
     {roomInvitesEnabled && <ReceivedRoomInvites/>}
     {data && <div className="arena-friends-grid">
-      <ArenaPanel title={`친구 (${data.friends.length})`}><ul className="arena-friends-list">{data.friends.map(person => <li key={person.id}><Link className="arena-friend-name" href={`/players/${person.id}`}>{person.nickname}</Link><div className="arena-friend-actions">{messagesEnabled && <Link href={dmConversationPath(person.id)}>메시지</Link>}<button onClick={() => choose({ kind: 'remove', ...person })}>친구 해제</button><button onClick={() => choose({ kind: 'block', ...person })}>차단</button></div></li>)}</ul>{!data.friends.length && <p className="arena-muted">아직 친구가 없습니다. 플레이어를 찾아 요청을 보내 보세요.</p>}</ArenaPanel>
-      <ArenaPanel title={`받은 요청 (${data.incoming.length})`}><ul className="arena-friends-list">{data.incoming.map(request => <li key={request.id}><Link className="arena-friend-name" href={`/players/${request.userId}`}>{request.nickname}</Link><div className="arena-friend-actions"><button onClick={() => choose({ kind: 'accept', id: request.id, nickname: request.nickname })}>수락</button><button onClick={() => choose({ kind: 'reject', id: request.id, nickname: request.nickname })}>거절</button></div></li>)}</ul>{!data.incoming.length && <p className="arena-muted">받은 친구 요청이 없습니다.</p>}</ArenaPanel>
+      <ArenaPanel title={`친구 (${data.friends.length})`}><ul className="arena-friends-list">{data.friends.map(person => <li key={person.id}><Link className="arena-friend-name" href={`/players/${person.id}`}>{person.nickname}</Link><div className="arena-friend-actions">{messagesEnabled && <Link href={dmConversationPath(person.id)}>메시지</Link>}<button onClick={event => choose({ kind: 'remove', ...person }, event.currentTarget)}>친구 해제</button><button onClick={event => choose({ kind: 'block', ...person }, event.currentTarget)}>차단</button></div></li>)}</ul>{!data.friends.length && <p className="arena-muted">아직 친구가 없습니다. 플레이어를 찾아 요청을 보내 보세요.</p>}</ArenaPanel>
+      <ArenaPanel title={`받은 요청 (${data.incoming.length})`}><ul className="arena-friends-list">{data.incoming.map(request => <li key={request.id}><Link className="arena-friend-name" href={`/players/${request.userId}`}>{request.nickname}</Link><div className="arena-friend-actions"><button onClick={event => choose({ kind: 'accept', id: request.id, nickname: request.nickname }, event.currentTarget)}>수락</button><button onClick={event => choose({ kind: 'reject', id: request.id, nickname: request.nickname }, event.currentTarget)}>거절</button></div></li>)}</ul>{!data.incoming.length && <p className="arena-muted">받은 친구 요청이 없습니다.</p>}</ArenaPanel>
       <ArenaPanel title={`보낸 요청 (${data.outgoing.length})`}><ul className="arena-friends-list">{data.outgoing.map(request => <li key={request.id}><Link className="arena-friend-name" href={`/players/${request.userId}`}>{request.nickname}</Link><span className="arena-friend-badge">응답 기다리는 중</span></li>)}</ul>{!data.outgoing.length && <p className="arena-muted">보낸 친구 요청이 없습니다.</p>}</ArenaPanel>
-      <ArenaPanel title={`차단한 플레이어 (${data.blocked.length})`}><ul className="arena-friends-list">{data.blocked.map(person => <li key={person.id}><strong className="arena-friend-name">{person.nickname ?? '비공개 플레이어'}</strong><div className="arena-friend-actions"><button onClick={() => choose({ kind: 'unblock', id: person.id, nickname: person.nickname ?? '비공개 플레이어' })}>차단 해제</button></div></li>)}</ul>{!data.blocked.length && <p className="arena-muted">차단한 플레이어가 없습니다.</p>}<p className="arena-muted">차단을 해제해도 친구 관계가 자동으로 복구되지는 않습니다.</p></ArenaPanel>
+      <ArenaPanel title={`차단한 플레이어 (${data.blocked.length})`}><ul className="arena-friends-list">{data.blocked.map(person => <li key={person.id}><strong className="arena-friend-name">{person.nickname ?? '비공개 플레이어'}</strong><div className="arena-friend-actions"><button onClick={event => choose({ kind: 'unblock', id: person.id, nickname: person.nickname ?? '비공개 플레이어' }, event.currentTarget)}>차단 해제</button></div></li>)}</ul>{!data.blocked.length && <p className="arena-muted">차단한 플레이어가 없습니다.</p>}<p className="arena-muted">차단을 해제해도 친구 관계가 자동으로 복구되지는 않습니다.</p></ArenaPanel>
     </div>}
-    <dialog className="arena-friend-dialog" ref={dialog} aria-labelledby="friend-action-title" onCancel={event => { if (busy.current) event.preventDefault(); }} onClose={() => { if (!busy.current) setAction(null); }}>
+    <dialog className="arena-friend-dialog" ref={dialog} aria-labelledby="friend-action-title" onCancel={event => { if (busy.current) event.preventDefault(); }}>
       <h2 id="friend-action-title">{action ? labels[action.kind] : '친구 관리'} 확인</h2><p className="arena-friend-dialog-name">{action?.nickname}</p><p>{action && details[action.kind]}</p>
       {error != null && <p role="alert" className="arena-directory-feedback">{friendErrorMessage(error)}</p>}
       <div className="arena-friend-actions"><button className="arena-button arena-button--outline" disabled={pending} onClick={() => dialog.current?.close()}>취소</button><button className="arena-button" disabled={pending} onClick={() => { void confirm(); }}>{pending ? '처리 중…' : '확인'}</button></div>
