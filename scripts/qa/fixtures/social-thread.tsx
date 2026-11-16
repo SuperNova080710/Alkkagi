@@ -56,7 +56,7 @@ async function verify() {
     if (body.scrollHeight > body.clientHeight + 1 || panel.scrollHeight > panel.clientHeight + 1)
       throw new Error('Drawer or thread panel scrolls instead of the message list');
     if (history.scrollHeight <= history.clientHeight || history.clientHeight < 48)
-      throw new Error('Long message list has no usable scroll area');
+      throw new Error('Long message list has no usable scroll area (' + history.clientHeight + 'px of ' + body.clientHeight + 'px)');
     history.scrollTop = 0;
     history.scrollTop += 60;
     if (history.scrollTop === 0 || send.bottom !== composer.querySelector('button')?.getBoundingClientRect().bottom)
