@@ -352,6 +352,15 @@
 .arena-social .arena-dm-compose-bottom { margin-top: 5px; }
 .arena-social .arena-dm-feedback:empty { min-height: 0; margin-top: 0; }
 
+@media (max-height: 520px) {
+  .arena-social-drawer:has(> .arena-social-content--messages) .arena-social-header { padding-block: 5px; }
+  .arena-social-drawer:has(> .arena-social-content--messages) .arena-social-tabs {
+    margin-top: 4px;
+    padding-block: 3px;
+  }
+  .arena-social-content--messages { padding-block: 5px; }
+  .arena-social-content--messages + .arena-social-footer a { min-height: 32px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .arena-social-dialog, .arena-social-dialog::backdrop, .arena-social .arena-social-drawer { transition: none; }
 }
