@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { ArenaGame } from '@/components/lobby/game-switcher';
 import { ArenaGlassHeader, type ArenaNavItem } from './arena-glass-header';
@@ -38,9 +37,9 @@ export function ArenaShell({ children, current, account, game = 'alkkagi', publi
     <a className="arena-skip" href="#arena-content">본문으로 이동</a>
     <div className="arena-wrap">
       <ArenaGlassHeader items={menus} activeHref={activeHref} account={account}>
-        <Link href="/" className="arena-brand" aria-label="한판아레나 홈">
+        <a href="/auth/home" className="arena-brand" aria-label="한판아레나 홈">
           <span>한판아레나</span><span lang="en">HANPAN ARENA</span>
-        </Link>
+        </a>
       </ArenaGlassHeader>
       <main id="arena-content" tabIndex={-1}>{children}</main>
       <footer className="arena-footer">한판아레나 <span>오목 · 체스 · 알까기</span></footer>
