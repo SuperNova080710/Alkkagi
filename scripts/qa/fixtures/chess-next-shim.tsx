@@ -11,3 +11,6 @@ const router = {
   },
 };
 export const useRouter = () => router;
+
+// The isolated fixture runs outside Next.js; supply the current browser path.
+export const usePathname = () => window.location.pathname;
