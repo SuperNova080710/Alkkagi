@@ -7,6 +7,10 @@ import { socialInviteGames, type SocialGame } from '../src/lib/social/inbox';
 import type { SocialInbox } from '../src/components/social/social-inbox';
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock('@zakisheriff/liquid-glass', async importOriginal => ({
+  ...await importOriginal<typeof import('@zakisheriff/liquid-glass')>(),
+  useRefraction: vi.fn(),
+}));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 const userId = '11111111-1111-4111-8111-111111111111';
@@ -46,6 +50,7 @@ afterEach(() => {
     if (descriptor) Object.defineProperty(dialogPrototype, method, descriptor);
     else Reflect.deleteProperty(dialogPrototype, method);
   });
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   push.mockReset();
 });
@@ -78,6 +83,54 @@ it.each(games)('opens one inbox and accepts a %s invite from another game', asyn
     expect(host.querySelector('dialog')?.open).toBe(false);
     expect(document.activeElement).toBe(launcher);
     expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+  }
+});
+
+it('moves the glass tab and dismisses only a complete backdrop click', async () => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(300);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(52);
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    if (this.tagName === 'DIALOG') return new DOMRect(12, 100, 350, 620);
+    if (this.dataset.glassOption === 'invites') return new DOMRect(100, 4, 95, 44);
+    if (this.dataset.glassOption === 'requests') return new DOMRect(200, 4, 95, 44);
+    return new DOMRect(0, 0, 300, 52);
+  });
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    await act(async () => root.render(<SocialDrawer inbox={inbox} pathname="/lobby"
+      onRefresh={vi.fn()} loadFailed={false}/>));
+    const launcher = host.querySelector<HTMLButtonElement>('.arena-social-launcher')!;
+    await act(async () => launcher.click());
+    const dialog = host.querySelector('dialog')!;
+    const requests = dialog.querySelector<HTMLButtonElement>('button[data-glass-option="requests"]')!;
+    const indicator = dialog.querySelector<HTMLElement>('.arena-glass-indicator')!;
+    expect(indicator.style.transform).toContain('translate3d(101px,');
+    await act(async () => requests.click());
+    expect(requests.getAttribute('aria-pressed')).toBe('true');
+    expect(indicator.style.transform).toContain('translate3d(201px,');
+    expect(dialog.open).toBe(true);
+
+    const event = (type: string, x: number) =>
+      new MouseEvent(type, { bubbles: true, button: 0, clientX: x, clientY: 200 });
+    await act(async () => {
+      requests.dispatchEvent(event('pointerdown', 88));
+      dialog.dispatchEvent(event('click', 450));
+    });
+    expect(dialog.open).toBe(true);
+    await act(async () => {
+      dialog.dispatchEvent(event('pointerdown', 450));
+      dialog.dispatchEvent(event('click', 450));
+    });
+    expect(dialog.open).toBe(false);
+    expect(launcher.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(launcher);
   } finally {
     await act(async () => root.unmount());
     host.remove();

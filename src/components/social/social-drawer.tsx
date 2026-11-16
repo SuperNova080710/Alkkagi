@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { friendActionRequest, friendErrorMessage, friendMutation } from '@/components/friends/friend-api';
 import { MessengerView } from '@/components/messages/messenger-view';
 import { inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
   type RoomInviteResponded } from '@/components/rooms/room-invite-api';
+import { useArenaGlassIndicator, useArenaGlassSurface } from '@/components/ui/use-arena-glass-indicator';
 import { socialInviteGames } from '@/lib/social/inbox';
 import { unreadMessages, type SocialInbox, type SocialInvite, type SocialRequest } from './social-inbox';
 
@@ -30,6 +31,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
   const dialog = useRef<HTMLDialogElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const tabSurface = useRef<HTMLSpanElement>(null);
   const previousPath = useRef(pathname);
   const busy = useRef(false);
   const [open, setOpen] = useState(false);
@@ -41,11 +43,46 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
   const invites = inbox.invites.length;
   const requests = inbox.requests?.length ?? 0;
   const newItems = unread + invites + requests;
+  const { track, indicator } = useArenaGlassIndicator<HTMLDivElement>(tab, undefined, open);
+  useArenaGlassSurface(tabSurface, open);
+
+  const close = useCallback(() => { dialog.current?.close(); }, []);
 
   useEffect(() => {
-    if (previousPath.current !== pathname) dialog.current?.close();
+    if (!open || !dialog.current) return;
+    const modal = dialog.current;
+    let pressedOutside = false;
+
+    function outside(event: MouseEvent) {
+      if (event.target !== modal) return false;
+      const rect = modal.getBoundingClientRect();
+      return event.clientX < rect.left || event.clientX > rect.right ||
+        event.clientY < rect.top || event.clientY > rect.bottom;
+    }
+    function handlePress(event: PointerEvent) {
+      pressedOutside = event.button === 0 && outside(event);
+    }
+    function resetPress() {
+      pressedOutside = false;
+    }
+    function handleClick(event: MouseEvent) {
+      if (pressedOutside && event.button === 0 && outside(event)) close();
+      resetPress();
+    }
+    modal.addEventListener('pointerdown', handlePress);
+    modal.addEventListener('pointercancel', resetPress);
+    modal.addEventListener('click', handleClick);
+    return () => {
+      modal.removeEventListener('pointerdown', handlePress);
+      modal.removeEventListener('pointercancel', resetPress);
+      modal.removeEventListener('click', handleClick);
+    };
+  }, [open, close]);
+
+  useEffect(() => {
+    if (previousPath.current !== pathname) close();
     previousPath.current = pathname;
-  }, [pathname]);
+  }, [pathname, close]);
 
   function show() {
     if (!dialog.current || dialog.current.open) return;
@@ -55,10 +92,6 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
     dialog.current.showModal();
     closeButton.current?.focus({ preventScroll: true });
     onRefresh();
-  }
-
-  function close() {
-    dialog.current?.close();
   }
 
   async function respond(operation: () => Promise<string>, errorText: (reason: unknown) => string) {
@@ -110,7 +143,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
   }
 
   function tabButton(value: Tab, label: string, count: number) {
-    return <button type="button" aria-pressed={tab === value} onClick={() => select(value)}>
+    return <button type="button" data-glass-option={value} aria-pressed={tab === value} onClick={() => select(value)}>
       {label}{count > 0 && <span className="arena-social-count">{count > 99 ? '99+' : count}</span>}
     </button>;
   }
@@ -173,7 +206,9 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
           </div>
           <button ref={closeButton} className="arena-social-close" type="button" aria-label="메신저 닫기" onClick={close}>×</button>
         </header>
-        <div className="arena-social-tabs" role="group" aria-label="메신저 메뉴">
+        <div ref={track} className="arena-social-tabs" role="group" aria-label="메신저 메뉴">
+          <span ref={tabSurface} className="arena-social-tab-glass lg-glass lg-glass--host" aria-hidden="true"/>
+          <span ref={indicator} className="arena-glass-indicator lg-glass" aria-hidden="true"/>
           {inbox.messages !== undefined && tabButton('messages', '메시지', unread)}
           {inbox.inviteGames.length > 0 && tabButton('invites', '대전 초대', invites)}
           {tabButton('requests', '친구 요청', requests)}
