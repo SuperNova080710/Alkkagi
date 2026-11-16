@@ -213,7 +213,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
           {inbox.inviteGames.length > 0 && tabButton('invites', '대전 초대', invites)}
           {tabButton('requests', '친구 요청', requests)}
         </div>
-        <div className="arena-social-content">
+        <div className={'arena-social-content' + (tab === 'messages' ? ' arena-social-content--messages' : '')}>
           {loadFailed && <p role="alert" className="arena-social-error">
             알림을 새로고침하지 못했습니다. <button type="button" onClick={onRefresh}>다시 시도</button>
           </p>}
