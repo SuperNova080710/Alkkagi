@@ -161,9 +161,7 @@ export function OmokRankedLobby({ nickname = '닉네임 확인 필요' }: { nick
   const matchingStatus = queue.status === 'queued' ? '상대 검색 중'
     : queue.status === 'matched' ? '매칭 완료' : '대기 안 함';
 
-  return <RankedLayout nickname={nickname} label="오목 랭킹" kicker="OMOK · RANKED ARENA"
-    description={<>오목 랭크 RP는 알까기 RP와 별개로 정산됩니다.<br/>
-      일반전과 AI 대전은 순위에 영향을 주지 않습니다.</>}
+  return <RankedLayout nickname={nickname} label="오목 랭킹"
     error={dashboardError ? `랭킹 정보를 불러오지 못했습니다. ${dashboardError}` : undefined}
     queue={<RankedQueuePanel status={queue.status} loading={loading} pending={pending} error={error}
       onChange={intent => void change(intent)} onRefresh={() => void refresh()}/>}

@@ -1,27 +1,17 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import './ranked-presentation.css';
 
-export function RankedLayout({ nickname, label, kicker, description, error, stats, queue, children }: {
+export function RankedLayout({ nickname, label, error, stats, queue, children }: {
   nickname: string;
-  label?: string;
-  kicker: string;
-  description: ReactNode;
+  label: string;
   error?: string;
   stats: ReactNode;
   queue: ReactNode;
   children: ReactNode;
 }) {
   return <div className="arena-ranked-view" aria-label={label}>
-    <header className="arena-service-heading">
-      <div>
-        <p className="arena-section-kicker">{kicker}</p>
-        <h1>한 판씩, 더 높은 곳으로.</h1>
-        <p>{description}</p>
-      </div>
-      <Image src="/art/ranked.webp" width={150} height={150} alt=""/>
-    </header>
+    <h1 className="sr-only">{label}</h1>
     <div className="arena-service-name">
       <strong>{nickname}</strong>
       <Link href="/profile">내 프로필 <span aria-hidden="true">›</span></Link>

@@ -8,7 +8,8 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), replace: 
 describe('#290 Omok and Alkkagi ranked page layout parity', () => {
   it('uses the same three stats, matchmaking column and two content cards', () => {
     const html = renderToStaticMarkup(<OmokRankedLobby nickname="같은 닉네임"/>);
-    expect(html).toContain('arena-service-heading');
+    expect(html).not.toContain('arena-service-heading');
+    expect(html).toContain('<h1 class="sr-only">오목 랭킹</h1>');
     expect(html).toContain('arena-service-name');
     expect(html).toContain('같은 닉네임');
     expect(html.match(/class="arena-stats"/g)).toHaveLength(1);
