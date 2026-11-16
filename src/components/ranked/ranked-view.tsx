@@ -13,8 +13,7 @@ export function RankedView({ nickname, dashboard, queue, game = 'alkkagi' }: {
   return <ArenaShell current="ranked" game={game}><div className="arena-service arena-service--ranked">
     {(process.env.OMOK_UI_ENABLED === 'true' || process.env.CHESS_UI_ENABLED === 'true') &&
       <GameSwitcher current={game} section="ranked" omokEnabled={process.env.OMOK_UI_ENABLED === 'true'}/>}
-    <RankedLayout nickname={nickname} kicker={game === 'chess' ? 'CHESS · RANKED ARENA' : 'RANKED ARENA'}
-      description={<>승리하면 RP를 얻고, 패배하면 RP가 줄어듭니다.<br/>일반전과 AI 연습전은 순위에 영향을 주지 않아요.</>}
+    <RankedLayout nickname={nickname} label={game === 'chess' ? '체스 랭킹' : '알까기 랭킹'}
       error={dashboard ? undefined : '랭킹 정보를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.'}
       queue={queue}
       stats={<>

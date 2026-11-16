@@ -222,7 +222,7 @@ async function main() {
           await session.eval(fixture.outputFiles[0].text, sessionId);
           const report = await until(() => session.eval('document.documentElement.dataset.qaMessenger', sessionId), 8000);
           if (report !== 'PASS') failures.push('Messenger geometry: ' + report);
-          else console.log('PASS ' + label + ' messenger: messages scroll independently and composer stays visible');
+          else console.log('PASS ' + label + ' messenger: thread and tab slides preserve the composer and independent history scroll');
         }
         if (path === '/') {
           const refracted = await until(async () => await session.eval(`
@@ -313,6 +313,14 @@ async function main() {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
           await writeFile(join(outdir, safePath.replaceAll('/', '-') + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
+        }
+        if (label === 'wide-1920x1080' && path === '/') {
+          await session.eval(`document.querySelector('.arena-nav a[href="/how-to-play"]').click()`, sessionId);
+          const slid = await until(() => session.eval(`location.pathname === '/how-to-play' &&
+            document.getElementById('arena-content').getAnimations().some(animation => animation.id === 'arena-page-slide')
+          `, sessionId), 8000).catch(() => false);
+          if (!slid) failures.push('Main menu navigation did not play the page slide');
+          else console.log('PASS ' + label + ' main menu page slide');
         }
         results.push({ viewport: label, cssPixels: [width, height], path,
           httpStatus: response.status, ...m, failures });

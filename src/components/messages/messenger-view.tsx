@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import type { ArenaSlideDirection } from '@/components/ui/arena-page';
 import { notifySocialInboxChanged } from '@/components/social/social-inbox';
 import { shouldSubmitChatOnEnter } from '@/lib/chat/keyboard';
 import {
@@ -34,6 +35,7 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState<unknown>(null);
   const [selected, setSelected] = useState(initialPeer);
+  const [threadSlide, setThreadSlide] = useState<ArenaSlideDirection>();
   const [history, setHistory] = useState<DmHistory | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(Boolean(initialPeer));
   const [threadError, setThreadError] = useState<unknown>(null);
@@ -151,15 +153,16 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
 
   useEffect(() => {
     if (!embedded) return;
-    if (selected) back.current?.focus();
+    if (selected) back.current?.focus({ preventScroll: true });
     else if (returnToPeers.current) {
       returnToPeers.current = false;
-      peerControl.current?.focus();
+      peerControl.current?.focus({ preventScroll: true });
     }
   }, [embedded, selected]);
 
   function selectPeer(peerId: string) {
     if (!isDmPeerId(peerId) || selected === peerId || sending || olderLoading) return;
+    if (embedded) setThreadSlide('forward');
     setSelected(peerId); setHistory(null); setThreadError(null); setLoadingHistory(true);
     setDraft(''); setSendError(null); setActivity(''); pendingRequest.current = null;
     readCursor.current = null; scrollRestore.current = null;
@@ -247,7 +250,8 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
   </section>;
 
   return <section className="arena-dm-shell" aria-label="친구 메신저">
-    {(!embedded || !selected) && <aside className="arena-panel arena-dm-inbox" aria-label="친구 대화 목록">
+    {(!embedded || !selected) && <aside className="arena-panel arena-dm-inbox" aria-label="친구 대화 목록"
+      data-arena-slide={embedded ? threadSlide : undefined}>
       <div className="arena-dm-heading">
         <div><h2>친구와 대화</h2><p>친구만 메시지를 주고받을 수 있습니다.</p></div>
         <button type="button" className="arena-dm-reload" onClick={refreshAll} disabled={loadingList}>새로고침</button>
@@ -279,13 +283,14 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
       {!embedded && <Link href="/friends" className="arena-text-link">친구 관리로 돌아가기 ›</Link>}
     </aside>}
 
-    {(!embedded || selected) && <section className="arena-panel arena-dm-thread" aria-label="선택한 대화">
+    {(!embedded || selected) && <section className="arena-panel arena-dm-thread" aria-label="선택한 대화"
+      data-arena-slide={embedded ? threadSlide : undefined}>
       {selected ? <>
         <header className="arena-dm-thread-heading">
           {embedded ? <div className="arena-dm-thread-peer">
             <button type="button" ref={back} className="arena-social-back" aria-label="대화 목록으로 돌아가기"
               disabled={sending || olderLoading}
-              onClick={() => { returnToPeers.current = true; setSelected(null); }}>{'<'}</button>
+              onClick={() => { returnToPeers.current = true; setThreadSlide('back'); setSelected(null); }}>{'<'}</button>
             <h2>{person?.nickname ?? '대화 상대'}</h2>
           </div> : <div><h2>{person?.nickname ?? '대화 상대'}</h2><p>친구 전용 1:1 메시지</p></div>}
           {person && <Link href={'/players/' + person.id} onClick={onNavigate} className="arena-text-link">프로필 ›</Link>}

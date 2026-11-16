@@ -17,7 +17,6 @@ export default async function ChessLobbyPage() {
   ]);
   return <ArenaLobbyLayout game="chess" account={<LogoutForm/>} showGameSwitcher
     omokEnabled={process.env.OMOK_UI_ENABLED === 'true'}
-    friendsEnabled={process.env.FRIENDS_UI_ENABLED === 'true'}
     experienceEnabled={process.env.EXPERIENCE_UI_ENABLED === 'true'}
     cosmeticsEnabled={process.env.COSMETICS_UI_ENABLED === 'true'}
     data={{nickname:profile.data?.nickname ?? '플레이어',rating:dashboard?.rating ?? null,leaderboard:dashboard?.leaderboard ?? [],rankingUnavailable:!dashboard}}
