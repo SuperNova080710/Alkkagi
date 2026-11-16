@@ -136,3 +136,35 @@ it('moves the glass tab and dismisses only a complete backdrop click', async () 
     host.remove();
   }
 });
+
+it('keeps the back control next to the nickname and returns focus to the friend list', async () => {
+  const fetcher = vi.fn(async (path: string) => ({
+    ok: true,
+    json: async () => ({ data: path === '/api/friends' ? { friends: [{ id: otherId, nickname: '친구 A' }] }
+      : path === '/api/messages' ? [] : { threadId: id, messages: [], hasMore: false } }),
+  }));
+  vi.stubGlobal('fetch', fetcher);
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    await act(async () => root.render(<SocialDrawer inbox={{ ...inbox, invites: [] }} pathname="/lobby"
+      onRefresh={vi.fn()} loadFailed={false}/>));
+    await act(async () => host.querySelector<HTMLButtonElement>('.arena-social-launcher')!.click());
+    await act(async () => host.querySelector<HTMLButtonElement>('.arena-dm-peer')!.click());
+    const heading = host.querySelector('.arena-dm-thread-heading')!;
+    const back = heading.querySelector<HTMLButtonElement>('button[aria-label="대화 목록으로 돌아가기"]')!;
+    expect(back.textContent).toBe('<');
+    expect(back.nextElementSibling?.textContent).toBe('친구 A');
+    expect(heading.textContent).not.toContain('친구 전용 1:1 메시지');
+    expect(document.activeElement).toBe(back);
+    expect(host.querySelector('.arena-dm-compose textarea')).not.toBeNull();
+
+    await act(async () => back.click());
+    expect(host.querySelector('.arena-dm-thread')).toBeNull();
+    expect(document.activeElement).toBe(host.querySelector('.arena-dm-peer'));
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+  }
+});

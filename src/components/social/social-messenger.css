@@ -302,18 +302,65 @@
 }
 .arena-social-footer a { display: inline-flex; align-items: center; min-height: 44px; }
 
+.arena-social-content--messages {
+  display: flex;
+  flex-direction: column;
+}
+/* Allow the body to scroll on very short viewports where the controls cannot fit. */
 .arena-social .arena-dm-shell {
+  flex: 1 0 240px;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   height: auto;
   margin-top: 0;
 }
-.arena-social .arena-dm-shell .arena-panel { padding: 12px; }
+.arena-social .arena-dm-shell .arena-panel { padding: 8px; }
 .arena-social .arena-dm-inbox { max-height: none; }
-.arena-social .arena-dm-peers { flex: 0 0 auto; overflow: visible; }
-.arena-social .arena-dm-thread { min-height: 0; overflow: visible; }
-.arena-social .arena-dm-messages { flex: none; height: clamp(100px, 27dvh, 250px); }
-.arena-social-back { align-self: start; justify-self: start; }
+.arena-social .arena-dm-thread { min-height: 0; overflow-y: auto; }
+.arena-social .arena-dm-thread-heading { gap: 8px; padding-bottom: 5px; }
+.arena-social .arena-dm-thread-peer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.arena-social .arena-dm-thread-peer h2 {
+  margin: 0;
+  overflow: hidden;
+  font-size: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.arena-social .arena-dm-thread-heading > a { flex-shrink: 0; }
+.arena-social .arena-social-back {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  min-height: 36px;
+  padding: 0;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.arena-social .arena-social-back:disabled { opacity: .55; cursor: not-allowed; }
+.arena-social .arena-dm-messages { flex: 1 1 0; height: auto; padding-block: 8px; }
+.arena-social .arena-dm-older { min-height: 32px; margin-block: 5px 0; padding-block: 4px; }
+.arena-social .arena-dm-compose { padding-top: 6px; }
+.arena-social .arena-dm-compose textarea {
+  min-height: 48px;
+  max-height: 84px;
+  padding-block: 6px;
+}
+.arena-social .arena-dm-compose-bottom { margin-top: 5px; }
+.arena-social .arena-dm-feedback:empty { min-height: 0; margin-top: 0; }
 
+@media (max-height: 520px) {
+  .arena-social-drawer:has(> .arena-social-content--messages) .arena-social-header { padding-block: 5px; }
+  .arena-social-drawer:has(> .arena-social-content--messages) .arena-social-tabs {
+    margin-top: 4px;
+    padding-block: 3px;
+  }
+  .arena-social-content--messages { padding-block: 5px; }
+  .arena-social-content--messages + .arena-social-footer a { min-height: 32px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .arena-social-dialog, .arena-social-dialog::backdrop, .arena-social .arena-social-drawer { transition: none; }
 }

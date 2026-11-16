@@ -8,6 +8,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { build } from 'esbuild';
 
 const viewports = [
   ['desktop-1280x720', 1280, 720], ['desktop-1024x768', 1024, 768], ['desktop-1366x768', 1366, 768],
@@ -159,6 +160,16 @@ async function main() {
     await session.call('Page.enable', {}, sessionId);
     await session.call('Runtime.enable', {}, sessionId);
 
+    const fixture = await build({
+      entryPoints: ['scripts/qa/fixtures/social-thread.tsx'],
+      write: false, bundle: true, format: 'iife', jsx: 'automatic',
+      alias: { 'next/link': resolve('scripts/qa/fixtures/chess-next-shim.tsx'),
+        'next/navigation': resolve('scripts/qa/fixtures/chess-next-shim.tsx') },
+      define: { 'process.env.NODE_ENV': '"production"',
+        'process.env.NEXT_PUBLIC_SUPABASE_URL': 'undefined',
+        'process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY': 'undefined' },
+    });
+    const drawerStyle = await readFile('src/components/social/social-messenger.css', 'utf8');
     const results = [];
     const selectedViewports = realZoom
       ? [['chrome-zoom-200', 1920, 1080]]
@@ -200,6 +211,19 @@ async function main() {
           failures.push('Chrome tab zoom is no longer 200%');
         }
         if (m.focus.href !== '#arena-content') failures.push('Skip link is not the first keyboard focus target');
+        if (path === '/' && ['wide-1920x1080', 'mobile-320x720', 'zoom-equivalent-960x540', 'chrome-zoom-200'].includes(label)) {
+          await session.eval(`(() => {
+            delete document.documentElement.dataset.qaMessenger;
+            const style = document.createElement('style');
+            style.id = 'qa-messenger-style';
+            style.textContent = ${JSON.stringify(drawerStyle)};
+            document.head.append(style);
+          })()`, sessionId);
+          await session.eval(fixture.outputFiles[0].text, sessionId);
+          const report = await until(() => session.eval('document.documentElement.dataset.qaMessenger', sessionId), 8000);
+          if (report !== 'PASS') failures.push('Messenger geometry: ' + report);
+          else console.log('PASS ' + label + ' messenger: messages scroll independently and composer stays visible');
+        }
         if (path === '/') {
           const refracted = await until(async () => await session.eval(`
             Boolean(document.querySelector('.arena-header-glass[data-lg-refract="surface"]'))
