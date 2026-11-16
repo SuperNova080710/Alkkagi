@@ -20,14 +20,13 @@ type ArenaLobbyLayoutProps = {
   account?: ReactNode;
   showGameSwitcher: boolean;
   omokEnabled?: boolean;
-  friendsEnabled?: boolean;
   cosmeticsEnabled?: boolean;
   experienceEnabled?: boolean;
 };
 
 export function ArenaLobbyLayout({
   game, data, modes, recovery, account, showGameSwitcher, omokEnabled,
-  friendsEnabled = false, cosmeticsEnabled = false, experienceEnabled = false,
+  cosmeticsEnabled = false, experienceEnabled = false,
 }: ArenaLobbyLayoutProps) {
   const omok = game === 'omok';
   const chess = game === 'chess';
@@ -62,14 +61,6 @@ export function ArenaLobbyLayout({
             {gameLabel}전체 랭킹 보기 <span aria-hidden="true">›</span>
           </Link>
         </ArenaPanel>
-        <div className="arena-future">
-          {friendsEnabled
-            ? <Link href="/friends">친구 <small>친구 목록으로 ›</small></Link>
-            : <span>친구 <small>준비 중</small></span>}
-          {cosmeticsEnabled
-            ? <Link href="/cosmetics">꾸미기 <small>아이템 관리하기 ›</small></Link>
-            : <span>꾸미기 <small>준비 중</small></span>}
-        </div>
       </aside>
     </div>
   </ArenaShell>;

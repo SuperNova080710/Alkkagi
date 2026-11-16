@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/ui-viewport-browser.yml'
       - 'scripts/qa/public-viewport.mjs'
+      - 'scripts/qa/fixtures/social-thread.tsx'
+      - 'src/components/social/**'
+      - 'src/components/messages/messenger-view.tsx'
       - 'src/app/arena.css'
       - 'src/app/globals.css'
       - 'src/app/page.tsx'

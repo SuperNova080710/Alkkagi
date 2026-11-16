@@ -1,5 +1,6 @@
 'use client';
 
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -115,7 +116,7 @@ export function ChessAi({userId}: {userId:string}) {
         pieceSkins={{w:cosmetics[userId]?.chessCode}}
         enabled={!finished && !error && position.turn === 'w'} onMove={play}/>
       {finished && <OmokResultOverlay game="chess" mode="ai" outcome={outcome} finishReason={reason}
-        onReplay={() => replay.current?.showModal()} onReturn={() => router.push('/chess')}/>}
+        onReplay={trigger => openArenaDialog(replay.current, trigger)} onReturn={() => router.push('/chess')}/>}
     </div>
     <ArenaPanel title={'체스 AI · ' + levels[session.difficulty]}>
       {finished && <p role="status">{outcome}</p>}

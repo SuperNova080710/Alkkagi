@@ -50,7 +50,7 @@ describe('v0.3 Omok AI direct-start dialog (#284)', () => {
     expect(html).toContain('초대 코드로 참가');
 
     const source = readFileSync(new URL('../src/components/omok/omok-lobby-modes.tsx', import.meta.url),'utf8');
-    expect(source).toContain("open('ai')");
+    expect(source).toContain("open('ai', event.currentTarget)");
     expect(source).toContain('<OmokAiModalEntry onPendingChange={setAiPending}/>');
     expect(source).toContain('if (aiPending) event.preventDefault()');
   });

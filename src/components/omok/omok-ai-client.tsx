@@ -1,5 +1,6 @@
 'use client';
 
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -181,9 +182,9 @@ export function OmokAiMatchClient({ matchId, currentUserId = '' }: { matchId: st
     } catch (cause) { await refresh(); setError(omokErrorText(cause)); }
     finally { lock.current = false; setPending(false); }
   }
-  function chooseReplayDifficulty() {
+  function chooseReplayDifficulty(trigger: HTMLButtonElement) {
     if (!snapshot || snapshot.status !== 'finished' || lock.current) return;
-    replayDialog.current?.showModal();
+    openArenaDialog(replayDialog.current, trigger);
   }
   if (loading && !snapshot) return <p role="status" className="arena-omok-live-panel">AI 대국 정보를 불러오는 중…</p>;
   if (!snapshot) return <section className="arena-omok-live-panel">

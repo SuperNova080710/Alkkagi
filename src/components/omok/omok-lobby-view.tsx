@@ -12,13 +12,13 @@ export type OmokLobbyData = LobbySummary & {
   recoveryUnavailable: boolean;
 };
 
-export function OmokLobbyView({ data, account, friendsEnabled, cosmeticsEnabled, experienceEnabled }: {
-  data: OmokLobbyData; account?: ReactNode; friendsEnabled?: boolean; cosmeticsEnabled?: boolean;
+export function OmokLobbyView({ data, account, cosmeticsEnabled, experienceEnabled }: {
+  data: OmokLobbyData; account?: ReactNode; cosmeticsEnabled?: boolean;
   experienceEnabled?: boolean;
 }) {
   const hasMatches = data.activeCasual.length > 0 || data.activeAi.length > 0;
   return <ArenaLobbyLayout game="omok" data={data} modes={<OmokLobbyModes/>} account={account}
-    showGameSwitcher friendsEnabled={friendsEnabled}
+    showGameSwitcher
     cosmeticsEnabled={cosmeticsEnabled} experienceEnabled={experienceEnabled}
     recovery={<LobbyRecoveryInline hasMatches={hasMatches} unavailable={data.recoveryUnavailable}>
       {data.activeCasual.map((match, index) => <Link key={match.id}

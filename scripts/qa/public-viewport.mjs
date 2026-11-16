@@ -8,6 +8,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { build } from 'esbuild';
 
 const viewports = [
   ['desktop-1280x720', 1280, 720], ['desktop-1024x768', 1024, 768], ['desktop-1366x768', 1366, 768],
@@ -159,6 +160,16 @@ async function main() {
     await session.call('Page.enable', {}, sessionId);
     await session.call('Runtime.enable', {}, sessionId);
 
+    const fixture = await build({
+      entryPoints: ['scripts/qa/fixtures/social-thread.tsx'],
+      write: false, bundle: true, format: 'iife', jsx: 'automatic',
+      alias: { 'next/link': resolve('scripts/qa/fixtures/chess-next-shim.tsx'),
+        'next/navigation': resolve('scripts/qa/fixtures/chess-next-shim.tsx') },
+      define: { 'process.env.NODE_ENV': '"production"',
+        'process.env.NEXT_PUBLIC_SUPABASE_URL': 'undefined',
+        'process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY': 'undefined' },
+    });
+    const drawerStyle = await readFile('src/components/social/social-messenger.css', 'utf8');
     const results = [];
     const selectedViewports = realZoom
       ? [['chrome-zoom-200', 1920, 1080]]
@@ -200,7 +211,33 @@ async function main() {
           failures.push('Chrome tab zoom is no longer 200%');
         }
         if (m.focus.href !== '#arena-content') failures.push('Skip link is not the first keyboard focus target');
+        if (path === '/' && ['wide-1920x1080', 'mobile-320x720', 'zoom-equivalent-960x540', 'chrome-zoom-200'].includes(label)) {
+          await session.eval(`(() => {
+            delete document.documentElement.dataset.qaMessenger;
+            const style = document.createElement('style');
+            style.id = 'qa-messenger-style';
+            style.textContent = ${JSON.stringify(drawerStyle)};
+            document.head.append(style);
+          })()`, sessionId);
+          await session.eval(fixture.outputFiles[0].text, sessionId);
+          const report = await until(() => session.eval('document.documentElement.dataset.qaMessenger', sessionId), 8000);
+          if (report !== 'PASS') failures.push('Messenger geometry: ' + report);
+          else console.log('PASS ' + label + ' messenger: thread and tab slides preserve the composer and independent history scroll');
+        }
         if (path === '/') {
+          const refracted = await until(async () => await session.eval(`
+            Boolean(document.querySelector('.arena-header-glass[data-lg-refract="surface"]'))
+          `, sessionId), 5000).catch(() => false);
+          if (!refracted) failures.push('Liquid Glass did not build the Chromium backdrop filter');
+          const aligned = await session.eval(`(() => {
+            const nav = document.querySelector('.arena-nav[data-indicator-ready]');
+            const pill = nav?.querySelector('.arena-nav-indicator')?.getBoundingClientRect();
+            const current = nav?.querySelector('[aria-current="location"]')?.getBoundingClientRect();
+            return Boolean(pill && current && pill.width > 0 &&
+              Math.abs(pill.left - current.left - 1) < 2 &&
+              Math.abs(pill.right - current.right + 1) < 2);
+          })()`, sessionId);
+          if (!aligned) failures.push('Sliding indicator is missing or off its active link');
           const home = await session.eval(`(() => {
             const grid = document.querySelector('.arena-platform-grid');
             if (!grid) return null;
@@ -221,6 +258,51 @@ async function main() {
             failures.push('Home vertical overflow ' + m.verticalOverflowPx + 'px');
           }
         }
+        if (label === 'wide-1920x1080') {
+          if (m.verticalOverflowPx > 1) failures.push('Full HD document scroll ' + m.verticalOverflowPx + 'px');
+          if (path === '/login') {
+            const navParity = await session.eval(`(() => {
+              const header = document.querySelector('.arena-header');
+              const tabs = [...(header?.querySelectorAll('.arena-nav a') ?? [])];
+              if (!header || tabs.length === 0) return false;
+              const bounds = () => tabs.map(tab => {
+                const {x, y, width, height} = tab.getBoundingClientRect();
+                return [x, y, width, height];
+              });
+              const initial = bounds();
+              if (initial.some(([, , width, height]) => width !== 88 || height !== 44)) return false;
+              const account = document.createElement('div');
+              account.className = 'arena-account';
+              account.textContent = '로그아웃';
+              header.append(account);
+              const matches = JSON.stringify(bounds()) === JSON.stringify(initial);
+              account.remove();
+              return matches;
+            })()`, sessionId);
+            if (!navParity) failures.push('Header links changed position or size when the account action appeared');
+            const motion = await session.eval(`(async () => {
+              const dialog = document.createElement('dialog');
+              dialog.className = 'arena-dialog';
+              dialog.textContent = '대전 선택';
+              dialog.style.setProperty('--arena-panel-origin-x', '200px');
+              dialog.style.setProperty('--arena-panel-origin-y', '240px');
+              document.querySelector('#arena-content').append(dialog);
+              dialog.showModal();
+              await new Promise(requestAnimationFrame);
+              getComputedStyle(dialog).transform;
+              const entering = dialog.getAnimations().some(animation =>
+                animation.transitionProperty === 'transform' && animation.effect.getTiming().duration === 330);
+              await new Promise(resolve => setTimeout(resolve, 380));
+              dialog.close();
+              getComputedStyle(dialog).transform;
+              const exiting = dialog.getAnimations().some(animation =>
+                animation.transitionProperty === 'transform' && animation.effect.getTiming().duration === 330);
+              dialog.remove();
+              return entering && exiting;
+            })()`, sessionId);
+            if (!motion) failures.push('Shared modal does not transition in and out at 330 ms');
+          }
+        }
         if (response.status !== 200) failures.push('HTTP ' + response.status);
         if (m.path !== path) failures.push('Unexpected redirect: ' + m.path);
         if (m.horizontalOverflowPx > 1) failures.push('Horizontal overflow ' + m.horizontalOverflowPx + 'px');
@@ -231,6 +313,31 @@ async function main() {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
           await writeFile(join(outdir, safePath.replaceAll('/', '-') + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
+        }
+        if (path === '/' && ['wide-1920x1080', 'mobile-320x720'].includes(label)) {
+          const nativeLink = label.startsWith('mobile-');
+          await session.eval(`(() => {
+            const target = document.querySelector('.arena-nav a[href="/how-to-play"]');
+            if (${nativeLink}) {
+              const anchor = document.createElement('a');
+              anchor.href = target.href;
+              document.body.append(anchor);
+              anchor.click();
+            } else target.click();
+          })()`, sessionId);
+          const slide = await until(() => session.eval(`(() => {
+            if (location.pathname !== '/how-to-play') return null;
+            const page = document.getElementById('arena-content');
+            const animation = page?.getAnimations().find(item => item.animationName === 'arena-page-slide');
+            if (!animation) return null;
+            const first = animation.effect.getKeyframes()[0].transform;
+            return { offset: new DOMMatrix(first).m41, duration: animation.effect.getTiming().duration,
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+          })()`, sessionId), 8000).catch(() => null);
+          if (!slide || slide.offset < (nativeLink ? 36 : 64) || slide.duration !== 360 || slide.overflow > 1) {
+            failures.push('Page did not slide visibly within the viewport: ' + JSON.stringify(slide));
+          } else console.log('PASS ' + label + ' page slide ' + (nativeLink ? 'after document navigation' : 'from main menu')
+            + ' (' + slide.offset + 'px, ' + slide.duration + 'ms)');
         }
         results.push({ viewport: label, cssPixels: [width, height], path,
           httpStatus: response.status, ...m, failures });

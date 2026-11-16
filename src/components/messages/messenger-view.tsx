@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { createBrowserClient } from '@supabase/ssr';
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import type { ArenaSlideDirection } from '@/components/ui/arena-page';
+import { notifySocialInboxChanged } from '@/components/social/social-inbox';
 import { shouldSubmitChatOnEnter } from '@/lib/chat/keyboard';
 import {
   DmApiError, canSendDm, dmBodyLength, dmConversationPath, dmErrorMessage, dmMutation,
@@ -10,7 +12,7 @@ import {
   type DmHistory, type DmInboxItem, type DmPeer,
 } from './message-api';
 
-type Props = { userId: string; initialPeer: string | null };
+type Props = { userId: string; initialPeer: string | null; embedded?: boolean; onNavigate?: () => void };
 const endpoint = (peerId: string) => '/api/messages/' + encodeURIComponent(peerId);
 
 function formatTime(value: string): string {
@@ -20,12 +22,20 @@ function formatTime(value: string): string {
     : '';
 }
 
-export function MessengerView({ userId, initialPeer }: Props) {
+export function MessengerView({ userId, initialPeer, embedded = false, onNavigate }: Props) {
+  const viewId = useId();
+  const bodyId = viewId + '-body';
+  const shortcutId = viewId + '-shortcut';
+  const limitId = viewId + '-limit';
+  const back = useRef<HTMLButtonElement>(null);
+  const peerControl = useRef<HTMLButtonElement>(null);
+  const returnToPeers = useRef(false);
   const [friends, setFriends] = useState<DmPeer[]>([]);
   const [inbox, setInbox] = useState<DmInboxItem[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState<unknown>(null);
   const [selected, setSelected] = useState(initialPeer);
+  const [threadSlide, setThreadSlide] = useState<ArenaSlideDirection>();
   const [history, setHistory] = useState<DmHistory | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(Boolean(initialPeer));
   const [threadError, setThreadError] = useState<unknown>(null);
@@ -90,7 +100,10 @@ export function MessengerView({ userId, initialPeer }: Props) {
     const peer = selected, id = newestIncoming.id;
     readCursor.current = { peerId: peer, id };
     dmMutation(endpoint(peer) + '/read', 'PUT', { messageId: id })
-      .then(() => setListRefresh(count => count + 1))
+      .then(() => {
+        setListRefresh(count => count + 1);
+        notifySocialInboxChanged();
+      })
       .catch(() => {
         if (readCursor.current?.peerId === peer && readCursor.current.id === id)
           readCursor.current = null;
@@ -121,12 +134,12 @@ export function MessengerView({ userId, initialPeer }: Props) {
       document.removeEventListener('visibilitychange', onVisibility);
     };
     const db = createBrowserClient(url, key);
-    const threads = db.channel('dm-inbox-' + userId)
+    const threads = db.channel('dm-inbox-' + userId + viewId)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dm_threads' },
         () => setListRefresh(n => n + 1)).subscribe();
     // Subscribe across authorized friend threads so unopened conversations also
     // refresh their unread badges. RLS limits event access; REST remains authority.
-    const messages = db.channel('dm-messages-inbox-' + userId)
+    const messages = db.channel('dm-messages-inbox-' + userId + viewId)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'dm_messages',
       }, () => refreshAll()).subscribe();
@@ -136,14 +149,24 @@ export function MessengerView({ userId, initialPeer }: Props) {
       void db.removeChannel(threads);
       void db.removeChannel(messages);
     };
-  }, [userId, refreshAll]);
+  }, [userId, viewId, refreshAll]);
+
+  useEffect(() => {
+    if (!embedded) return;
+    if (selected) back.current?.focus({ preventScroll: true });
+    else if (returnToPeers.current) {
+      returnToPeers.current = false;
+      peerControl.current?.focus({ preventScroll: true });
+    }
+  }, [embedded, selected]);
 
   function selectPeer(peerId: string) {
     if (!isDmPeerId(peerId) || selected === peerId || sending || olderLoading) return;
+    if (embedded) setThreadSlide('forward');
     setSelected(peerId); setHistory(null); setThreadError(null); setLoadingHistory(true);
     setDraft(''); setSendError(null); setActivity(''); pendingRequest.current = null;
     readCursor.current = null; scrollRestore.current = null;
-    window.history.replaceState(null, '', dmConversationPath(peerId));
+    if (!embedded) window.history.replaceState(null, '', dmConversationPath(peerId));
   }
 
   async function loadOlder() {
@@ -223,11 +246,12 @@ export function MessengerView({ userId, initialPeer }: Props) {
 
   if (authError) return <section className="arena-panel arena-dm-unavailable">
     <h2>로그인이 필요합니다</h2><p role="alert">세션이 만료되었습니다. 다시 로그인해 주세요.</p>
-    <Link href="/login" className="arena-button">로그인하기</Link>
+    <Link href="/login" onClick={onNavigate} className="arena-button">로그인하기</Link>
   </section>;
 
   return <section className="arena-dm-shell" aria-label="친구 메신저">
-    <aside className="arena-panel arena-dm-inbox" aria-label="친구 대화 목록">
+    {(!embedded || !selected) && <aside className="arena-panel arena-dm-inbox" aria-label="친구 대화 목록"
+      data-arena-slide={embedded ? threadSlide : undefined}>
       <div className="arena-dm-heading">
         <div><h2>친구와 대화</h2><p>친구만 메시지를 주고받을 수 있습니다.</p></div>
         <button type="button" className="arena-dm-reload" onClick={refreshAll} disabled={loadingList}>새로고침</button>
@@ -236,11 +260,12 @@ export function MessengerView({ userId, initialPeer }: Props) {
       {listError != null && <p role="alert" className="arena-dm-error">{dmErrorMessage(listError)}</p>}
       {!loadingList && !listError && !choices.length && <div className="arena-dm-empty">
         <p>아직 대화할 친구가 없습니다.</p>
-        <Link href="/friends" className="arena-text-link">친구 목록에서 요청하기 ›</Link>
+        <Link href="/friends" onClick={onNavigate} className="arena-text-link">친구 목록에서 요청하기 ›</Link>
       </div>}
       <ul className="arena-dm-peers">
         {choices.map(item => <li key={item.id}>
-          <button type="button" aria-current={selected === item.id ? 'true' : undefined} disabled={sending || olderLoading}
+          <button type="button" ref={embedded && item.id === choices[0]?.id ? peerControl : undefined}
+            aria-current={selected === item.id ? 'true' : undefined} disabled={sending || olderLoading}
             className={'arena-dm-peer' + (selected === item.id ? ' is-selected' : '')}
             onClick={() => selectPeer(item.id)}>
             <span className="arena-dm-avatar" aria-hidden="true">●</span>
@@ -255,14 +280,20 @@ export function MessengerView({ userId, initialPeer }: Props) {
           </button>
         </li>)}
       </ul>
-      <Link href="/friends" className="arena-text-link">친구 관리로 돌아가기 ›</Link>
-    </aside>
+      {!embedded && <Link href="/friends" className="arena-text-link">친구 관리로 돌아가기 ›</Link>}
+    </aside>}
 
-    <section className="arena-panel arena-dm-thread" aria-label="선택한 대화">
+    {(!embedded || selected) && <section className="arena-panel arena-dm-thread" aria-label="선택한 대화"
+      data-arena-slide={embedded ? threadSlide : undefined}>
       {selected ? <>
         <header className="arena-dm-thread-heading">
-          <div><h2>{person?.nickname ?? '대화 상대'}</h2><p>친구 전용 1:1 메시지</p></div>
-          {person && <Link href={'/players/' + person.id} className="arena-text-link">프로필 ›</Link>}
+          {embedded ? <div className="arena-dm-thread-peer">
+            <button type="button" ref={back} className="arena-social-back" aria-label="대화 목록으로 돌아가기"
+              disabled={sending || olderLoading}
+              onClick={() => { returnToPeers.current = true; setThreadSlide('back'); setSelected(null); }}>{'<'}</button>
+            <h2>{person?.nickname ?? '대화 상대'}</h2>
+          </div> : <div><h2>{person?.nickname ?? '대화 상대'}</h2><p>친구 전용 1:1 메시지</p></div>}
+          {person && <Link href={'/players/' + person.id} onClick={onNavigate} className="arena-text-link">프로필 ›</Link>}
         </header>
         {loadingHistory && !history && <p role="status" className="arena-muted">대화를 불러오고 있습니다…</p>}
         {threadError != null && <div className="arena-dm-error" role="alert">
@@ -283,14 +314,14 @@ export function MessengerView({ userId, initialPeer }: Props) {
               </li>)}
           </ol>
           <form onSubmit={event => void submit(event)} className="arena-dm-compose">
-            <label htmlFor="arena-dm-body">메시지 입력</label>
-            <textarea id="arena-dm-body" ref={composer} rows={3} maxLength={1000}
+            <label htmlFor={bodyId}>메시지 입력</label>
+            <textarea id={bodyId} ref={composer} rows={embedded ? 2 : 3} maxLength={1000}
               value={draft} onChange={event => {setDraft(event.target.value);pendingRequest.current=null;setSendError(null);}}
               onKeyDown={onKeyDown} readOnly={sending} placeholder="친구에게 메시지를 보내세요."
-              aria-describedby="arena-dm-shortcut arena-dm-limit"/>
+              aria-describedby={shortcutId + ' ' + limitId}/>
             <div className="arena-dm-compose-bottom">
-              <div><p id="arena-dm-shortcut">Enter 전송 · Shift+Enter 줄바꿈</p>
-                <p id="arena-dm-limit" aria-live="off">{dmBodyLength(draft)}/500자</p></div>
+              <div><p id={shortcutId}>Enter 전송 · Shift+Enter 줄바꿈</p>
+                <p id={limitId} aria-live="off">{dmBodyLength(draft)}/500자</p></div>
               <button type="submit" className="arena-button" disabled={!canSendDm(draft) || sending}>
                 {sending ? '전송 중…' : '전송'}
               </button>
@@ -302,6 +333,6 @@ export function MessengerView({ userId, initialPeer }: Props) {
       </> : <div className="arena-dm-welcome"><div className="arena-dm-welcome-mark" aria-hidden="true">● ●</div>
         <h2>친구를 선택해 주세요</h2><p>친구 목록에서 대화 상대를 선택하면 메시지를 주고받을 수 있습니다.</p>
       </div>}
-    </section>
+    </section>}
   </section>;
 }

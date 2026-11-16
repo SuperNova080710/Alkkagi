@@ -55,7 +55,8 @@ describe('issue #104 responsive accessibility regression contract (not a screens
 
   it('wraps intermediate-width header nav and narrow cards instead of hiding document overflow', () => {
     expect(responsive).toContain('(min-width: 640px) and (max-width: 1023px)');
-    expect(responsive).toMatch(/\.arena-nav\s*\{\s*flex: 1 1 420px;/);
+    expect(responsive).toContain('grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr)');
+    expect(responsive).toContain('.arena-header > .arena-nav { grid-area: 2 / 1 / 3 / -1; margin: 0; }');
     expect(responsive).toContain('(max-width: 360px)');
     expect(responsive).toContain('grid-template-columns: 72px minmax(0, 1fr)');
     expect(responsive).toContain('font-size: clamp(31px, 12.5vw, 49px)');

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
+import { notifySocialInboxChanged } from '@/components/social/social-inbox';
 import { usePlayerResource } from '@/components/players/use-player-resource';
 import {
   inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
@@ -52,6 +53,7 @@ export function ReceivedRoomInvites({ game, disabled = false, onProcessingChange
       } else {
         throw new RoomInviteError(503, 'ROOM_INVITE_SERVICE_UNAVAILABLE');
       }
+      notifySocialInboxChanged();
       retry();
     } catch (cause) {
       setFailure(cause); retry();

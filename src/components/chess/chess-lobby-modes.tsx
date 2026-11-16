@@ -1,9 +1,9 @@
 'use client';
 
+import { openArenaDialog } from '@/components/ui/arena-panel-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, type FormEvent } from 'react';
-import { ReceivedRoomInvites } from '@/components/rooms/received-room-invites';
 import { ArenaModeCard } from '@/components/ui/arena';
 import { ChessDifficultyForm } from './chess-difficulty-form';
 import { chessRequest } from './client';
@@ -14,14 +14,14 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
   const [mode, setMode] = useState<'casual' | 'ai' | null>(null);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const [pending, setPending] = useState<'create' | 'join' | 'invite' | null>(null);
+  const [pending, setPending] = useState<'create' | 'join' | null>(null);
   const lock = useRef(false);
   const creation = useRef<string | null>(null);
 
-  function open(next: 'casual' | 'ai') {
+  function open(next: 'casual' | 'ai', trigger: HTMLButtonElement) {
     setMode(next);
     setError('');
-    dialog.current?.showModal();
+    openArenaDialog(dialog.current, trigger);
   }
 
   async function enter(event: FormEvent, action: 'create' | 'join') {
@@ -49,7 +49,7 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
   return <>
     <div className="arena-modes" aria-label="체스 대전 방식">
       <ArenaModeCard game="chess" mode="casual">
-        <button className="arena-button" type="button" onClick={() => open('casual')}>
+        <button className="arena-button" type="button" onClick={event => open('casual', event.currentTarget)}>
           방 만들기 · 코드로 참가 <span aria-hidden="true">›</span>
         </button>
       </ArenaModeCard>
@@ -59,13 +59,13 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
         </Link>
       </ArenaModeCard>
       <ArenaModeCard game="chess" mode="ai">
-        <button className="arena-button arena-button--blue" type="button" onClick={() => open('ai')}>
+        <button className="arena-button arena-button--blue" type="button" onClick={event => open('ai', event.currentTarget)}>
           AI 연습 시작 <span aria-hidden="true">›</span>
         </button>
       </ArenaModeCard>
     </div>
     <dialog ref={dialog} className="arena-dialog" aria-labelledby="chess-mode-title"
-      onCancel={event => { if (lock.current) event.preventDefault(); }} onClose={() => setMode(null)}>
+      onCancel={event => { if (lock.current) event.preventDefault(); }}>
       <div className="arena-dialog-heading">
         <h2 id="chess-mode-title">{mode === 'casual' ? '친구와 한 판!' : 'AI와 연습해 볼까요?'}</h2>
         <button type="button" className="arena-close" aria-label="닫기" disabled={pending !== null}
@@ -95,11 +95,6 @@ export function ChessLobbyModes({ invitesEnabled }: { invitesEnabled: boolean })
           </form>
         </div>
         {error && <p role="alert" className="arena-invite-error">{error}</p>}
-        {invitesEnabled && <ReceivedRoomInvites game="chess" disabled={pending === 'create' || pending === 'join'}
-          onProcessingChange={processing => {
-            lock.current = processing;
-            setPending(processing ? 'invite' : null);
-          }} onAccepted={() => dialog.current?.close()}/>}
       </div> : mode === 'ai' && <ChessDifficultyForm onStart={difficulty => {
         dialog.current?.close();
         router.push('/chess/ai#' + difficulty);

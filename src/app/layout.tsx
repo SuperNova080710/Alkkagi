@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { isSearchProduction, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/seo/site";
+import { SocialMessenger } from "@/components/social/social-messenger";
+import { ArenaPageMotion } from "@/components/ui/arena-page";
 import "./globals.css";
+import "@zakisheriff/liquid-glass/styles.css";
 import "./arena.css";
 
 export const metadata: Metadata = {
@@ -36,7 +39,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ArenaPageMotion />
+        {process.env.FRIENDS_UI_ENABLED === 'true' && <SocialMessenger/>}
+      </body>
     </html>
   );
 }

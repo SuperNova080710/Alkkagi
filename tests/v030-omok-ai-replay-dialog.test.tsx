@@ -19,7 +19,7 @@ describe('#289 replay AI match with editable difficulty', () => {
   it('keeps replay separate from explicit lobby return', () => {
     const source = readFileSync(new URL('../src/components/omok/omok-ai-client.tsx', import.meta.url), 'utf8');
     expect(source).toContain("snapshot.status !== 'finished'");
-    expect(source).toContain('replayDialog.current?.showModal()');
+    expect(source).toContain('openArenaDialog(replayDialog.current, trigger)');
     expect(source).toContain('onReplay={chooseReplayDifficulty}');
     expect(source).toContain('onReturn={() => router.push(\'/omok\')}');
     expect(source).toContain('onCancel={event => { if (replayPending) event.preventDefault(); }}');
