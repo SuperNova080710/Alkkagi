@@ -13,6 +13,21 @@ body {
   margin: 0;
 }
 
+@keyframes arena-page-slide {
+  from { transform: translateX(var(--arena-page-offset)); opacity: .56; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .arena-wrap:has(> #arena-content[data-arena-page-slide]) { overflow-x: clip; }
+  #arena-content[data-arena-page-slide] {
+    --arena-page-offset: clamp(36px, 5vw, 72px);
+    animation: arena-page-slide 360ms var(--arena-panel-ease);
+  }
+  #arena-content[data-arena-page-slide="back"] {
+    --arena-page-offset: calc(-1 * clamp(36px, 5vw, 72px));
+  }
+}
+
 ::selection {
   background: #6ee7b7;
   color: #020617;

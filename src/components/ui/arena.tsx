@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { ArenaPage } from './arena-page';
 import type { ArenaGame } from '@/components/lobby/game-switcher';
 import { ArenaGlassHeader, type ArenaNavItem } from './arena-glass-header';
 
@@ -42,7 +41,7 @@ export function ArenaShell({ children, current, account, game = 'alkkagi', publi
           <span>한판아레나</span><span lang="en">HANPAN ARENA</span>
         </a>
       </ArenaGlassHeader>
-      <ArenaPage>{children}</ArenaPage>
+      <main id="arena-content" tabIndex={-1}>{children}</main>
       <footer className="arena-footer">한판아레나 <span>오목 · 체스 · 알까기</span></footer>
     </div>
   </div>;
