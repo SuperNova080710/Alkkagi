@@ -247,8 +247,6 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
   </section>;
 
   return <section className="arena-dm-shell" aria-label="친구 메신저">
-    {embedded && selected && <button type="button" ref={back} className="arena-social-back"
-      disabled={sending || olderLoading} onClick={() => { returnToPeers.current = true; setSelected(null); }}>‹ 대화 목록</button>}
     {(!embedded || !selected) && <aside className="arena-panel arena-dm-inbox" aria-label="친구 대화 목록">
       <div className="arena-dm-heading">
         <div><h2>친구와 대화</h2><p>친구만 메시지를 주고받을 수 있습니다.</p></div>
@@ -284,7 +282,12 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
     {(!embedded || selected) && <section className="arena-panel arena-dm-thread" aria-label="선택한 대화">
       {selected ? <>
         <header className="arena-dm-thread-heading">
-          <div><h2>{person?.nickname ?? '대화 상대'}</h2><p>친구 전용 1:1 메시지</p></div>
+          {embedded ? <div className="arena-dm-thread-peer">
+            <button type="button" ref={back} className="arena-social-back" aria-label="대화 목록으로 돌아가기"
+              disabled={sending || olderLoading}
+              onClick={() => { returnToPeers.current = true; setSelected(null); }}>{'<'}</button>
+            <h2>{person?.nickname ?? '대화 상대'}</h2>
+          </div> : <div><h2>{person?.nickname ?? '대화 상대'}</h2><p>친구 전용 1:1 메시지</p></div>}
           {person && <Link href={'/players/' + person.id} onClick={onNavigate} className="arena-text-link">프로필 ›</Link>}
         </header>
         {loadingHistory && !history && <p role="status" className="arena-muted">대화를 불러오고 있습니다…</p>}
@@ -307,7 +310,7 @@ export function MessengerView({ userId, initialPeer, embedded = false, onNavigat
           </ol>
           <form onSubmit={event => void submit(event)} className="arena-dm-compose">
             <label htmlFor={bodyId}>메시지 입력</label>
-            <textarea id={bodyId} ref={composer} rows={3} maxLength={1000}
+            <textarea id={bodyId} ref={composer} rows={embedded ? 2 : 3} maxLength={1000}
               value={draft} onChange={event => {setDraft(event.target.value);pendingRequest.current=null;setSendError(null);}}
               onKeyDown={onKeyDown} readOnly={sending} placeholder="친구에게 메시지를 보내세요."
               aria-describedby={shortcutId + ' ' + limitId}/>
