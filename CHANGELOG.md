@@ -3,11 +3,21 @@
 한판아레나(구 Alkkagi Arena)의 **개발 병합**, **릴리스 후보(RC)**, **Production 배포**를 분리합니다.
 [릴리스 프로세스](docs/release-process.md) · [v0.4.2 인수 체크리스트](docs/release-v0.4.2-handoff.md)
 
-## [0.4.2] — Release Candidate 준비 (2026-11-11)
+## [0.4.3] — Release Candidate (2026-11-16)
 
-> **출시 전:** `release/v0.4.2`는 `develop`의 기능 통합을 기반으로 준비 중입니다.
-> 현행 운영 Production은 여전히 **v0.4.1** (`main` `d40e1101`). 신규 SQL 5개는 **사용자 승인에 따라 기존 운영 Supabase DB에 적용 완료**됐으나, 신규 v0.4.2 웹 기능은 아직 Production에 배포되지 않았습니다.
-> RC CI·Preview 두 계정 인수·운영 변경 승인이 완료되기 전에는 정식 출시로 표시하지 않습니다.
+- **공통 메신저:** 알까기·오목·체스에서 읽지 않은 메시지, 친구 요청, 대전 초대가 있으면 왼쪽 하단 버튼에 알림을 표시합니다. 메신저에서 대화하거나 요청에 응답하고, 초대를 수락하면 해당 게임 방으로 이동합니다. 드로어는 버튼 위치에서 펼쳐지고 같은 위치로 닫힙니다. ([#373](https://github.com/SuperNova080710/Alkkagi/pull/373))
+- **상단 내비게이션:** `@zakisheriff/liquid-glass` 굴절 표면과 선택 렌즈를 적용했습니다. 선택 표시가 메뉴 위치와 너비에 맞춰 탄력 있게 이동하고, 동작 줄이기 설정에서는 바로 이동합니다. ([#376](https://github.com/SuperNova080710/Alkkagi/pull/376))
+- **화면 정렬 및 전환:** 계정 버튼 유무에 관계없이 공통 메뉴 위치와 인디케이터 크기를 맞췄습니다. 메신저 및 앱 패널에 330ms 전환을 적용하고 Full HD에서 긴 내용은 콘텐츠 영역 안에서 스크롤하도록 조정했습니다. ([#378](https://github.com/SuperNova080710/Alkkagi/pull/378))
+- **게임 전환 및 메신저 탭:** 게임 전환 표시가 페이지를 넘길 때도 탄력 있게 이어집니다. 메신저·대전 초대·친구 요청 탭에 공통 리퀴드 글래스를 적용하고 드로어 바깥을 클릭해도 버튼으로 접히도록 했습니다. ([#379](https://github.com/SuperNova080710/Alkkagi/issues/379))
+- **상단 로고:** 로그인 상태에서 로고를 누르면 공통 로비로 이동합니다. 로그아웃 상태에서는 공개 홈으로 이동합니다. ([#381](https://github.com/SuperNova080710/Alkkagi/issues/381))
+- **메신저 대화 화면:** 긴 대화는 내역 영역에서 스크롤하고 입력칸과 전송 버튼이 드로어 안에 보이도록 개선했습니다. 닉네임 옆에 대화 목록으로 돌아가는 버튼을 배치했습니다. ([#383](https://github.com/SuperNova080710/Alkkagi/issues/383))
+- **화면 전환과 정리:** 상단 메뉴의 페이지 본문과 드로어의 탭·대화 화면에 방향별 슬라이드를 적용했습니다. 세 게임의 랭킹 상단 배너와 로비 TOP 3 아래 바로가기 묶음을 제거했습니다. ([#385](https://github.com/SuperNova080710/Alkkagi/issues/385))
+- **페이지 슬라이드 보완:** 실제 페이지 전환 시 이동을 실행하고, 넓은 화면에서는 본문이 72px 이동하도록 개선했습니다. ([#386](https://github.com/SuperNova080710/Alkkagi/pull/386))
+- **릴리스:** `release/v0.4.3`의 Vercel Preview에서 검증합니다. 이번 변경에 신규 SQL 마이그레이션은 없습니다.
+
+## [0.4.2] — Production READY (2026-11-11)
+
+> [PR #356](https://github.com/SuperNova080710/Alkkagi/pull/356)으로 `main`에 배포했습니다. Vercel Production `2577dc07` READY를 확인했습니다.
 
 ### Added
 - [#344](https://github.com/SuperNova080710/Alkkagi/pull/344): 체스 일반전 종료 30분 내 **양측 수락 재대결**. 원본 기보와 승패를 보존하고 후속 대국에서 흑백 교대. 독립 PostgreSQL 17 두 연결 동시성·멱등성 테스트 포함.
