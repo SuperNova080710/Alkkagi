@@ -86,13 +86,16 @@
   border-bottom-color: #edc56a;
 }
 .arena-nav[data-indicator-ready] a[data-glass-selected] { color: #fff7d1; }
-.arena-nav .arena-nav-indicator.lg-glass {
+.arena-glass-indicator.lg-glass {
   position: absolute;
   inset: 0 auto auto 0;
   z-index: 0;
   visibility: hidden;
   pointer-events: none;
   border-radius: 999px;
+}
+[data-indicator-ready] > .arena-glass-indicator { visibility: visible; }
+.arena-nav .arena-nav-indicator.lg-glass {
   --lg-glass-fill: rgb(222 255 224 / .23);
   --lg-glass-blur: 2px;
   --lg-saturate: 1.4;
@@ -100,7 +103,6 @@
   --lg-edge: rgb(232 255 230 / .72);
   --lg-glass-shadow: inset 0 1px #fffce8c9, inset 0 -1px #b5ebca83, 0 2px 7px #071f193c;
 }
-.arena-nav[data-indicator-ready] .arena-nav-indicator { visibility: visible; }
 @media (prefers-reduced-transparency: reduce) {
   .arena-header { background: #163e30; }
   .arena-header-glass.lg-glass { display: none; }
@@ -108,7 +110,7 @@
 }
 @media (forced-colors: active) {
   .arena-header-glass.lg-glass,
-  .arena-nav[data-indicator-ready] .arena-nav-indicator { visibility: hidden; }
+  [data-indicator-ready] > .arena-glass-indicator { visibility: hidden; }
   .arena-nav a[aria-current],
   .arena-nav a[data-glass-selected] { border-bottom-color: Highlight; }
 }
@@ -2157,6 +2159,7 @@
 
 /* #236: gated v0.3 multi-game selection and omok lobby staging. */
 .arena-game-switcher {
+  position: relative;
   display: flex;
   align-items: stretch;
   gap: 6px;
@@ -2169,6 +2172,8 @@
   box-shadow: inset 0 2px 4px #45653b22, 0 3px 0 #a2aa8d;
 }
 .arena-game-switcher > a {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2185,13 +2190,25 @@
   transition: background .15s ease, transform .15s ease;
 }
 .arena-game-switcher > a:hover { background: #fffaf0; }
-.arena-game-switcher > a.is-active {
+.arena-game-switcher:not([data-indicator-ready]) > a.is-active {
   color: #fffaf0;
   background: linear-gradient(#258754, #17603d);
   border-color: #134b34;
   box-shadow: inset 0 1px #ffffff55, 0 2px 0 #0c4330;
 }
-.arena-game-switcher > a.is-active:hover { background: linear-gradient(#2e9060, #17603d); }
+.arena-game-switcher[data-indicator-ready] > a[data-glass-selected] {
+  color: #fffaf0;
+  background: transparent;
+}
+.arena-game-switcher > .arena-glass-indicator {
+  --lg-glass-fill: rgb(25 114 70 / .89);
+  --lg-glass-blur: 2px;
+  --lg-edge: rgb(221 255 227 / .72);
+  --lg-glass-shadow: inset 0 1px #efffe3a1, inset 0 -1px #0e553bcc, 0 2px 4px #174c3940;
+}
+@media (forced-colors: active) {
+  .arena-game-switcher > a[aria-current] { border-color: Highlight; }
+}
 .arena-game-switcher-puck { font-size: 15px; color: #edbd52; text-shadow: 0 1px 1px #123; }
 .arena-game-switcher-stones { display: inline-flex; letter-spacing: -9px; padding-right: 7px; font-size: 14px; color: #1c2621; }
 .arena-game-switcher-stones b { font-size: inherit; color: #f6ebd1; text-shadow: 0 0 1px #28362d; }
