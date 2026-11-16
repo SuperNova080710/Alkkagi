@@ -222,7 +222,7 @@ async function main() {
           await session.eval(fixture.outputFiles[0].text, sessionId);
           const report = await until(() => session.eval('document.documentElement.dataset.qaMessenger', sessionId), 8000);
           if (report !== 'PASS') failures.push('Messenger geometry: ' + report);
-          else console.log('PASS ' + label + ' messenger: messages scroll independently and composer stays visible');
+          else console.log('PASS ' + label + ' messenger: thread and tab slides preserve the composer and independent history scroll');
         }
         if (path === '/') {
           const refracted = await until(async () => await session.eval(`
@@ -313,6 +313,31 @@ async function main() {
             format: 'png', captureBeyondViewport: false,
           }, sessionId);
           await writeFile(join(outdir, safePath.replaceAll('/', '-') + '-' + label + '.png'), Buffer.from(screenshot.data, 'base64'));
+        }
+        if (path === '/' && ['wide-1920x1080', 'mobile-320x720'].includes(label)) {
+          const nativeLink = label.startsWith('mobile-');
+          await session.eval(`(() => {
+            const target = document.querySelector('.arena-nav a[href="/how-to-play"]');
+            if (${nativeLink}) {
+              const anchor = document.createElement('a');
+              anchor.href = target.href;
+              document.body.append(anchor);
+              anchor.click();
+            } else target.click();
+          })()`, sessionId);
+          const slide = await until(() => session.eval(`(() => {
+            if (location.pathname !== '/how-to-play') return null;
+            const page = document.getElementById('arena-content');
+            const animation = page?.getAnimations().find(item => item.animationName === 'arena-page-slide');
+            if (!animation) return null;
+            const first = animation.effect.getKeyframes()[0].transform;
+            return { offset: new DOMMatrix(first).m41, duration: animation.effect.getTiming().duration,
+              overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+          })()`, sessionId), 8000).catch(() => null);
+          if (!slide || slide.offset < (nativeLink ? 36 : 64) || slide.duration !== 360 || slide.overflow > 1) {
+            failures.push('Page did not slide visibly within the viewport: ' + JSON.stringify(slide));
+          } else console.log('PASS ' + label + ' page slide ' + (nativeLink ? 'after document navigation' : 'from main menu')
+            + ' (' + slide.offset + 'px, ' + slide.duration + 'ms)');
         }
         results.push({ viewport: label, cssPixels: [width, height], path,
           httpStatus: response.status, ...m, failures });

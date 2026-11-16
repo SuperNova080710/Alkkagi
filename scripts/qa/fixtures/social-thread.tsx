@@ -47,6 +47,8 @@ async function verify() {
     const body = await waitFor<HTMLDivElement>(host, '.arena-social-content');
     const panel = await waitFor<HTMLElement>(host, '.arena-dm-thread');
     const composer = await waitFor<HTMLFormElement>(host, '.arena-dm-compose');
+    if (panel.dataset.arenaSlide !== 'forward' || getComputedStyle(panel).animationName !== 'arena-slide-in')
+      throw new Error('Opening a conversation does not slide the thread in');
     await new Promise(resolve => setTimeout(resolve, 380));
     const bounds = body.getBoundingClientRect();
     const input = composer.querySelector('textarea')?.getBoundingClientRect();
@@ -66,6 +68,13 @@ async function verify() {
       throw new Error('Back control is not beside the nickname');
     back.click();
     await waitFor(host, '.arena-dm-peer');
+    const inbox = await waitFor<HTMLElement>(host, '.arena-dm-inbox[data-arena-slide="back"]');
+    if (getComputedStyle(inbox).animationName !== 'arena-slide-in')
+      throw new Error('Returning to the list does not slide it back in');
+    (await waitFor<HTMLButtonElement>(host, '[data-glass-option="invites"]')).click();
+    const invites = await waitFor<HTMLElement>(host, '.arena-social-pane[data-arena-slide="forward"]');
+    if (getComputedStyle(invites).animationName !== 'arena-slide-in')
+      throw new Error('Selecting another tab does not slide the content in');
     return 'PASS';
   } finally {
     root.unmount();

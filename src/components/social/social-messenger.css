@@ -231,6 +231,7 @@
 
 .arena-social-content {
   overflow: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   padding: 10px 12px;
   scrollbar-width: thin;
@@ -306,9 +307,15 @@
   display: flex;
   flex-direction: column;
 }
-/* Allow the body to scroll on very short viewports where the controls cannot fit. */
-.arena-social .arena-dm-shell {
+/* Let the body scroll at very short heights where the controls cannot fit. */
+.arena-social-content--messages > .arena-social-pane {
+  display: flex;
   flex: 1 0 240px;
+  flex-direction: column;
+  min-width: 0;
+}
+.arena-social .arena-dm-shell {
+  flex: 1 1 auto;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: auto;
@@ -360,6 +367,17 @@
   }
   .arena-social-content--messages { padding-block: 5px; }
   .arena-social-content--messages + .arena-social-footer a { min-height: 32px; }
+}
+.arena-social [data-arena-slide="forward"] { --arena-slide-start: 22px; }
+.arena-social [data-arena-slide="back"] { --arena-slide-start: -22px; }
+@keyframes arena-slide-in {
+  from { translate: var(--arena-slide-start) 0; opacity: .6; }
+  to { translate: 0 0; opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .arena-social [data-arena-slide] {
+    animation: arena-slide-in var(--arena-panel-duration) var(--arena-panel-ease);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .arena-social-dialog, .arena-social-dialog::backdrop, .arena-social .arena-social-drawer { transition: none; }

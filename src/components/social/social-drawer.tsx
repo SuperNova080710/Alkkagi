@@ -7,11 +7,13 @@ import { friendActionRequest, friendErrorMessage, friendMutation } from '@/compo
 import { MessengerView } from '@/components/messages/messenger-view';
 import { inviteTime, isRoomUuid, RoomInviteError, roomInviteError, roomInviteMutation,
   type RoomInviteResponded } from '@/components/rooms/room-invite-api';
+import type { ArenaSlideDirection } from '@/components/ui/arena-page';
 import { useArenaGlassIndicator, useArenaGlassSurface } from '@/components/ui/use-arena-glass-indicator';
 import { socialInviteGames } from '@/lib/social/inbox';
 import { unreadMessages, type SocialInbox, type SocialInvite, type SocialRequest } from './social-inbox';
 
-type Tab = 'messages' | 'invites' | 'requests';
+const tabs = ['messages', 'invites', 'requests'] as const;
+type Tab = typeof tabs[number];
 
 function InboxActions({ label, pending, onRespond }: {
   label: string; pending: boolean; onRespond: (accept: boolean) => void;
@@ -36,6 +38,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
   const busy = useRef(false);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('requests');
+  const [tabSlide, setTabSlide] = useState<ArenaSlideDirection>();
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState('');
   const [failure, setFailure] = useState('');
@@ -88,6 +91,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
     if (!dialog.current || dialog.current.open) return;
     setTab(invites > 0 ? 'invites' : requests > 0 ? 'requests'
       : inbox.messages !== undefined ? 'messages' : inbox.inviteGames.length ? 'invites' : 'requests');
+    setTabSlide(undefined);
     setOpen(true);
     dialog.current.showModal();
     closeButton.current?.focus({ preventScroll: true });
@@ -135,8 +139,9 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
     }, friendErrorMessage);
   }
 
-  function select(tab: Tab) {
-    setTab(tab);
+  function select(nextTab: Tab) {
+    if (nextTab !== tab) setTabSlide(tabs.indexOf(nextTab) > tabs.indexOf(tab) ? 'forward' : 'back');
+    setTab(nextTab);
     setFailure('');
     setNotice('');
     onRefresh();
@@ -219,7 +224,7 @@ export function SocialDrawer({ inbox, pathname, loadFailed, onRefresh }: {
           </p>}
           {failure && <p role="alert" className="arena-social-error">{failure}</p>}
           {notice && <p role="status" className="arena-social-notice">{notice}</p>}
-          {open && content}
+          {open && <div key={tab} className="arena-social-pane" data-arena-slide={tabSlide}>{content}</div>}
         </div>
         <footer className="arena-social-footer"><Link href="/friends" onClick={close}>친구 관리 ›</Link></footer>
       </div>
